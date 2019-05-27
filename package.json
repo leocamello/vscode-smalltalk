@@ -1,0 +1,38 @@
+{
+    "name": "vscode-smalltalk",
+    "displayName": "SmallTalk",
+    "description": "SmallTalk Language Support",
+    "author": { 
+        "name": "Leonardo Nascimento",
+        "email": "leocamello@gmail.com"
+    },
+    "publisher": "leocamello",
+    "license": "MIT",
+    "version": "0.0.1",
+    "preview": true,
+    "repository": {
+        "url": "https://github.com/leocamello/vscode-smalltalk"
+    },
+    "bugs": {
+        "url": "https://github.com/leocamello/vscode-smalltalk/issues"
+    },
+    "engines": {
+        "vscode": "^1.34.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "smalltalk",
+            "aliases": ["SmallTalk", "smalltalk"],
+            "extensions": [".st"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "smalltalk",
+            "scopeName": "source.smalltalk",
+            "path": "./syntaxes/smalltalk.tmLanguage.json"
+        }]
+    }
+}
