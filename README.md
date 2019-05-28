@@ -14,13 +14,13 @@ SmallTalk Language Support for Visual Studio Code can be installed from the [Vis
 ### Declarative Language Features
 
 - Syntax highlighting
+- Snippet completion
 - Bracket matching
 - Bracket autoclosing
 - Bracket autosurrounding
 - Comment toggling
 - Auto indentation
 - Folding (by markers)
-<!-- - Snippet completion -->
 
 <!-- ### Programmatic Language Features
 

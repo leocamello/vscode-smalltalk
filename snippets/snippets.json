@@ -1,0 +1,86 @@
+{
+	"as": {
+		"prefix": "as",
+		"body": "self assert: ${1:expression}",
+		"description": "assert",
+		"scope": "source.smalltalk"
+	},
+	"cat": {
+		"prefix": "cat",
+		"body": "<category: '$1'>",
+		"description": "category",
+		"scope": "source.smalltalk"
+	},
+	"cla": {
+		"prefix": "cla",
+		"body": "Object subclass: ${1:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.st)?/(?2::\\u$1)/g}} [\n\t<category: '$2'>\n\t<comment: '$3'>\n\t$0\n]",
+		"description": "class (Object subclass: …)",
+		"scope": "source.smalltalk"
+	},
+	"cla1": {
+		"prefix": "cla",
+		"body": "${1:Object} subclass: #${2:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.st)?/(?2::\\u$1)/g}}\n\tinstanceVariableNames: '$3' \n\tclassVariableNames: '$4'\n\tpoolDictionaries: '$5' \n\tcategory: '$6'\n\n\t$0",
+		"description": "class instance variables …",
+		"scope": "source.smalltalk"
+	},
+	"cla2": {
+		"prefix": "cla",
+		"body": "Object subclass: ${1:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.st)?/(?2::\\u$1)/g}} [\n\t$0\n]",
+		"description": "class (without category)",
+		"scope": "source.smalltalk"
+	},
+	"cmethod": {
+		"prefix": "cmethod",
+		"body": "${1:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.st)?/(?2::\\u$1)/g}} class >> ${2:method_name} [\n\t$0\n]",
+		"description": "class_method",
+		"scope": "source.smalltalk"
+	},
+	"com": {
+		"prefix": "com",
+		"body": "<comment: '$1'>",
+		"description": "comment",
+		"scope": "source.smalltalk"
+	},
+	"eval": {
+		"prefix": "eval",
+		"body": "Eval [\n\t$0\n]",
+		"description": "eval",
+		"scope": "source.smalltalk"
+	},
+	"if": {
+		"prefix": "if",
+		"body": "${1:expression} ifTrue: [ $2 ] ifFalse: [ $3 ].",
+		"description": "if",
+		"scope": "source.smalltalk"
+	},
+	"iff": {
+		"prefix": "iff",
+		"body": "$1{:expression} ifFalse: [ $0 ].",
+		"description": "ifFalse",
+		"scope": "source.smalltalk"
+	},
+	"ifn": {
+		"prefix": "ifn",
+		"body": "${1:expression} ifNil: [ $0 ].",
+		"description": "ifNil",
+		"scope": "source.smalltalk"
+	},
+	"ift": {
+		"prefix": "ift",
+		"body": "${1:expression} ifTrue: [ $0 ].",
+		"description": "ifTrue",
+		"scope": "source.smalltalk"
+	},
+	"method": {
+		"prefix": "method",
+		"body": "${1:method_name} [\n\t<category: '${2:accessing}'>\n\t$0\n]",
+		"description": "method",
+		"scope": "source.smalltalk"
+	},
+	"ret": {
+		"prefix": "ret",
+		"body": "^${1:self}",
+		"description": "return",
+		"scope": "source.smalltalk"
+	}
+}

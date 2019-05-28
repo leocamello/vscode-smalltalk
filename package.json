@@ -2,13 +2,13 @@
     "name": "vscode-smalltalk",
     "displayName": "SmallTalk",
     "description": "SmallTalk Language Support for Visual Studio Code",
-    "author": { 
+    "author": {
         "name": "Leonardo Nascimento",
         "email": "leocamello@gmail.com"
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "preview": true,
     "icon": "icon.png",
     "repository": {
@@ -21,19 +21,35 @@
         "vscode": "^1.31.0"
     },
     "categories": [
-        "Programming Languages"
+        "Programming Languages",
+        "Snippets"
     ],
     "contributes": {
-        "languages": [{
-            "id": "smalltalk",
-            "aliases": ["SmallTalk", "smalltalk"],
-            "extensions": [".st"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "smalltalk",
-            "scopeName": "source.smalltalk",
-            "path": "./syntaxes/smalltalk.tmLanguage.json"
-        }]
+        "languages": [
+            {
+                "id": "smalltalk",
+                "aliases": [
+                    "SmallTalk",
+                    "smalltalk"
+                ],
+                "extensions": [
+                    ".st"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "smalltalk",
+                "scopeName": "source.smalltalk",
+                "path": "./syntaxes/smalltalk.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "smalltalk",
+                "path": "./snippets/snippets.json"
+            }
+        ]
     }
 }
