@@ -18,4 +18,4 @@ steps:
 - script: |
     npm install -g vsce
     vsce package
-  displayName: 'npm install and build'
+  displayName: 'Generate Package'
