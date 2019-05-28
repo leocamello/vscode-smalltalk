@@ -1,14 +1,14 @@
 {
     "name": "vscode-smalltalk",
     "displayName": "SmallTalk",
-    "description": "SmallTalk Language Support",
+    "description": "SmallTalk Language Support for Visual Studio Code",
     "author": { 
         "name": "Leonardo Nascimento",
         "email": "leocamello@gmail.com"
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "preview": true,
     "icon": "icon.png",
     "repository": {
