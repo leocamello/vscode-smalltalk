@@ -10,12 +10,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: NodeTool@0
+- task: PublishBuildArtifacts@1
   inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
-
-- script: |
-    npm install -g vsce
-    vsce package
-  displayName: 'Generate Package'
+    PathtoPublish: '$(System.DefaultWorkingDirectory)'
