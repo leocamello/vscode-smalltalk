@@ -1,15 +1,44 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# Node.js VS Code Extension CI Pipeline
+# Installs dependencies and publishes source code artifacts.
 
 trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Azure Pipelines # Explicitly specify the Microsoft-hosted pool
+  vmImage: 'ubuntu-latest' # Use the latest Ubuntu image
 
 steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x' # Specify a Node.js LTS version appropriate for VS Code extensions
+  displayName: 'Install Node.js 18.x'
+
+- script: npm install
+  displayName: 'Install dependencies'
+  # This step installs packages listed in package.json and package-lock.json
+
+# Optional: Add build/lint/test steps here if you define them in package.json
+# - script: npm run lint
+#   displayName: 'Run linter'
+# - script: npm run test
+#   displayName: 'Run tests'
+# - script: npm run compile # If you have a TypeScript compilation step
+#   displayName: 'Compile TypeScript'
+
+# Optional: Add packaging step if you want to publish the .vsix file
+# - script: npm install -g vsce
+#   displayName: 'Install vsce globally'
+# - script: vsce package
+#   displayName: 'Package Extension (.vsix)'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     PathtoPublish: '$(System.DefaultWorkingDirectory)/$(publisher).$(name)-$(version).vsix' # Adjust pattern as needed
+#     ArtifactName: 'extension_package'
+#   displayName: 'Publish .vsix Artifact'
+
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(System.DefaultWorkingDirectory)'
+    PathtoPublish: '$(System.DefaultWorkingDirectory)' # Publishes the entire source directory
+    ArtifactName: 'source_code' # It's good practice to name your artifacts
+  displayName: 'Publish Source Code Artifact'
