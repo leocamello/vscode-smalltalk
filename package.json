@@ -51,5 +51,11 @@
                 "path": "./snippets/snippets.json"
             }
         ]
+    },
+    "devDependencies": {
+        "@vscode/vsce": "^3.3.2"
+    },
+    "scripts": {
+        "deploy": "vsce publish --yarn"
     }
 }

@@ -1,0 +1,36 @@
+.github/copilot-instructions.md
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log*
+*.log
+*.lock # If you prefer not to commit lock files (though committing them is often recommended)
+
+# VS Code Extension specific
+*.vsix
+out/ # If using TypeScript compilation output directory
+dist/ # Common build output directory
+
+# VS Code Editor specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# Operating System specific
+.DS_Store
+Thumbs.db
+
+# Test & Coverage Output
+coverage/
+*.lcov
+
+# Environment Variables
+.env*
+!.env.example
+
+# Build Artifacts (if applicable beyond .vsix)
+# build/
