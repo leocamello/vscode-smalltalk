@@ -14,11 +14,19 @@ Provides comprehensive language support for **Smalltalk**, with an initial focus
 <!-- Prerequisites (US-102) -->
 ## Prerequisites
 
-<!-- TODO: Content for US-102 -->
-<!-- Briefly mention the need for GNU Smalltalk installation -->
-<!-- Link to GNU Smalltalk website -->
-<!-- Mention recommended version (latest stable) -->
-<!-- Mention the smalltalk.gnuSmalltalkPath setting -->
+This extension requires **GNU Smalltalk** to be installed on your system to provide its full functionality, especially for features planned in future phases (like code execution or language server integration).
+
+1.  **Install GNU Smalltalk:**
+    *   You need a working installation of GNU Smalltalk. We recommend using the **latest stable version**.
+    *   Download and find installation instructions for your operating system on the official **[GNU Smalltalk Website](https://www.gnu.org/software/smalltalk/)**.
+    *   Ensure the GNU Smalltalk executable (`gst`) is available in your system's `PATH`.
+
+2.  **Verify Installation (Optional but Recommended):**
+    *   Open your terminal or command prompt and run `gst --version`. This should output the installed version number.
+
+**Note:** While the extension primarily focuses on GNU Smalltalk, basic syntax highlighting might work for other Smalltalk dialects using `.st` files, but compatibility is not guaranteed. Future features requiring execution or analysis will depend specifically on `gst`.
+
+*(Self-correction: We will add details about the `smalltalk.gnuSmalltalkPath` setting in the Configuration section under US-105, but it's good to ensure `gst` is findable via PATH as the primary method).*
 
 <!-- Installation -->
 ## Installation
