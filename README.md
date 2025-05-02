@@ -22,7 +22,7 @@ This extension requires **GNU Smalltalk** to be installed on your system to prov
     *   Ensure the GNU Smalltalk executable (`gst`) is available in your system's `PATH`.
 
 2.  **Verify Installation (Optional but Recommended):**
-    *   Open your terminal or command prompt and run `gst --version` or `gst -v`. This should output the installed version number.
+    *   Open your terminal or command prompt and run `gst --version`. This should output the installed version number.
 
 **Note:** While the extension primarily focuses on GNU Smalltalk, basic syntax highlighting might work for other Smalltalk dialects using `.st` files, but compatibility is not guaranteed. Future features requiring execution or analysis will depend specifically on `gst`.
 
