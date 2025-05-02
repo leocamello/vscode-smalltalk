@@ -1,6 +1,5 @@
 # SmallTalk Language Support for Visual Studio Code
 
-[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version/leocamello.vscode-smalltalk.svg "Current Release")](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
 [![.github/workflows/main.yml](https://github.com/leocamello/vscode-smalltalk/actions/workflows/main.yml/badge.svg)](https://github.com/leocamello/vscode-smalltalk/actions/workflows/main.yml)
 
 This preview release of the extension adds language support for SmallTalk to Visual Studio Code.

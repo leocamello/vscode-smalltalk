@@ -53,9 +53,12 @@
         ]
     },
     "devDependencies": {
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.3.2"
     },
     "scripts": {
+        "test": "vscode-test",
         "deploy": "vsce publish --yarn"
     }
 }
