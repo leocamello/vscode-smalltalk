@@ -1,10 +1,10 @@
 # Smalltalk Language Support for Visual Studio Code
 
 <!-- Badges: VS Code Marketplace Version, Installs, Rating, GitHub Actions CI -->
+[![Build Status](https://img.shields.io/github/actions/workflow/status/leocamello/vscode-smalltalk/main.yml?branch=master&style=flat-square&logo=github)](https://github.com/leocamello/vscode-smalltalk/actions?query=workflow:main)
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/leocamello.vscode-smalltalk?style=flat-square&label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
-[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/leocamello.vscode-smalltalk?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
 [![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/leocamello.vscode-smalltalk?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
-[![.github/workflows/main.yml](https://github.com/leocamello/vscode-smalltalk/actions/workflows/main.yml/badge.svg)](https://github.com/leocamello/vscode-smalltalk/actions/workflows/main.yml)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/leocamello.vscode-smalltalk?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
 
 <!-- Introduction (US-101 AC2) -->
 ## Introduction
@@ -77,9 +77,14 @@ Install the **Smalltalk Language Support** extension from the [Visual Studio Cod
 <!-- Configuration (US-105) -->
 ## Configuration
 
-<!-- TODO: Content for US-105 -->
-<!-- List key settings, e.g.: -->
-<!-- - `smalltalk.gnuSmalltalkPath`: Path to the GNU Smalltalk executable (`gst`). -->
+You can configure the Smalltalk extension settings through the standard Visual Studio Code settings interface (UI or `settings.json`). See the [VS Code User Settings documentation](https://code.visualstudio.com/docs/getstarted/settings) for more details on how to modify settings.
+
+The following settings are available:
+
+*   **`smalltalk.gnuSmalltalkPath`**
+    *   **Description:** Specifies the absolute path to the GNU Smalltalk executable (`gst`). This setting is used by features that need to invoke GNU Smalltalk (like running files or future LSP integration) if the executable cannot be found in the system's `PATH` environment variable.
+    *   **Type:** `string`
+    *   **Default:** `""` (The extension will first attempt to find `gst` in the system `PATH`).
 
 <!-- Commands (US-301) -->
 ## Commands
