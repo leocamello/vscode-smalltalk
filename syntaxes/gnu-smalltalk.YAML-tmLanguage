@@ -234,19 +234,82 @@ repository:
 
   literals_symbol:
     patterns:
-      - name: constant.other.symbol.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement symbol literals (Step 5)
+      # Quoted string symbols: #'a string symbol' - must come first to avoid partial matches
+      - name: constant.other.symbol.quoted.smalltalk
+        begin: '(#)(\'')'
+        beginCaptures:
+          '1': {name: punctuation.definition.symbol.smalltalk}
+          '2': {name: punctuation.definition.string.begin.symbol.smalltalk}
+        end: "'"
+        endCaptures:
+          '0': {name: punctuation.definition.string.end.symbol.smalltalk}
+        contentName: string.quoted.single.symbol.smalltalk
+        patterns:
+          - match: "''"
+            name: constant.character.escape.apostrophe.smalltalk
+      
+      # Binary operator symbols: #+, #~=, #==, etc.
+      - name: constant.other.symbol.operator.smalltalk
+        match: '(#)([-+*/\\~=<>@%|&?,]+)'
+        captures:
+          '1': {name: punctuation.definition.symbol.smalltalk}
+      
+      # Numeric-like symbols: #123, #1.0, #1s
+      - name: constant.other.symbol.numeric.smalltalk
+        match: '(#)(\d+(\.\d+)?(s\d*)?)'
+        captures:
+          '1': {name: punctuation.definition.symbol.smalltalk}
+      
+      # Keyword-like symbols: #keyword:, #ifTrue:ifFalse:, etc.
+      - name: constant.other.symbol.keyword.smalltalk
+        match: '(#)([a-zA-Z][a-zA-Z0-9_]*:([a-zA-Z][a-zA-Z0-9_]*:)*)'
+        captures:
+          '1': {name: punctuation.definition.symbol.smalltalk}
+          '2': {name: entity.name.function.keyword.symbol.smalltalk}
+      
+      # Identifier-like symbols: #aSymbol, #yourself, etc.
+      - name: constant.other.symbol.identifier.smalltalk
+        match: '(#)([a-zA-Z][a-zA-Z0-9_]*)'
+        captures:
+          '1': {name: punctuation.definition.symbol.smalltalk}
 
   literals_array_static:
-    name: meta.array.literal.placeholder.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement static array literals (Step 5)
+    name: meta.array.literal.smalltalk
+    # Changed to match the entire #( as the begin token
+    begin: '#\('
+    beginCaptures:
+      '0': {name: punctuation.definition.array.begin.smalltalk}
+    end: '\)'
+    endCaptures:
+      '0': {name: punctuation.definition.array.end.smalltalk}
+    patterns:
+      - include: '#literals_string'
+      - include: '#literals_character'
+      - include: '#literals_numeric'
+      - include: '#literals_symbol'
+      - include: '#literals_array_static'  # Support for nested arrays
+      # More specific language constant scopes
+      - match: '\bnil\b'
+        name: constant.language.nil.smalltalk
+      - match: '\b(true|false)\b'
+        name: constant.language.boolean.smalltalk
 
   literals_byte_array:
-    name: meta.bytearray.literal.placeholder.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement byte array literals (Step 5)
+    name: meta.bytearray.literal.smalltalk
+    # Changed to match the entire #[ as the begin token
+    begin: '#\['
+    beginCaptures:
+      '0': {name: punctuation.definition.bytearray.begin.smalltalk}
+    end: '\]'
+    endCaptures:
+      '0': {name: punctuation.definition.bytearray.end.smalltalk}
+    patterns:
+      # Match integers 0-255 only using a precise range pattern
+      - name: constant.numeric.integer.byte.smalltalk
+        match: '\b([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\b'
+      # Match invalid entries (for error highlighting)
+      - match: '[^0-9\s\]]+'
+        name: invalid.illegal.byte-value.smalltalk
 
   gst_literals_special:
     patterns:
