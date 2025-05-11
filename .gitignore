@@ -1,11 +1,12 @@
 # Node.js
 node_modules/
 npm-debug.log*
+yarn-debug.log*
 yarn-error.log*
 *.log
-*.lock # If you prefer not to commit lock files (though committing them is often recommended)
 
-# VS Code Extension specific
+# VS Code specific
+.vscode/
 *.vsix
 out/ # If using TypeScript compilation output directory
 dist/ # Common build output directory
@@ -31,4 +32,7 @@ coverage/
 !.env.example
 
 # Build Artifacts (if applicable beyond .vsix)
-# build/
+build/
+
+# Other entries
+syntaxes/gnu-smalltalk.tmLanguage.json

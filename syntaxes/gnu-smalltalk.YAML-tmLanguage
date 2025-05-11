@@ -1,0 +1,144 @@
+# This is the new TextMate grammar for GNU Smalltalk, authored in YAML.
+# It will be converted to JSON for use by VS Code.
+
+name: GNU Smalltalk
+scopeName: source.smalltalk.gnu
+fileTypes: 
+  - 'st'
+  - 'gst'
+uuid: '7F2D8A6E-1B4C-4E89-9A2D-3C6F8B1E9A0F' # New UUID for this grammar
+
+patterns:
+  - include: '#shebang'
+  - include: '#comments'
+  - include: '#gst_definition_structures'
+  - include: '#gst_other_constructs'
+  - include: '#message_sends'
+  - include: '#assignments_and_returns'
+  - include: '#block_structures'
+  - include: '#all_literals'
+  - include: '#identifiers_and_variables' # Renamed from #identifier_usages for consistency with previous YAML
+  - include: '#gst_file_out_chunk_separators'
+  - include: '#punctuation_general'
+
+repository:
+  shebang:
+    name: comment.line.shebang.gst.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder: Will be implemented in Step 2
+    # TODO: Implement shebang pattern (Step 2)
+
+  comments:
+    name: comment.block.double-quoted.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder: Will be implemented in Step 2
+    # TODO: Implement double-quoted comments (Step 2)
+
+  gst_definition_structures:
+    patterns:
+      - name: meta.definition.placeholder.gst.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement GST definition structures (Step 10)
+    #       (e.g., Namespace, Class definitions/extensions, Scoped methods)
+
+  gst_other_constructs:
+    patterns:
+      - name: meta.construct.placeholder.gst.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement other GST-specific constructs (Step 11)
+    #       (e.g., Eval, Attributes)
+
+  message_sends: # Top-level include for message sending logic
+    patterns:
+      - name: meta.message-send.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement message send patterns (Step 9)
+    #       This will be complex and will likely use '#message_send_components'.
+
+  assignments_and_returns:
+    patterns:
+      - name: keyword.operator.assignment.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+      - name: keyword.control.return.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement assignment and return operators (Step 8)
+
+  block_structures:
+    name: meta.block.literal.placeholder.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement block structures (Step 8)
+
+  all_literals: # Meta-include for all literal types
+    patterns:
+      - include: '#literals_string'
+      - include: '#literals_character'
+      - include: '#literals_numeric'
+      - include: '#literals_symbol'
+      - include: '#literals_array_static'
+      - include: '#literals_byte_array'
+      - include: '#gst_literals_special'
+    # TODO: Implement individual literal types in their respective repository items (Steps 3-6)
+
+  identifiers_and_variables: # Placeholder for all identifier/variable related patterns
+    patterns:
+      - name: variable.language.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+      - name: variable.other.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement identifiers and pseudo-variables (Step 7)
+
+  gst_file_out_chunk_separators:
+    name: punctuation.separator.chunk.placeholder.gst.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement file-out chunk separators (Step 11)
+
+  punctuation_general:
+    patterns:
+      - name: punctuation.terminator.statement.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement general punctuation (Step 7)
+
+  # Key 'repository' Item Groups (Placeholders for sub-components)
+  literals_string:
+    name: string.quoted.single.placeholder.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement string literals (Step 3)
+
+  literals_character:
+    name: constant.character.placeholder.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement character literals (Step 3)
+
+  literals_numeric: # Group for all numeric types
+    patterns:
+      - name: constant.numeric.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement numeric literals (Step 4)
+
+  literals_symbol: # Group for all symbol types
+    patterns:
+      - name: constant.other.symbol.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement symbol literals (Step 5)
+
+  literals_array_static:
+    name: meta.array.literal.placeholder.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement static array literals (Step 5)
+
+  literals_byte_array:
+    name: meta.bytearray.literal.placeholder.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement byte array literals (Step 5)
+
+  gst_literals_special: # Group for GST specific literals
+    patterns:
+      - name: constant.other.special.placeholder.gst.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement GST-specific literals/constants (Step 6)
+    #       (Dynamic array constructor, binding constants, compile-time constants)
+
+  message_send_components: # Reusable components for message sends
+    patterns:
+      - name: entity.name.function.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement individual selector type patterns (Step 9)
+    #       (e.g., unary_selectors, binary_selectors, keyword_selectors)

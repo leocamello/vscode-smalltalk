@@ -1,4 +1,6 @@
 .github/**
 .vscode/**
 .vscode-test/**
+docs/**
 .gitignore
+syntaxes/gnu-smalltalk.YAML-tmLanguage

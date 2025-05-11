@@ -30,10 +30,12 @@
                 "id": "smalltalk",
                 "aliases": [
                     "SmallTalk",
-                    "smalltalk"
+                    "smalltalk",
+                    "GNU Smalltalk"
                 ],
                 "extensions": [
-                    ".st"
+                    ".st",
+                    ".gst"
                 ],
                 "configuration": "./language-configuration.json"
             }
@@ -41,8 +43,8 @@
         "grammars": [
             {
                 "language": "smalltalk",
-                "scopeName": "source.smalltalk",
-                "path": "./syntaxes/smalltalk.tmLanguage.json"
+                "scopeName": "source.smalltalk.gnu",
+                "path": "./syntaxes/gnu-smalltalk.tmLanguage.json"
             }
         ],
         "snippets": [
@@ -55,10 +57,12 @@
     "devDependencies": {
         "@vscode/test-cli": "^0.0.10",
         "@vscode/test-electron": "^2.5.2",
-        "@vscode/vsce": "^3.3.2"
+        "@vscode/vsce": "^3.3.2",
+        "js-yaml": "^4.1.0"
     },
     "scripts": {
         "test": "vscode-test",
-        "deploy": "vsce publish --yarn"
+        "deploy": "vsce publish --yarn",
+        "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json"
     }
 }
