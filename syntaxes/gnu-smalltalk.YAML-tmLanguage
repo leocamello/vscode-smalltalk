@@ -137,9 +137,100 @@ repository:
 
   literals_numeric:
     patterns:
-      - name: constant.numeric.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement numeric literals (Step 4)
+      # Scaled Decimals with radix prefix: 16rA.Bs2, 16rAs2
+      - name: constant.numeric.scaled-decimal.gst.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)(?:\.([0-9A-Za-z_]+))?(s)(-?\d+)?
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+          '4': {name: constant.numeric.radix.number.smalltalk}
+          '5': {name: constant.numeric.scaled-decimal.scale-indicator.gst.smalltalk}
+          '6': {name: constant.numeric.integer.scale-value.gst.smalltalk}
+      
+      # Scaled Decimals with decimal point, no radix: 1.2s2
+      - name: constant.numeric.scaled-decimal.gst.smalltalk
+        match: (-)?([0-9][0-9_]*)\.([0-9][0-9_]*)(s)(-?\d+)?
+        captures:
+          '4': {name: constant.numeric.scaled-decimal.scale-indicator.gst.smalltalk}
+          '5': {name: constant.numeric.integer.scale-value.gst.smalltalk}
+      
+      # Scaled Decimals without decimal point, no radix: 1s2
+      - name: constant.numeric.scaled-decimal.gst.smalltalk
+        match: (-)?([0-9][0-9_]*)(s)(-?\d+)?
+        captures:
+          '3': {name: constant.numeric.scaled-decimal.scale-indicator.gst.smalltalk}
+          '4': {name: constant.numeric.integer.scale-value.gst.smalltalk}
+      
+      # Floats with radix prefix, exponent, and decimal: 16rF.Fe2
+      - name: constant.numeric.float.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)([edq])(-?\d+)?
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+          '4': {name: constant.numeric.radix.number.smalltalk}
+          '5': {name: constant.numeric.float.exponent-indicator.smalltalk}
+          '6': {name: constant.numeric.integer.smalltalk}
+      
+      # Floats with radix prefix and precision suffix: 16rF.Fd
+      - name: constant.numeric.float.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)([edq])
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+          '4': {name: constant.numeric.radix.number.smalltalk}
+          '5': {name: constant.numeric.float.exponent-indicator.smalltalk}
+      
+      # Floats with radix prefix, no decimal, with exponent/suffix: 16rFFe2, 16rFFd
+      - name: constant.numeric.float.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)([edq])(-?\d+)?
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+          '4': {name: constant.numeric.float.exponent-indicator.smalltalk}
+          '5': {name: constant.numeric.integer.smalltalk}
+      
+      # Floats with radix prefix, just decimal: 16rF.F
+      - name: constant.numeric.float.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+          '4': {name: constant.numeric.radix.number.smalltalk}
+      
+      # Floats with decimal and exponent: 1.0e2
+      - name: constant.numeric.float.smalltalk
+        match: (-)?([0-9][0-9_]*)\.([0-9][0-9_]*)([edq])(-?\d+)?
+        captures:
+          '4': {name: constant.numeric.float.exponent-indicator.smalltalk}
+          '5': {name: constant.numeric.integer.smalltalk}
+      
+      # Floats with decimal and precision suffix: 1.0d, 1.0e, 1.0q
+      - name: constant.numeric.float.smalltalk
+        match: (-)?([0-9][0-9_]*)\.([0-9][0-9_]*)([edq])
+        captures:
+          '4': {name: constant.numeric.float.exponent-indicator.smalltalk}
+      
+      # Integers with exponent (treated as float): 123e2
+      - name: constant.numeric.float.smalltalk
+        match: (-)?([0-9][0-9_]*)([edq])(-?\d+)?
+        captures:
+          '3': {name: constant.numeric.float.exponent-indicator.smalltalk}
+          '4': {name: constant.numeric.integer.smalltalk}
+      
+      # Radix Integers: 16rFF
+      - name: constant.numeric.integer.radix.smalltalk
+        match: (-)?(\d+r)([0-9A-Za-z_]+)
+        captures:
+          '2': {name: constant.numeric.radix.base.smalltalk}
+          '3': {name: constant.numeric.radix.number.smalltalk}
+      
+      # Simple Floats (just decimal): 1.0
+      - name: constant.numeric.float.smalltalk
+        match: (-)?([0-9][0-9_]*)\.([0-9][0-9_]*)
+      
+      # Simple Integers: 123, 1_000_000
+      - name: constant.numeric.integer.smalltalk
+        match: (-)?([0-9][0-9_]*)
 
   literals_symbol:
     patterns:
