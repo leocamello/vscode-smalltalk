@@ -313,9 +313,52 @@ repository:
 
   gst_literals_special:
     patterns:
-      - name: constant.other.special.placeholder.gst.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement GST-specific literals/constants (Step 6)
+      # Dynamic Array Constructor {elem1. elem2. elem3}
+      - name: meta.array.constructor.dynamic.gst.smalltalk
+        begin: '\{'
+        beginCaptures:
+          '0': {name: punctuation.definition.array.constructor.begin.gst.smalltalk}
+        end: '\}'
+        endCaptures:
+          '0': {name: punctuation.definition.array.constructor.end.gst.smalltalk}
+        patterns:
+          # Match the period separator between array elements
+          - match: '\.'
+            name: punctuation.separator.array.constructor.gst.smalltalk
+          # Include all patterns to recursively match content
+          - include: '$self'
+      
+      # Binding Constants #{Class}, #{Namespace::Class}
+      - name: constant.other.binding.gst.smalltalk
+        begin: '#\{'
+        beginCaptures:
+          '0': {name: punctuation.definition.binding.begin.gst.smalltalk}
+        end: '\}'
+        endCaptures:
+          '0': {name: punctuation.definition.binding.end.gst.smalltalk}
+        patterns:
+          # Namespaced class pattern (e.g., TestBindings::MyBoundClass)
+          - match: '([A-Z][a-zA-Z0-9_]*)(::|::)([A-Z][a-zA-Z0-9_]*)'
+            captures:
+              '1': {name: entity.name.namespace.gst.smalltalk}
+              '2': {name: punctuation.separator.namespace.gst.smalltalk}
+              '3': {name: entity.name.type.class.smalltalk}
+          # Direct class/global pattern (e.g., Transcript, Array)
+          - match: '[A-Z][a-zA-Z0-9_]*'
+            name: entity.name.type.class.smalltalk
+      
+      # Compile-Time Constants ##(expression)
+      - name: meta.compile-time-constant.gst.smalltalk
+        begin: '(##)(\()'
+        beginCaptures:
+          '1': {name: constant.other.compile-time.marker.gst.smalltalk}
+          '2': {name: punctuation.definition.compile-time.begin.gst.smalltalk}
+        end: '\)'
+        endCaptures:
+          '0': {name: punctuation.definition.compile-time.end.gst.smalltalk}
+        patterns:
+          # Include all patterns to recursively match content
+          - include: '$self'
 
   identifiers_and_variables:
     patterns:
