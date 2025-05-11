@@ -36,6 +36,8 @@ repository:
         name: comment.line.shebang.gst.smalltalk
       '1': # The first capture group, which is '(#! )'
         name: punctuation.definition.comment.shebang.gst.smalltalk
+      '2': # The second capture group, which is the content after '#!'
+        name: comment.line.shebang.content.gst.smalltalk
 
   comments:
     # Matches Smalltalk-style double-quoted comments.
@@ -93,37 +95,45 @@ repository:
       - include: '#literals_array_static'
       - include: '#literals_byte_array'
       - include: '#gst_literals_special'
-    # TODO: Implement individual literal types (Steps 3-6)
 
-  identifiers_and_variables:
-    patterns:
-      - name: variable.language.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-      - name: variable.other.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement identifiers and pseudo-variables (Step 7)
-
-  gst_file_out_chunk_separators:
-    name: punctuation.separator.chunk.placeholder.gst.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement file-out chunk separators (Step 11)
-
-  punctuation_general:
-    patterns:
-      - name: punctuation.terminator.statement.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement general punctuation (Step 7)
-
-  # Key 'repository' Item Groups (Placeholders for sub-components)
   literals_string:
-    name: string.quoted.single.placeholder.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement string literals (Step 3)
+    name: string.quoted.single.smalltalk
+    begin: "'"
+    beginCaptures:
+      '0':
+        name: punctuation.definition.string.begin.smalltalk
+    end: "'"
+    endCaptures:
+      '0':
+        name: punctuation.definition.string.end.smalltalk
+    patterns:
+      - match: "''"
+        name: constant.character.escape.apostrophe.smalltalk
 
   literals_character:
-    name: constant.character.placeholder.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement character literals (Step 3)
+    patterns:
+      # GST-specific numeric character literals - must come before simple character literals
+      # to ensure proper matching of the extended form
+      - name: constant.character.numeric.gst.smalltalk
+        match: '(\$<)(?:([0-9]+r)([0-9A-Za-z]+)|([0-9]+))(>)'
+        captures:
+          '1':
+            name: punctuation.definition.character.numeric.begin.gst.smalltalk
+          '2':
+            name: constant.numeric.radix.base.smalltalk
+          '3':
+            name: constant.numeric.integer.smalltalk
+          '4':
+            name: constant.numeric.integer.smalltalk
+          '5':
+            name: punctuation.definition.character.numeric.end.gst.smalltalk
+      
+      # Simple character literals (e.g., $a, $$)
+      - name: constant.character.simple.smalltalk
+        match: '(\$)(.)'
+        captures:
+          '1':
+            name: punctuation.definition.character.smalltalk
 
   literals_numeric:
     patterns:
@@ -152,6 +162,25 @@ repository:
       - name: constant.other.special.placeholder.gst.smalltalk # Placeholder
         match: '^(?=impossible)pattern$' # Placeholder
     # TODO: Implement GST-specific literals/constants (Step 6)
+
+  identifiers_and_variables:
+    patterns:
+      - name: variable.language.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+      - name: variable.other.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement identifiers and pseudo-variables (Step 7)
+
+  gst_file_out_chunk_separators:
+    name: punctuation.separator.chunk.placeholder.gst.smalltalk # Placeholder
+    match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement file-out chunk separators (Step 11)
+
+  punctuation_general:
+    patterns:
+      - name: punctuation.terminator.statement.placeholder.smalltalk # Placeholder
+        match: '^(?=impossible)pattern$' # Placeholder
+    # TODO: Implement general punctuation (Step 7)
 
   message_send_components:
     patterns:
