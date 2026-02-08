@@ -40,14 +40,24 @@ Install the **Smalltalk Language Support** extension from the [Visual Studio Cod
 <!-- Quick Start (US-103) -->
 ## Quick Start
 
-<!-- TODO: Content for US-103 -->
-<!-- Simple steps: -->
-<!-- 1. Ensure Prerequisites are met. -->
-<!-- 2. Install the extension. -->
-<!-- 3. Open a folder containing .st files or create a new .st file. -->
-<!-- 4. Observe syntax highlighting. -->
-<!-- 5. (Optional) Show a basic snippet usage. -->
-<!-- 6. (Optional, depends on US-301) Show how to run a simple file. -->
+1. **Ensure Prerequisites:** Verify that GNU Smalltalk is installed by running `gst --version` in your terminal. If not installed, follow the instructions in the [Prerequisites](#prerequisites) section.
+
+2. **Install the Extension:** Install the Smalltalk Language Support extension from the Visual Studio Code Marketplace (see [Installation](#installation)).
+
+3. **Create a Smalltalk File:** Create a new file named `hello.st` in your project folder.
+
+4. **Write Code:** Add the following Smalltalk code to the file:
+   ```smalltalk
+   Transcript show: 'Hello, Smalltalk!'; cr.
+   ```
+
+5. **Run the File:** Open your terminal in the project folder and execute:
+   ```bash
+   gst hello.st
+   ```
+   You should see the output: `Hello, Smalltalk!`
+
+6. **Enjoy Syntax Highlighting:** As you write more Smalltalk code, you'll benefit from accurate syntax highlighting, snippets, and other editing features provided by the extension.
 
 <!-- Features (US-104) -->
 ## Features
@@ -96,11 +106,27 @@ The following settings are available:
 <!-- Troubleshooting (US-106) -->
 ## Troubleshooting
 
-<!-- TODO: Content for US-106 -->
-<!-- Common issues and solutions, e.g.: -->
-<!-- - Syntax highlighting not working? (Check file association) -->
-<!-- - 'Run File' command fails? (Check `smalltalk.gnuSmalltalkPath` setting) -->
-<!-- - Link to GitHub Issues for reporting problems. -->
+### Issue: 'gst' not found
+
+**Problem:** You receive an error message like `gst: command not found` when trying to run a Smalltalk file.
+
+**Solution:**
+- Ensure GNU Smalltalk is properly installed on your system. Refer to the [Prerequisites](#prerequisites) section for installation instructions.
+- Verify that the `gst` executable is available in your system's `PATH` environment variable.
+- If GNU Smalltalk is installed but not in your `PATH`, configure the `smalltalk.gnuSmalltalkPath` setting to point to the absolute path of the `gst` executable (e.g., `/usr/local/bin/gst` on macOS/Linux or `C:\Program Files\GnuSmalltalk\gst.exe` on Windows).
+
+### Issue: Syntax Highlighting not working
+
+**Problem:** Syntax highlighting is not displayed in your `.st` files.
+
+**Solution:**
+- Ensure the file has the correct `.st` file extension.
+- Verify that the "Smalltalk" language mode is selected. You can check this in the bottom-right corner of VS Code and switch to "Smalltalk" if needed.
+- Try reloading the window (`Ctrl+R` or `Cmd+R`) to refresh the extension.
+
+### Need More Help?
+
+If you encounter issues not covered here, please report them on the [GitHub Issues page](https://github.com/leocamello/vscode-smalltalk/issues).
 
 <!-- Contributing -->
 ## Contributing

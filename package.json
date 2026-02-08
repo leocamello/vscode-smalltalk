@@ -52,7 +52,17 @@
                 "language": "smalltalk",
                 "path": "./snippets/snippets.json"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "SmallTalk",
+            "properties": {
+                "smalltalk.gnuSmalltalkPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Absolute path to the GNU Smalltalk executable (gst). If empty, the extension will attempt to find 'gst' in your system PATH."
+                }
+            }
+        }
     },
     "devDependencies": {
         "@vscode/test-cli": "^0.0.10",

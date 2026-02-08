@@ -11,8 +11,10 @@
 - [x] AC3: Mentions PATH requirement.
 
 ## US-103: Quick Start
-- [ ] AC1: Steps to install and run.
-- [ ] AC2: Verification steps.
+- [x] AC1: Steps to install and run.
+    - [x] Write steps for creating `hello.st`.
+    - [x] Document how to execute script (CLI).
+    - [x] Verify highlighting works.
 
 ## US-104: Features List
 - [x] AC1: Lists Syntax/Snippets.
@@ -21,6 +23,11 @@
 ## US-105: Configuration
 - [x] AC1: Documents `smalltalk.gnuSmalltalkPath`.
 - [x] AC2: Explains settings UI.
+- [x] AC3: **Technical Implementation** (Fix).
+    - [x] Add `configuration` section to `package.json`.
+    - [x] Define `smalltalk.gnuSmalltalkPath` property.
 
 ## US-106: Troubleshooting
-- [ ] AC1: Common issues listed.
+- [x] AC1: Common issues listed.
+    - [x] "GNU Smalltalk not found".
+    - [x] "Syntax highlighting not working".

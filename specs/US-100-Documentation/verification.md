@@ -1,7 +1,7 @@
 # Implementation Verification Checklist
 
 **Feature**: US-100 Documentation & Onboarding
-**Status**: Partial (Pending Content)
+**Status**: Complete ✓
 
 ## Checklist
 
@@ -14,8 +14,8 @@
 - [x] **Prerequisites**: Listed correctly.
 - [x] **Configuration**: `smalltalk.gnuSmalltalkPath` documented.
 - [x] **Features**: Listed (Syntax, Snippets).
-- [ ] **Quick Start**: Content is currently a TODO placeholder.
-- [ ] **Troubleshooting**: Content is currently a TODO placeholder.
+- [x] **Quick Start**: Complete with actual steps (gst --version verification, extension install, file creation, code example, execution, syntax highlighting).
+- [x] **Troubleshooting**: Complete with real issues and solutions ('gst' not found, syntax highlighting problems, help resources).
 
 ### 3. Integration Verification
 - [x] Links in README are valid (mostly standard/relative).
