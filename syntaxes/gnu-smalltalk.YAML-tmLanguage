@@ -57,34 +57,135 @@ repository:
 
   gst_definition_structures:
     patterns:
-      - name: meta.definition.placeholder.gst.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement GST definition structures (Step 10)
+      # Namespace Definition: Namespace current: 'Name' [ ... ]
+      - name: meta.namespace.definition.gst.smalltalk
+        begin: '\b(Namespace)\s+(current:)\s+([^\s\[]+)\s*(\[)'
+        beginCaptures:
+          '1': {name: support.class.gst.smalltalk}
+          '2': {name: keyword.declaration.namespace.gst.smalltalk}
+          '3': {name: entity.name.namespace.gst.smalltalk}
+          '4': {name: punctuation.definition.namespace.body.begin.gst.smalltalk}
+        end: '\]'
+        endCaptures:
+          '0': {name: punctuation.definition.namespace.body.end.gst.smalltalk}
+        patterns:
+          - include: '$self'
+
+      # Class Extension: Class extend [ ... ]
+      - name: meta.class.extension.gst.smalltalk
+        begin: '\b([A-Z][a-zA-Z0-9_]*)\s+(extend)\s*(\[)'
+        beginCaptures:
+          '1': {name: entity.name.type.class.gst.smalltalk}
+          '2': {name: keyword.declaration.class.extend.gst.smalltalk}
+          '3': {name: punctuation.definition.class.body.begin.gst.smalltalk}
+        end: '\]'
+        endCaptures:
+          '0': {name: punctuation.definition.class.body.end.gst.smalltalk}
+        patterns:
+          - include: '$self'
+
+      # Scoped Method Definition: Class >> selector [ ... ]
+      # Supports Class class >> selector
+      - name: meta.method.definition.gst.smalltalk
+        begin: '\b([A-Z][a-zA-Z0-9_]*)(?:\s+(class))?\s+(>>)\s+([^\s\[]+)\s*(\[)'
+        beginCaptures:
+          '1': {name: entity.name.type.class.gst.smalltalk}
+          '2': {name: storage.modifier.class-side.smalltalk}
+          '3': {name: punctuation.definition.method.scoped.gst.smalltalk}
+          '4': {name: entity.name.function.definition.gst.smalltalk}
+          '5': {name: punctuation.definition.method.body.begin.gst.smalltalk}
+        end: '\]'
+        endCaptures:
+          '0': {name: punctuation.definition.method.body.end.gst.smalltalk}
+        patterns:
+          - include: '$self'
+
 
   gst_other_constructs:
     patterns:
-      - name: meta.construct.placeholder.gst.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement other GST-specific constructs (Step 11)
+      # Eval [ ... ]
+      - name: meta.eval.gst.smalltalk
+        begin: '\b(Eval)\s*(\[)'
+        beginCaptures:
+          '1': {name: keyword.control.eval.gst.smalltalk}
+          '2': {name: punctuation.definition.eval.body.begin.gst.smalltalk}
+        end: '\]'
+        endCaptures:
+          '0': {name: punctuation.definition.eval.body.end.gst.smalltalk}
+        patterns:
+          - include: '$self'
+
+      # Attributes / Primitives < ... >
+      - name: meta.attribute.gst.smalltalk
+        begin: '<'
+        beginCaptures:
+          '0': {name: punctuation.definition.attribute.begin.gst.smalltalk}
+        end: '>'
+        endCaptures:
+          '0': {name: punctuation.definition.attribute.end.gst.smalltalk}
+        patterns:
+          # Specific primitive highlighting
+          - match: '\b(primitive:)\s*([a-zA-Z0-9_]+|''[^'']*'')'
+            captures:
+              '1': {name: keyword.control.primitive.gst.smalltalk}
+              '2': {name: entity.name.function.primitive.gst.smalltalk}
+          - include: '$self'
 
   message_sends:
     patterns:
-      - name: meta.message-send.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement message send patterns (Step 9)
+      - include: '#message_send_components'
 
   assignments_and_returns:
     patterns:
-      - name: keyword.operator.assignment.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-      - name: keyword.control.return.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement assignment and return operators (Step 8)
+      # Assignment :=
+      - match: ':='
+        name: keyword.operator.assignment.smalltalk
+      # Assignment _ (GST specific)
+      - match: '_'
+        name: keyword.operator.assignment.underscore.gst.smalltalk
+      # Return ^
+      - match: '\^'
+        name: keyword.control.return.smalltalk
 
   block_structures:
-    name: meta.block.literal.placeholder.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement block structures (Step 8)
+    name: meta.block.literal.smalltalk
+    begin: '\['
+    beginCaptures:
+      '0': {name: punctuation.definition.block.begin.smalltalk}
+    end: '\]'
+    endCaptures:
+      '0': {name: punctuation.definition.block.end.smalltalk}
+    patterns:
+      # Block Parameters: :arg1 :arg2 ... |
+      # We capture the arguments individually. 
+      # Note: This simple pattern doesn't enforce that args are at the start, 
+      # but it's usually sufficient for highlighting.
+      - match: '(:)([a-z][a-zA-Z0-9_]*)'
+        captures:
+          '1': {name: punctuation.definition.variable.parameter.block.smalltalk}
+          '2': {name: variable.parameter.block.smalltalk}
+      
+      # Block Parameter Separator (Bar)
+      # We attempt to distinguish this from binary operator by context (often follows args)
+      # But simpler is to just match it.
+      - match: '\|'
+        name: punctuation.separator.variable.block.smalltalk
+      
+      # Block Temporaries: | temp1 temp2 |
+      # We use a begin/end to capture the whole temporary section.
+      - name: meta.variable.local.definition.smalltalk
+        begin: '(\|)'
+        beginCaptures:
+          '1': {name: punctuation.definition.variable.local.begin.smalltalk}
+        end: '(\|)'
+        endCaptures:
+          '1': {name: punctuation.definition.variable.local.end.smalltalk}
+        patterns:
+          - match: '\b[a-z][a-zA-Z0-9_]*\b'
+            name: variable.other.local.smalltalk
+
+      # Recursive content
+      - include: '$self'
 
   all_literals:
     patterns:
@@ -362,25 +463,59 @@ repository:
 
   identifiers_and_variables:
     patterns:
-      - name: variable.language.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-      - name: variable.other.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement identifiers and pseudo-variables (Step 7)
+      # Pseudo-variables
+      - match: '\bself\b'
+        name: variable.language.self.smalltalk
+      - match: '\bsuper\b'
+        name: variable.language.super.smalltalk
+      - match: '\bthisContext\b'
+        name: variable.language.this-context.gst.smalltalk
+      - match: '\bnil\b'
+        name: constant.language.nil.smalltalk
+      - match: '\b(true|false)\b'
+        name: constant.language.boolean.smalltalk
+
+      # Class Name Convention (Capitalized identifiers)
+      - match: '\b[A-Z][a-zA-Z0-9_]*\b'
+        name: entity.name.type.class.smalltalk
+
+      # General Identifiers (Lowercase starting)
+      - match: '\b[a-z_][a-zA-Z0-9_]*\b'
+        name: variable.other.smalltalk
 
   gst_file_out_chunk_separators:
-    name: punctuation.separator.chunk.placeholder.gst.smalltalk # Placeholder
-    match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement file-out chunk separators (Step 11)
+    patterns:
+      # Chunk separator ! (usually at end of line or on its own line)
+      - match: '!'
+        name: punctuation.separator.chunk.gst.smalltalk
 
   punctuation_general:
     patterns:
-      - name: punctuation.terminator.statement.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement general punctuation (Step 7)
+      # Statement Terminator
+      - match: '\.'
+        name: punctuation.terminator.statement.smalltalk
+      
+      # Cascade Separator
+      - match: ';'
+        name: punctuation.separator.cascade.smalltalk
+      
+      # Grouping Parentheses
+      - name: meta.expression.parenthesized.smalltalk
+        begin: '\('
+        beginCaptures:
+          '0': {name: punctuation.section.group.begin.smalltalk}
+        end: '\)'
+        endCaptures:
+          '0': {name: punctuation.section.group.end.smalltalk}
+        patterns:
+          - include: '$self'
 
   message_send_components:
     patterns:
-      - name: entity.name.function.placeholder.smalltalk # Placeholder
-        match: '^(?=impossible)pattern$' # Placeholder
-    # TODO: Implement individual selector type patterns (Step 9)
+      # Keyword Selectors (key:)
+      - match: '\b([a-zA-Z][a-zA-Z0-9_]*:)'
+        name: entity.name.function.keyword.smalltalk
+      
+      # Binary Selectors (+, -, etc.)
+      - match: '([-+*/\\~=< >@%|&?!,]+)'
+        name: keyword.operator.binary.smalltalk
