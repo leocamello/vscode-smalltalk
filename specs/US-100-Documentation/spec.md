@@ -26,12 +26,20 @@ A comprehensive README is essential for user adoption. It guides new users on ho
 *   **AC2**: Introduction clearly states GNU Smalltalk target.
 
 **US-102**: As a new user, I want a "Prerequisites" section so I know what to install.
-*   **AC1**: Lists GNU Smalltalk (`gst`) as required.
-*   **AC2**: Links to official GNU Smalltalk website.
+*   **AC1**: Lists "GNU Smalltalk" as a requirement.
+*   **AC2**: Provides a link to the official GNU Smalltalk website.
+*   **AC3**: Mentions the need for `gst` to be accessible (PATH or setting).
+*   **AC4**: Specifies that the "latest stable version" is recommended.
+*   **AC5**: Section is easy to find.
 
 **US-103**: As a new user, I want a "Quick Start" guide so I can get running fast.
-*   **AC1**: Steps to install and create a simple `.st` file.
-*   **AC2**: Verify highlighting works.
+*   **AC1**: Steps include installing the extension.
+*   **AC2**: Steps include opening a folder/workspace.
+*   **AC3**: Steps include creating a simple `.st` file.
+*   **AC4**: Steps demonstrate basic syntax highlighting.
+*   **AC5**: Guide explains how to ensure 'gst' is accessible (PATH or `smalltalk.gnuSmalltalkPath`).
+*   **AC6**: Guide is concise.
+*   **AC7**: Guide uses clear, numbered steps.
 
 **US-104**: As a user, I want a "Features" list to know what the extension does.
 *   **AC1**: Lists current declarative features (Syntax, Snippets).

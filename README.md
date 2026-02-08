@@ -26,8 +26,6 @@ This extension requires **GNU Smalltalk** to be installed on your system to prov
 
 **Note:** While the extension primarily focuses on GNU Smalltalk, basic syntax highlighting might work for other Smalltalk dialects using `.st` files, but compatibility is not guaranteed. Future features requiring execution or analysis will depend specifically on `gst`.
 
-*(Self-correction: We will add details about the `smalltalk.gnuSmalltalkPath` setting in the Configuration section under US-105, but it's good to ensure `gst` is findable via PATH as the primary method).*
-
 <!-- Installation -->
 ## Installation
 
@@ -40,7 +38,7 @@ Install the **Smalltalk Language Support** extension from the [Visual Studio Cod
 <!-- Quick Start (US-103) -->
 ## Quick Start
 
-1. **Ensure Prerequisites:** Verify that GNU Smalltalk is installed by running `gst --version` in your terminal. If not installed, follow the instructions in the [Prerequisites](#prerequisites) section.
+1. **Ensure Prerequisites:** Verify that GNU Smalltalk is installed by running `gst --version` in your terminal. If not installed, follow the instructions in the [Prerequisites](#prerequisites) section. If `gst` is installed but not found, see [Configuration](#configuration) to set the path.
 
 2. **Install the Extension:** Install the Smalltalk Language Support extension from the Visual Studio Code Marketplace (see [Installation](#installation)).
 

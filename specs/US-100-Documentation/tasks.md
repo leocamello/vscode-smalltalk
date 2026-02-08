@@ -6,15 +6,20 @@
 - [x] AC3: Badges added.
 
 ## US-102: Prerequisites
-- [x] AC1: Lists GNU Smalltalk.
-- [x] AC2: Links to website.
-- [x] AC3: Mentions PATH requirement.
+- [x] AC1: Lists "GNU Smalltalk" as a requirement.
+- [x] AC2: Provides a link to the official GNU Smalltalk website.
+- [x] AC3: Mentions the need for `gst` to be accessible (PATH or setting).
+- [x] AC4: Specifies that the "latest stable version" is recommended.
+- [x] AC5: Section is easy to find.
 
 ## US-103: Quick Start
-- [x] AC1: Steps to install and run.
-    - [x] Write steps for creating `hello.st`.
-    - [x] Document how to execute script (CLI).
-    - [x] Verify highlighting works.
+- [x] AC1: Steps include installing the extension.
+- [x] AC2: Steps include opening a folder/workspace.
+- [x] AC3: Steps include creating a simple `.st` file.
+- [x] AC4: Steps demonstrate basic syntax highlighting.
+- [x] AC5: Guide explains how to ensure 'gst' is accessible (PATH or `smalltalk.gnuSmalltalkPath`).
+- [x] AC6: Guide is concise.
+- [x] AC7: Guide uses clear, numbered steps.
 
 ## US-104: Features List
 - [x] AC1: Lists Syntax/Snippets.
