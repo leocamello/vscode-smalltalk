@@ -33,6 +33,8 @@
     - [x] Define `smalltalk.gnuSmalltalkPath` property.
 
 ## US-106: Troubleshooting
-- [x] AC1: Common issues listed.
-    - [x] "GNU Smalltalk not found".
-    - [x] "Syntax highlighting not working".
+- [x] AC1: Troubleshooting section exists.
+- [x] AC2: Guidance on basic setup (GST installed, PATH configured).
+- [x] AC3: Explains where to find logs (or states planned).
+- [x] AC4: Instructions to report issues.
+- [x] AC5: "Known Issues" subsection exists.

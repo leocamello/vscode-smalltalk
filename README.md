@@ -126,6 +126,12 @@ The following settings are available:
 
 If you encounter issues not covered here, please report them on the [GitHub Issues page](https://github.com/leocamello/vscode-smalltalk/issues).
 
+### Logs
+Detailed logging features are currently planned for future releases. In the meantime, please include any error messages you see in VS Code notifications when reporting bugs.
+
+### Known Issues
+*   No common issues identified yet. Please search the [GitHub Issues](https://github.com/leocamello/vscode-smalltalk/issues) page for existing reports.
+
 <!-- Contributing -->
 ## Contributing
 

@@ -50,7 +50,11 @@ A comprehensive README is essential for user adoption. It guides new users on ho
 *   **AC2**: Explains how to change settings.
 
 **US-106**: As a user, I want "Troubleshooting" to solve common issues.
-*   **AC1**: Guidance for common setup issues (PATH, etc.).
+*   **AC1**: Troubleshooting section exists.
+*   **AC2**: Guidance on basic setup (GST installed, PATH configured).
+*   **AC3**: Explains where to find logs (or states planned).
+*   **AC4**: Instructions to report issues.
+*   **AC5**: "Known Issues" subsection exists.
 
 ## 5. Technical Design
 *   **File**: `README.md` at project root.
