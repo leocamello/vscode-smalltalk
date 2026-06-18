@@ -6,8 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-18
+
 ### Added
 
+-   Indentation rules and comment-marker code folding (`"--` … `--"`) in the language configuration.
+-   Overhauled, expanded snippet set for common GNU Smalltalk patterns.
 -   Highlighting for class definition keywords (`subclass:`, `instanceVariableNames:`, etc.) and names (`entity.name.type.class.smalltalk`).
 -   Highlighting for method definition markers (`methodsFor:`) and category names (`entity.name.section.smalltalk`).
 -   Highlighting for method termination markers (`! !`) (`keyword.control.smalltalk`).
@@ -33,3 +37,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -   **Symbols:** Improved highlighting for symbols (`#symbol`, `#'symbol'`) (`constant.other.symbol.smalltalk`, `punctuation.definition.constant.symbol`).
 -   **Operators:** Refined regex and scopes for arithmetic, comparison, and logical operators.
 -   Removed ineffective/incorrect rule previously scoped as `constant.other.messages.smalltalk`.
+-   Raised the minimum required VS Code version to 1.82.
+
+### Fixed
+
+-   Bracket characters inside character literals (`$[`, `$(`, `${`, …) no longer break bracket matching, guides, or jump-to-bracket ([#2]).
+-   Removed the incorrect `lineComment` mapping; Smalltalk has no line comments, so comment toggling (`Ctrl+/`) now correctly uses block comments (thanks @madmini, [#21]).
+
+[#2]: https://github.com/leocamello/vscode-smalltalk/issues/2
+[#21]: https://github.com/leocamello/vscode-smalltalk/pull/21
