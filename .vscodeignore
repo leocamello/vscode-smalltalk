@@ -5,6 +5,9 @@
 docs/**
 specs/**
 src/**
+evals/**
 .gitignore
+.gitattributes
+CONTRIBUTING.md
 package-lock.json
 syntaxes/gnu-smalltalk.YAML-tmLanguage
