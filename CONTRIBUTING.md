@@ -25,31 +25,36 @@ From most authoritative to most specific:
 | **Decision records (ADRs)** | `docs/decisions/NNNN-*.md` | *Why* a significant/irreversible choice was made. |
 | **Product plan** | `docs/product/high-level-plan.md` | Vision, audience, phased rollout. |
 | **Epics** | `docs/product/epics.md` | Themes of work (`EPIC-00X`). |
-| **User stories** | `docs/product/user-stories.md` | The canonical `US-XXX` stories, with Acceptance Criteria + DoR/DoD. **This is the source of truth for a story's scope and ACs.** |
-| **Feature specs** | `specs/US-XXX-*/` | The Spec Kit working set for a feature: `spec.md`, `plan.md`, `tasks.md`, `verification.md`, `requirements-validation.md`. |
+| **User stories** | `docs/product/user-stories.md` | The **backlog**: every `US-XXX` story with its initial ACs + DoR/DoD. The entry point for picking up work. |
+| **Feature specs** | `specs/US-XXX-Title/` | The working set, created when a story is started (or *reverse-engineered* from finished work). **Once it exists, `spec.md` is the detailed source of truth for that feature's ACs.** Canonical package: `spec.md`, `plan.md`, `tasks.md`, `requirements-validation.md` (Spec-phase gate), `verification.md` (Verify-phase gate). |
 | **GitHub issues** | the repo's Issues | One issue per story/task, for tracking and discussion. |
 | **Roadmap snapshot** | `docs/ROADMAP.md` | The current milestone map (versions → themes). |
 
 > When two layers disagree, the higher one wins — and that's a bug to fix. See
 > *Keeping things consistent* below.
 
-## The workflow (Spec Kit pipeline)
+## The workflow (per user story)
 
-For a new feature, move through these stages (each has a `speckit.*` prompt under
-`.github/prompts/`):
+We run a **bespoke, Spec-Kit-inspired cycle** for each story. The `speckit.*` prompts under
+`.github/prompts/` *assist* each phase, but the artifacts (named to the `US-XXX` convention)
+are the deliverables — the cycle is what matters, not any one tool.
 
-1. **`speckit.constitution`** — establish or amend the principles (rare).
-2. **`speckit.specify`** — write `specs/US-XXX/spec.md` (overview, goals, user stories, ACs, technical design, risks).
-3. **`speckit.clarify`** — resolve ambiguities/questions in the spec before planning.
-4. **`speckit.plan`** — produce `specs/US-XXX/plan.md` (implementation approach).
-5. **`speckit.tasks`** — break the plan into `specs/US-XXX/tasks.md`.
-6. **`speckit.taskstoissues`** — open a GitHub issue per task/story (only against this repo's remote).
-7. **`speckit.implement`** — build it, committing against the story (see commit convention).
-8. **`speckit.analyze`** — cross-check artifacts for consistency (run this after any architecture change).
-9. **`speckit.checklist`** — generate/verify quality checklists.
+1. **Clarify** — pull the story from `docs/product/user-stories.md`; resolve ambiguities and
+   pin down testable ACs before writing code (`speckit.clarify` helps).
+2. **Spec** — author `specs/US-XXX-Title/spec.md` (overview, goals, user stories, ACs,
+   technical design, risks). Gate it with `requirements-validation.md`.
+3. **Plan** — break the approach into `plan.md`.
+4. **Task** — decompose into granular, checkable steps in `tasks.md`; open a GitHub issue
+   per story/task.
+5. **Implement** — make precise, test-driven edits on a `feature/US-XXX-…` branch.
+6. **Verify** — validate against the spec (e.g. `npm run eval` / grammar snapshots), fill
+   `verification.md`, tick off `tasks.md`, merge to `master`, and close the issue.
 
-Small stories may legitimately use a reduced artifact set (e.g. `spec.md` + `tasks.md`
-only). Research-heavy features do a **research-first** pass into `docs/research/` before
+**Reverse-engineering mode:** when code lands ahead of its spec (it happens), back-fill the
+full `specs/US-XXX-Title/` package to document the finished work — the spec set must exist
+either way. Omitting `plan.md`/`verification.md` is drift to avoid, not a shortcut.
+
+**Research-first:** complex features do a research pass into `docs/research/` before
 specifying (as US-200 did for the grammar before US-201).
 
 ## Conventions
@@ -68,7 +73,9 @@ specifying (as US-200 did for the grammar before US-201).
 * Area: `epic:documentation`, `epic:declarative-features`, `epic:workflow`, `epic:lsp`
 
 ### Branches & commits
-* Work on a feature branch; open a PR against `master`.
+* **Branch per story**, named for it: `feature/US-XXX-short-name` for new work,
+  `fix/US-XXX-short-name` for corrections. Open a PR against `master`; the PR closes the
+  linked issue on merge.
 * **Conventional Commits**, scoped to the story where applicable:
   * `feat(US-XXX): …`, `fix(US-XXX): …`, `test(US-XXX): …`
   * `docs: …`, `chore: …`, `ci: …`
