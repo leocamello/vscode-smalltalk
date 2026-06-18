@@ -80,6 +80,7 @@
         "test": "vscode-test",
         "deploy": "vsce publish",
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
-        "test:grammar": "node src/test/grammar-verification.js"
+        "test:grammar": "node src/test/grammar-verification.js",
+        "eval": "npm run build:grammar && npm run test:grammar"
     }
 }

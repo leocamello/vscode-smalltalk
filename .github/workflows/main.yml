@@ -25,10 +25,8 @@ jobs:
       with:
         node-version: 20.x
     - run: npm install
-    - name: Build grammar
-      run: npm run build:grammar
-    - name: Run grammar tests
-      run: npm run test:grammar
+    - name: Output evals
+      run: npm run eval
     - name: Package smoke test
       run: npx vsce package --no-dependencies -o vscode-smalltalk.vsix
     - name: Publish to Marketplace

@@ -99,6 +99,22 @@ package/publish time, so a clean checkout never ships a stale or missing grammar
 > (US-410+). Until then the extension is purely declarative (grammar, snippets, language
 > configuration).
 
+## Evals & quality harness
+
+AI agents are first-class contributors here, so quality depends on a harness that wraps
+**structure + automated verification + human judgement** around every change and evaluates
+it on two axes:
+
+* **Output Eval** — *is the artifact right?* Golden datasets + metrics per capability, run
+  deterministically in CI via `npm run eval`.
+* **Trajectory Eval** — *was it produced the right way?* A rubric scoring the process
+  (spec → issue → tests → CI → docs/ADR, no drift), applied at PR review.
+
+The [PR template](.github/PULL_REQUEST_TEMPLATE.md) makes both gates explicit, and **a
+feature is not Done until its eval dataset exists and passes**. Full design, the eval
+matrix, and the rubrics live in [`evals/`](evals/README.md). Guiding principle:
+*deterministic checks first, LLM-as-judge as an assist, human as the decision.*
+
 ## Decision records
 
 When you make a choice that is hard to reverse or that contradicts an existing plan, write
