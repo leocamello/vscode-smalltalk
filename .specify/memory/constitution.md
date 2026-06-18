@@ -37,16 +37,18 @@ The extension must handle the "dirty" state of code editing:
 
 ### VI. Test-Driven Development
 High quality is non-negotiable:
-- **TypeScript Client**: Unit tests (Mocha) for all logic. Integration tests (@vscode/test-electron) for workflows.
-- **Smalltalk Backend**: SUnit tests for Smalltalk-side logic.
-- Tests must exist and pass before feature merge.
+- **TypeScript Client**: Unit tests (Mocha) for all logic. Integration tests (@vscode/test-electron / @vscode/test-cli) for workflows.
+- **Language Server (TypeScript)**: Unit tests for the parser/symbol table (snapshot + mutation tests) and LSP behaviour.
+- **Grammar**: Snapshot tests (`npm run test:grammar`).
+- Tests must exist and pass — and **CI must be green on Linux, macOS, and Windows** — before feature merge.
 
 ## Technical Constraints
 
 ### Language & Runtime
 - **Client**: TypeScript (Strict Mode).
 - **Runtime**: Node.js (VS Code bundled version).
-- **Backend**: Smalltalk (GNU Smalltalk initially), potentially separate processes.
+- **Language Server**: TypeScript (`vscode-languageserver-node`), **bundled in the VSIX** and fully functional without any external Smalltalk install. See [ADR-0001](../../docs/decisions/0001-typescript-bundled-lsp-server.md).
+- **`gst` (GNU Smalltalk)**: an *optional external tool* only — used for "Run Current File" and opt-in compile diagnostics, never required for language intelligence.
 
 ### State Management
 - Use `vscode.Memento` for persistence.
@@ -75,4 +77,7 @@ High quality is non-negotiable:
 - This document supersedes other practices.
 - Changes require documented rationale and team agreement.
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-08
+### Amendment Log
+- **1.1.0 (2026-06-13):** Principle VI and Technical Constraints updated — the language server is implemented in TypeScript and bundled (not a Smalltalk backend); `gst` is an optional tool. Added the cross-platform CI gate. See [ADR-0001](../../docs/decisions/0001-typescript-bundled-lsp-server.md).
+
+**Version**: 1.1.0 | **Ratified**: 2026-02-08 | **Last Amended**: 2026-06-13

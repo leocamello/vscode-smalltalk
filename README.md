@@ -135,7 +135,7 @@ Detailed logging features are currently planned for future releases. In the mean
 <!-- Contributing -->
 ## Contributing
 
-Contributions are welcome! Please see our [Contribution Guide](CONTRIBUTING.md) (TODO: Create this file) for details on how to submit pull requests, report issues, and suggest features.
+Contributions are welcome! We follow a spec-driven process — see the [Contribution Guide](CONTRIBUTING.md) for how we work (specs, issues, conventions) and how to submit pull requests, report issues, and suggest features. The [Roadmap](docs/ROADMAP.md) shows where the project is headed.
 
 <!-- Contact Us / Support -->
 ## Support & Feedback
