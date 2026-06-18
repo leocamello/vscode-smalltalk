@@ -102,37 +102,45 @@
 
 ---
 
-## EPIC-004: LSP Backend Technical Investigation
+## EPIC-004: Language Intelligence — TypeScript LSP
 
 * **ID:** EPIC-004
 * **Status:** Proposed
 * **Priority:** Medium
-* **Phase:** Phase 1
+* **Phase:** Phase 2
 * **Date Proposed:** 2025-05-02
+* **Date Revised:** 2026-06-13 (architecture decision: bundled TypeScript server, not a Smalltalk backend)
 * **Owner:** Leonardo Nascimento 
 
 **Goal / Value Proposition:**
-> To de-risk the Phase 2 LSP implementation by performing upfront technical research and prototyping for the Smalltalk LSP backend and its integration with the VS Code client. This ensures a smoother transition to building language intelligence features.
+> To deliver Smalltalk language intelligence (navigation, completion, diagnostics, hover, formatting) via a **TypeScript language server bundled with the extension**, working out of the box without any external Smalltalk installation.
 
 **Scope & Description:**
-* Research and evaluate potential Smalltalk libraries (in GST and/or Pharo) for handling JSON-RPC communication.
-* Investigate and prototype methods for spawning, managing (lifecycle, errors), and communicating (via stdio) with a Smalltalk LSP server process from the TypeScript extension client (`vscode-languageclient`).
-* Define the specific data format and conventions for JSON-RPC messages between client and server.
-* Research best approaches for parsing/analyzing `.st` files within the chosen Smalltalk environment for LSP purposes (e.g., leveraging compiler tools, reflection).
-* Produce findings, recommendations, and potentially basic proof-of-concept code.
+* Build the extension client (`vscode-languageclient`) and a bundled server (`vscode-languageserver-node`), wired with esbuild.
+* Implement a hand-written, error-tolerant Smalltalk parser + symbol table (core ANSI layer + pluggable GST chunk/brace container formats).
+* Layer LSP features on the parser: document/workspace symbols + go-to-definition, completion (with a GNU Smalltalk kernel-library index), diagnostics, hover, and formatting.
+* Treat `gst` as an *optional* external tool only (Run Current File; opt-in compile diagnostics) — never a hard dependency.
 
 **Target Users:**
-* Development Team, Architect.
+* GNU Smalltalk developers using file-based (`.st`/`.gst`) workflows.
 
 **Related User Stories:**
-* [US-401: Research Smalltalk JSON-RPC Libraries]
-* [US-402: Prototype LSP Process Management & Communication]
-* [US-403: Research Smalltalk Code Analysis Techniques for LSP]
+* [US-410: TypeScript LSP scaffold (client + bundled server)]
+* [US-411: Error-tolerant Smalltalk parser + symbol table]
+* [US-412: Document/workspace symbols + go-to-definition]
+* [US-413: Completion + GNU Smalltalk kernel index]
+* [US-414: Diagnostics (parser live; gst opt-in)]
+* [US-415: Hover]
+* [US-416: Formatting]
+
+**Superseded Stories (closed):**
+* ~~US-401: Research Smalltalk JSON-RPC Libraries~~ (obsolete — server is TypeScript, no custom JSON-RPC)
+* ~~US-402: Prototype LSP Process Management & Communication~~ (obsolete — bundled server, no external Smalltalk process)
+* ~~US-403: Research Smalltalk Code Analysis Techniques~~ (replaced by US-411, the TypeScript parser)
 
 **Success Metrics (Optional):**
-* Clear recommendations for libraries and communication mechanisms.
-* Working prototype of client-server process management and basic communication.
-* Reduced uncertainty for Phase 2 planning and estimation.
+* Navigation and completion work in a fresh install with no `gst` present.
+* Parser passes the snapshot/mutation suite and the GNU Smalltalk kernel smoke test.
 
 ---
 

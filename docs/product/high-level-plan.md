@@ -25,18 +25,21 @@ The `vscode-smalltalk` extension will provide a seamless, reliable, and increasi
 
 The `vscode-smalltalk` extension involves:
 
-* A **VS Code extension client** (written primarily in TypeScript) responsible for UI integration, command handling, and managing the LSP communication protocol.
-* A backend **language server** implemented in Smalltalk.
-    * **Implementation Flexibility:** While the server *must* provide accurate support for **GNU Smalltalk** users and workflows, the specific Smalltalk dialect used to *implement* the server (e.g., GNU Smalltalk or Pharo) may be chosen based on technical advantages (available libraries, tooling for JSON-RPC, reflection, process management).
-    * **Protocol:** Communication between the client and the backend server will strictly adhere to the standard **Language Server Protocol (LSP)**, primarily via JSON-RPC over stdio.
+* A **VS Code extension client** (written in TypeScript) responsible for UI integration, command handling, and managing the LSP communication protocol.
+* A backend **language server implemented in TypeScript** (`vscode-languageserver-node`), bundled with the extension. **Architecture Decision (2026-06-13):** the server is *not* implemented in Smalltalk. It ships inside the VSIX and is fully functional **without** any external Smalltalk installation, parsing `.st`/`.gst` files with a hand-written, error-tolerant Smalltalk parser.
+    * **Optional `gst` integration:** GNU Smalltalk (`gst`), when available and configured, is spawned only as an *optional external tool* — for the "Run Current File" command and opt-in compile diagnostics. It is never required for language intelligence.
+    * **Dialect layering:** the parser is structured as a core ANSI-Smalltalk layer plus pluggable container formats (GST chunk `!` syntax and GST brace/class syntax), leaving the door open to other dialects (e.g. Pharo/Tonel) later without a rewrite.
+    * **Protocol:** Communication between the client and the bundled server adheres to the standard **Language Server Protocol (LSP)**.
 * A strong initial focus on supporting **GNU Smalltalk** semantics, runtime behavior, and tooling integration for both declarative features and LSP capabilities.
+
+> **Note:** This supersedes the earlier plan (and EPIC-004 / US-401–403) to implement the server in Smalltalk over hand-rolled JSON-RPC. GNU Smalltalk has had no stable release since 2013; a bundled TypeScript server is more portable, more maintainable, and works for every user out of the box.
 
 ## 5. Modularity Strategy Context
 
 This plan details the development of the primary **`vscode-smalltalk`** extension. This extension will encompass:
 
 * All **Declarative Language Features** (Syntax Highlighting, Snippets, Language Configuration).
-* Integration of **Language Server Protocol (LSP)** features (client-side logic and management of the Smalltalk LSP server process) for code intelligence.
+* Integration of **Language Server Protocol (LSP)** features (client-side logic plus the bundled TypeScript language server) for code intelligence.
 
 A separate extension, tentatively named `vscode-smalltalk-debugger`, is envisioned for future development to handle Debug Adapter Protocol (DAP) integration and debugging features. This aligns with the Single Responsibility Principle.
 
@@ -48,7 +51,7 @@ Development of the `vscode-smalltalk` extension will proceed iteratively through
     * **Focus:** Enhance and refine declarative features (syntax, snippets, config). Improve user onboarding via clear documentation (README.md). Implement basic workflow commands (e.g., running files via configured `gst`), ensuring alignment with VS Code best practices for future compatibility. Conduct technical investigation and preparatory work for the LSP backend (library research, process management, communication details) to de-risk Phase 2.
     * **Extension(s):** `vscode-smalltalk`
 * **Phase 2: Language Intelligence (LSP)**
-    * **Focus:** Implement and integrate core LSP features. Develop the Smalltalk LSP server backend targeting GNU Smalltalk support. Provide features like diagnostics, completion, hover, and navigation.
+    * **Focus:** Implement and integrate core LSP features. Develop the bundled TypeScript language server (hand-written Smalltalk parser + symbol table) targeting GNU Smalltalk support. Provide features like diagnostics, completion, hover, and navigation.
     * **Extension(s):** `vscode-smalltalk`
 
 *(Phase 3, focusing on Integrated Debugging (DAP), will be planned separately and involve the future `vscode-smalltalk-debugger` extension).*
@@ -60,7 +63,7 @@ Development of the `vscode-smalltalk` extension will proceed iteratively through
 * **Value-Driven:** Focus on delivering tangible benefits in each phase for the `vscode-smalltalk` extension.
 * **Quality Focused:** Emphasize robust implementation, clear documentation, and a comprehensive, multi-layered testing strategy:
     * **TypeScript Client:** Unit tests (e.g., Mocha/Chai/Jest).
-    * **Smalltalk Backend:** Unit and integration tests (e.g., SUnit).
+    * **Language Server:** Unit tests for the parser/symbol table (snapshot + mutation tests) and LSP integration tests via `@vscode/test-cli`.
     * **End-to-End:** Integration tests using `@vscode/test-cli` and `@vscode/test-electron` verifying client-server communication within VS Code.
 * **Collaborative:** Engage actively (PO, Architect, Dev Team) to refine requirements and ensure alignment.
 * **Architecturally Sound:** Adhere to VS Code best practices, LSP/DAP standards, and maintain clean separation of concerns.

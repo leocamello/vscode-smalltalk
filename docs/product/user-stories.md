@@ -564,7 +564,7 @@ Scenario: User follows Quick Start guide
 ## US-401: Research Smalltalk JSON-RPC Libraries
 
 * **ID:** US-401
-* **Status:** Ready
+* **Status:** Superseded (2026-06-13) — server is now TypeScript, no custom JSON-RPC. Closed as GitHub issue #14. See EPIC-004 and US-410.
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** M *(Adjusted based on architect feedback)*
@@ -609,7 +609,7 @@ Scenario: User follows Quick Start guide
 ## US-402: Prototype LSP Process Management & Communication
 
 * **ID:** US-402
-* **Status:** Ready
+* **Status:** Superseded (2026-06-13) — bundled TypeScript server, no external Smalltalk process to manage. Closed as GitHub issue #15. See EPIC-004 and US-410.
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** M
@@ -658,7 +658,7 @@ Scenario: User follows Quick Start guide
 ## US-403: Research Smalltalk Code Analysis Techniques for LSP
 
 * **ID:** US-403
-* **Status:** Ready
+* **Status:** Superseded (2026-06-13) — replaced by US-411 (hand-written TypeScript parser + symbol table). Closed as GitHub issue #16. See EPIC-004.
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** M
@@ -700,3 +700,261 @@ Scenario: User follows Quick Start guide
 **Notes / Questions / Assumptions:**
 * Focus is on *how* to get the necessary semantic information out of the Smalltalk environment to serve LSP requests.
 * Does not require implementing the analysis, only researching the methods.
+
+---
+
+## US-410: TypeScript LSP Scaffold (Client + Bundled Server)
+
+* **ID:** US-410
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a TypeScript extension client and a bundled `vscode-languageserver-node` server wired together with esbuild**, so that **language features can be built on a server that ships inside the VSIX and runs without any external Smalltalk installation.**
+
+**Acceptance Criteria (AC):**
+* AC1: The repo is restructured into `client/` and `server/` (npm workspaces) with a shared strict `tsconfig`.
+* AC2: esbuild bundles `dist/extension.js` and `dist/server.js`; `vscode:prepublish` builds both plus the grammar.
+* AC3: The client starts the bundled server over IPC with `documentSelector` for `smalltalk`; the server restarts on crash.
+* AC4: A no-op server (capabilities only) connects and the client reports it running via a trace setting.
+* AC5: The server requires no `gst`.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Story clearly defines user value (foundation for all LSP features).
+* [X] Clear scope (scaffold only, no features).
+* [X] Acceptance Criteria are testable (`@vscode/test-cli` integration).
+* [X] Dependencies identified (esbuild, vscode-languageclient/server 9.x, engines ^1.82).
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Client + server scaffold implemented and bundled.
+* [ ] **TypeScript Client:** Unit/integration tests written & passing.
+* [ ] **Language Server:** Server boots and reports capabilities.
+* [ ] **End-to-End:** `@vscode/test-cli` confirms client↔server handshake.
+* [ ] Documentation updated (README dev setup).
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Modeled on `microsoft/vscode-extension-samples` `lsp-sample`.
+
+---
+
+## US-411: Error-Tolerant Smalltalk Parser + Symbol Table
+
+* **ID:** US-411
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** High
+* **Estimate:** XL *(compiler front-end; the foundation for every feature)*
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a hand-written, error-tolerant lexer + recursive-descent parser producing an AST with positions and a per-document symbol table**, so that **all downstream LSP features have accurate semantic data even while code is being edited.**
+
+**Acceptance Criteria (AC):**
+* AC1: Lexer covers the GST token inventory (radix/scaled numbers, `$c`/`$<n>` chars, strings, symbols, `#(...)`/`#[...]`/`{...}`, scoped names, `#{...}`, shebang, chunk `!`), per `docs/research/gst-syntax/01-*`.
+* AC2: Parser covers ANSI expressions (unary>binary>keyword precedence), cascades, blocks, method patterns, and primitives, per `docs/research/gst-syntax/02-*`.
+* AC3: Container formats are pluggable: GST brace (`Object subclass: Foo [ ... ]`, `Foo class >> sel [ ... ]`) and GST chunk (`!Foo methodsFor: '...'! ... ! !`).
+* AC4: The parser never throws; it recovers (synchronizing on `.`, `!`, `]`, method-pattern starts), emitting error nodes + a diagnostics list, and always returns an AST.
+* AC5: A symbol table records classes, methods (selector + arity), instance/class/temp variables, and scopes.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Clear value (foundation for navigation/completion/diagnostics).
+* [X] Scope bounded to ANSI + GST container formats (no Tonel).
+* [X] Spec exists (`docs/research/gst-syntax/01-*`, `02-*`, `test-cases/*`).
+* [X] Estimated/sized (XL).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Lexer, parser, container layers, AST, and symbol table implemented.
+* [ ] **Language Server:** Snapshot AST/symbol tests reuse the 15 `test-cases/*.st` categories; mutation tests confirm no-throw recovery.
+* [ ] **Kernel smoke test:** all `../smalltalk-3.2.5/kernel/*.st` parse with zero crashes and a bounded error count.
+* [ ] Documentation updated (parser design notes).
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Gate: no LSP feature work (US-412+) begins until the kernel smoke test passes.
+
+---
+
+## US-412: Document/Workspace Symbols + Go-To-Definition
+
+* **ID:** US-412
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **an outline, workspace symbol search, and go-to-definition**, so that **I can navigate a codebase quickly without an external tool.**
+
+**Acceptance Criteria (AC):**
+* AC1: `textDocument/documentSymbol` returns a hierarchy (class → methods) for both chunk- and brace-format files.
+* AC2: `workspace/symbol` finds classes and selectors across the workspace (scan `**/*.{st,gst}`, respecting `files.exclude`).
+* AC3: `textDocument/definition` jumps from a message send to implementor candidates and from a class reference to its definition (returns all matches; Smalltalk is dynamically typed).
+* AC4: Results update as files change (debounced parse cache).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 (parser/symbols).
+* [X] Acceptance Criteria testable via integration tests.
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] documentSymbol, workspace/symbol, definition implemented.
+* [ ] **Language Server:** unit tests for symbol extraction.
+* [ ] **End-to-End:** integration tests asserting outline/symbol/definition results on a fixture workspace.
+* [ ] Works with no `gst` present.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Semantic `foldingRange` and `documentHighlight` are near-free bonuses if time allows.
+
+---
+
+## US-413: Completion + GNU Smalltalk Kernel Index
+
+* **ID:** US-413
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** High *(directly answers issue #1)*
+* **Estimate:** L
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **auto-completion for selectors, class names, and local/instance variables, including standard kernel-library selectors**, so that **I can write code faster with fewer lookups.**
+
+**Acceptance Criteria (AC):**
+* AC1: A build-time generator parses `../smalltalk-3.2.5/kernel/*.st` with our own parser into `server/data/kernel-index.json` (classes, superclass chains, selectors + arity).
+* AC2: Completion offers keyword selectors after a receiver (workspace > kernel ranking, prefix + camel-hump matching).
+* AC3: Completion offers class names in expression-head position and temp/instance variables from the symbol-table scopes.
+* AC4: Multi-part keyword selectors insert as snippets (e.g. `at:put:` → `at:${1} put:${2}`).
+* AC5: A setting `smalltalk.completion.kernelLibrary` (`gst-3.2.5` | `off`) controls the kernel index.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 + US-412 indexes.
+* [X] Licensing reviewed (kernel selector names/arities are facts; method comment prose is LGPL 2.1 — names/signatures only in v0.5.0).
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Kernel-index generator + completion provider implemented.
+* [ ] **Language Server:** unit tests at cursor positions; index generator snapshot test.
+* [ ] **End-to-End:** integration test asserting kernel + workspace completions.
+* [ ] GitHub issue #1 closed with a demo.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Decide on shipping kernel method-comment text (with attribution) before hover (US-415).
+
+---
+
+## US-414: Diagnostics (Parser Live; gst Opt-In)
+
+* **ID:** US-414
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **error squiggles as I type, plus optional real compile errors from `gst`**, so that **I catch mistakes without leaving the editor.**
+
+**Acceptance Criteria (AC):**
+* AC1: Parser diagnostics (syntax errors/warnings) are published on change, debounced, with code `smalltalk(parse)`.
+* AC2: An opt-in setting `smalltalk.diagnostics.useGst` (default off) runs `gst` on save, parses stderr (`file.st:LINE: error: ...`), maps to ranges, and tags source `gst`.
+* AC3: gst processes time out and are killed on edit; diagnostics never block typing.
+* AC4: Trivial code actions (e.g. insert missing `]`) are offered where cheap.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 (parser diagnostics are free from it).
+* [X] gst integration is strictly optional.
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Live parser diagnostics + opt-in gst path implemented.
+* [ ] **Language Server:** unit tests for diagnostic ranges; stderr-parsing tests.
+* [ ] **End-to-End:** integration test asserting squiggles on malformed input.
+* [ ] No zombie gst processes under rapid edits.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Verify gst stderr format against the bundled GNU Smalltalk 3.2.5 sources.
+
+---
+
+## US-415: Hover
+
+* **ID:** US-415
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **hover information for selectors, classes, variables, and literals**, so that **I can understand code without navigating away.**
+
+**Acceptance Criteria (AC):**
+* AC1: Hover on a selector shows its signature and implementor list (and kernel method comment if licensing allows).
+* AC2: Hover on a class shows its superclass chain and class comment.
+* AC3: Hover on a variable shows its kind and declaration site.
+* AC4: Hover on a numeric literal renders its radix/scaled-decimal value.
+* AC5: Hover content is Markdown with code fences.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411/412/413 indexes.
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Hover provider implemented.
+* [ ] **Language Server:** unit tests for hover content per symbol kind.
+* [ ] **End-to-End:** integration test asserting hover Markdown.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Reuses the workspace + kernel indexes from US-412/US-413.
+
+---
+
+## US-416: Formatting
+
+* **ID:** US-416
+* **Status:** Ready
+* **Epic:** EPIC-004
+* **Priority:** Low *(droppable from 1.0 to 1.1 if it slips)*
+* **Estimate:** L
+* **Date Proposed:** 2026-06-13
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **conservative, idempotent code formatting**, so that **I can normalize style without risking my code.**
+
+**Acceptance Criteria (AC):**
+* AC1: `rangeFormatting` + `onTypeFormatting` ship first (indent after `[`, dedent on `]`, align cascades).
+* AC2: `documentFormatting` reprints from the AST, preserving comments and blank lines, normalizing only indentation and keyword-message wrapping.
+* AC3: Property tests hold: `format(format(x)) === format(x)` and the lexer token stream is unchanged before/after.
+* AC4: Formatting is off by default (`smalltalk.format.enable`) for at least one release.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 (AST + lossless comments).
+* [X] Risk acknowledged (data loss = trust loss); idempotence is mandatory.
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Range/on-type formatting then document formatting implemented.
+* [ ] **Language Server:** idempotence + token-round-trip property tests passing.
+* [ ] **End-to-End:** integration test asserting formatted output.
+* [ ] Default-off setting honored.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* If it slips, it ships in v1.1 and must not block v1.0.
