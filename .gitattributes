@@ -1,0 +1,8 @@
+# Normalize all text files to LF in the repo and on checkout (all platforms),
+# so the grammar snapshot tests compare identically on Windows/macOS/Linux.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.vsix binary
+*.wasm binary

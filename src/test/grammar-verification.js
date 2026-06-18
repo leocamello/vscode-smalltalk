@@ -67,7 +67,9 @@ async function run() {
             console.log(`Updated snapshot: ${file}`);
         } else {
             if (fs.existsSync(snapshotPath)) {
-                const expected = fs.readFileSync(snapshotPath, 'utf8');
+                // Normalize CRLF -> LF so the comparison is stable across
+                // platforms (Windows checkouts may carry CRLF line endings).
+                const expected = fs.readFileSync(snapshotPath, 'utf8').replace(/\r\n/g, '\n');
                 if (expected !== snapshotContent) {
                     console.error(`Snapshot mismatch for ${file}`);
                     errors++;
