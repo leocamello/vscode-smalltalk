@@ -41,8 +41,10 @@ are the deliverables — the cycle is what matters, not any one tool.
 
 1. **Clarify** — pull the story from `docs/product/user-stories.md`; resolve ambiguities and
    pin down testable ACs before writing code (`speckit.clarify` helps).
-2. **Spec** — author `specs/US-XXX-Title/spec.md` (overview, goals, user stories, ACs,
-   technical design, risks). Gate it with `requirements-validation.md`.
+2. **Spec** — scaffold the package with `npm run new-story -- US-XXX "Short Title" [--branch]`
+   (stamps the full 5-file `specs/US-XXX-Title/` set from `.specify/templates/` and optionally
+   cuts the `feature/US-XXX-…` branch), then fill in `spec.md` (overview, goals, non-goals,
+   user stories, ACs, technical design, risks). Gate it with `requirements-validation.md`.
 3. **Plan** — break the approach into `plan.md`.
 4. **Task** — decompose into granular, checkable steps in `tasks.md`; open a GitHub issue
    per story/task.
