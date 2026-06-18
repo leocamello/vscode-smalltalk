@@ -1,7 +1,6 @@
 {
     "comments": {
         // symbols used for start and end a block comment
-        "lineComment": "\"",
         "blockComment": [ "\"", "\"" ]
     },
     // symbols used as brackets
