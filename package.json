@@ -18,7 +18,7 @@
         "url": "https://github.com/leocamello/vscode-smalltalk/issues"
     },
     "engines": {
-        "vscode": "^1.31.0"
+        "vscode": "^1.82.0"
     },
     "categories": [
         "Programming Languages",
@@ -76,8 +76,9 @@
         "vscode-tmgrammar-test": "^0.1.3"
     },
     "scripts": {
+        "vscode:prepublish": "npm run build:grammar",
         "test": "vscode-test",
-        "deploy": "vsce publish --yarn",
+        "deploy": "vsce publish",
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
         "test:grammar": "node src/test/grammar-verification.js"
     }

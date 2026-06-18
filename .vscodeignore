@@ -1,6 +1,10 @@
 .github/**
 .vscode/**
 .vscode-test/**
+.specify/**
 docs/**
+specs/**
+src/**
 .gitignore
+package-lock.json
 syntaxes/gnu-smalltalk.YAML-tmLanguage
