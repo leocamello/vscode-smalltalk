@@ -31,6 +31,16 @@ $>.          " Greater than character "
 $-.          " Hyphen character "
 $+.          " Plus character "
 
+" Bracket character literals (regression guard for bug #2: these must be
+  scoped constant.character.simple.smalltalk so unbalancedBracketScopes
+  keeps the editor's bracket matcher from pairing them) "
+$[.          " Open square bracket character "
+$].          " Close square bracket character "
+$(.          " Open paren character "
+$).          " Close paren character "
+${.          " Open brace character "
+$}.          " Close brace character "
+
 " Special character forms (e.g., Unicode code points) "
 $<65>.       " Character for ASCII 65 (A) "
 $<163>.      " Character for £ (pound sign) "

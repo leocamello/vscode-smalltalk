@@ -44,7 +44,11 @@
             {
                 "language": "smalltalk",
                 "scopeName": "source.smalltalk.gnu",
-                "path": "./syntaxes/gnu-smalltalk.tmLanguage.json"
+                "path": "./syntaxes/gnu-smalltalk.tmLanguage.json",
+                "unbalancedBracketScopes": [
+                    "constant.character.simple.smalltalk",
+                    "constant.character.numeric.gst.smalltalk"
+                ]
             }
         ],
         "snippets": [
