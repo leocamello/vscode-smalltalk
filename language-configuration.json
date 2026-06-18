@@ -13,7 +13,7 @@
     "autoClosingPairs": [
         { "open": "{", "close": "}" },
         { "open": "[", "close": "]" },
-        { "open": "(", "close": ")" }, 
+        { "open": "(", "close": ")" },
         { "open": "'", "close": "'", "notIn": ["string", "comment"] },
         { "open": "\"", "close": "\"", "notIn": ["string"] }
     ],
@@ -24,5 +24,15 @@
         ["(", ")"],
         ["'", "'"],
         ["\"", "\""]
-    ]
+    ],
+    "indentationRules": {
+        "increaseIndentPattern": "^.*(\\[[^]]*|\\{|#\\(|#\\[)$",
+        "decreaseIndentPattern": "^\\s*(\\]|\\}|\\)|\\.)$"
+    },
+    "folding": {
+        "markers": {
+            "start": "^\\s*\"--",
+            "end": "^\\s*--\""
+        }
+    }
 }
