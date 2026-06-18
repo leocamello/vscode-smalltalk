@@ -16,9 +16,13 @@ Provide robust syntax highlighting for GNU Smalltalk (`.st` files) in VS Code. T
 
 ## 3. User Stories
 
-**US-200**: As a developer, I want to understand the best approach for Smalltalk grammar so I don't reinvent the wheel.
-*   **AC1**: Research existing grammars.
-*   **AC2**: Define file structure (`syntaxes/gnu-smalltalk.YAML-tmLanguage`).
+**US-200**: As a developer, I want to thoroughly understand GNU Smalltalk's syntax rules and TextMate grammar best practices.
+*   **AC1**: Analyze GNU Smalltalk source files (lex.c, gst-parse.c) for tokenization rules.
+*   **AC2**: Document key findings and extracted syntax rules (See `docs/research/`).
+*   **AC3**: Research and summarize TextMate grammar best practices.
+*   **AC4**: Gather representative collection of GNU Smalltalk code snippets for testing.
+*   **AC5**: (Optional) Create PoC TextMate grammar snippet.
+*   **AC6**: Provide implementation recommendation (Adopt YAML-tmLanguage).
 
 **US-201**: As a Smalltalk developer, I want my code highlighted so I can read it easily.
 *   **AC1**: Comments (quoted `"`).

@@ -1,0 +1,533 @@
+LINE: #! /usr/bin/env gst -f
+  [0, 2] source.smalltalk.gnu comment.line.shebang.gst.smalltalk punctuation.definition.comment.shebang.gst.smalltalk : "#!"
+  [2, 22] source.smalltalk.gnu comment.line.shebang.gst.smalltalk comment.line.shebang.content.gst.smalltalk : " /usr/bin/env gst -f"
+LINE: "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+LINE:     File: 15_edge_cases_shebang_whitespace.st
+  [0, 46] source.smalltalk.gnu comment.block.double-quoted.smalltalk : "    File: 15_edge_cases_shebang_whitespace.st"
+LINE:     Purpose: Test cases for GNU Smalltalk edge cases:
+  [0, 54] source.smalltalk.gnu comment.block.double-quoted.smalltalk : "    Purpose: Test cases for GNU Smalltalk edge cases:"
+LINE:              - Shebang line
+  [0, 28] source.smalltalk.gnu comment.block.double-quoted.smalltalk : "             - Shebang line"
+LINE:              - Whitespace variations
+  [0, 37] source.smalltalk.gnu comment.block.double-quoted.smalltalk : "             - Whitespace variations"
+LINE: "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " --- Shebang Line --- "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 23] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " --- Shebang Line --- "
+  [23, 24] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: " The line `#! /usr/bin/env gst -f` at the very top of this file
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 65] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " The line `#! /usr/bin/env gst -f` at the very top of this file"
+LINE:   is a shebang. It should be recognized if at the absolute beginning. "
+  [0, 70] source.smalltalk.gnu comment.block.double-quoted.smalltalk : "  is a shebang. It should be recognized if at the absolute beginning. "
+  [70, 71] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: Transcript show: 'Shebang test: If this runs, gst processed the file.'; cr.
+  [0, 10] source.smalltalk.gnu entity.name.type.class.smalltalk : "Transcript"
+  [10, 11] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [11, 16] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "show:"
+  [16, 17] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [17, 18] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [18, 69] source.smalltalk.gnu string.quoted.single.smalltalk : "Shebang test: If this runs, gst processed the file."
+  [69, 70] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+  [70, 71] source.smalltalk.gnu punctuation.separator.cascade.smalltalk : ";"
+  [71, 72] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [72, 74] source.smalltalk.gnu variable.other.smalltalk : "cr"
+  [74, 75] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " --- Whitespace Variations --- "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 32] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " --- Whitespace Variations --- "
+  [32, 33] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Minimal spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 18] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Minimal spacing "
+  [18, 19] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: |var1|var1:=1+2*3.var1 printNl.Object new inspect.
+  [0, 1] source.smalltalk.gnu keyword.operator.binary.smalltalk : "|"
+  [1, 5] source.smalltalk.gnu variable.other.smalltalk : "var1"
+  [5, 6] source.smalltalk.gnu keyword.operator.binary.smalltalk : "|"
+  [6, 11] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "var1:"
+  [11, 12] source.smalltalk.gnu keyword.operator.binary.smalltalk : "="
+  [12, 13] source.smalltalk.gnu constant.numeric.integer.smalltalk : "1"
+  [13, 14] source.smalltalk.gnu keyword.operator.binary.smalltalk : "+"
+  [14, 15] source.smalltalk.gnu constant.numeric.integer.smalltalk : "2"
+  [15, 16] source.smalltalk.gnu keyword.operator.binary.smalltalk : "*"
+  [16, 17] source.smalltalk.gnu constant.numeric.integer.smalltalk : "3"
+  [17, 18] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+  [18, 22] source.smalltalk.gnu variable.other.smalltalk : "var1"
+  [22, 23] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [23, 30] source.smalltalk.gnu variable.other.smalltalk : "printNl"
+  [30, 31] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+  [31, 37] source.smalltalk.gnu entity.name.type.class.smalltalk : "Object"
+  [37, 38] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [38, 41] source.smalltalk.gnu variable.other.smalltalk : "new"
+  [41, 42] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [42, 49] source.smalltalk.gnu variable.other.smalltalk : "inspect"
+  [49, 50] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Generous spacing and newlines (where syntactically valid) "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 60] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Generous spacing and newlines (where syntactically valid) "
+  [60, 61] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: | var2
+  [0, 2] source.smalltalk.gnu keyword.operator.binary.smalltalk : "| "
+  [2, 6] source.smalltalk.gnu variable.other.smalltalk : "var2"
+LINE: var3 |
+  [0, 4] source.smalltalk.gnu variable.other.smalltalk : "var3"
+  [4, 6] source.smalltalk.gnu keyword.operator.binary.smalltalk : " |"
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: var2 :=
+  [0, 4] source.smalltalk.gnu variable.other.smalltalk : "var2"
+  [4, 5] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [5, 7] source.smalltalk.gnu keyword.operator.assignment.smalltalk : ":="
+LINE:     100
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 7] source.smalltalk.gnu constant.numeric.integer.smalltalk : "100"
+LINE:     +
+  [0, 5] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    +"
+LINE:     200.
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 7] source.smalltalk.gnu constant.numeric.integer.smalltalk : "200"
+  [7, 8] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: var3
+  [0, 4] source.smalltalk.gnu variable.other.smalltalk : "var3"
+LINE:     :=
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 6] source.smalltalk.gnu keyword.operator.assignment.smalltalk : ":="
+LINE:     var2
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 8] source.smalltalk.gnu variable.other.smalltalk : "var2"
+LINE:     yourself
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 12] source.smalltalk.gnu variable.other.smalltalk : "yourself"
+LINE:     .
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: Transcript
+  [0, 10] source.smalltalk.gnu entity.name.type.class.smalltalk : "Transcript"
+LINE:     show:
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 9] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "show:"
+LINE:         'Var2: '
+  [0, 8] source.smalltalk.gnu keyword.operator.binary.smalltalk : "        "
+  [8, 9] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [9, 15] source.smalltalk.gnu string.quoted.single.smalltalk : "Var2: "
+  [15, 16] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE:     ;
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu punctuation.separator.cascade.smalltalk : ";"
+LINE:     print: var2
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 10] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "print:"
+  [10, 11] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [11, 15] source.smalltalk.gnu variable.other.smalltalk : "var2"
+LINE:     ;
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu punctuation.separator.cascade.smalltalk : ";"
+LINE:     show: ', Var3: '
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 9] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "show:"
+  [9, 10] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [10, 11] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [11, 19] source.smalltalk.gnu string.quoted.single.smalltalk : ", Var3: "
+  [19, 20] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE:     ;
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu punctuation.separator.cascade.smalltalk : ";"
+LINE:     print: var3
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 10] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "print:"
+  [10, 11] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [11, 15] source.smalltalk.gnu variable.other.smalltalk : "var3"
+LINE:     ;
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu punctuation.separator.cascade.smalltalk : ";"
+LINE:     cr.
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 6] source.smalltalk.gnu variable.other.smalltalk : "cr"
+  [6, 7] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Blocks with varied spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 29] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Blocks with varied spacing "
+  [29, 30] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: [Transcript show:'Block with minimal space'.1]value.
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+  [1, 11] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.type.class.smalltalk : "Transcript"
+  [11, 12] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [12, 17] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.function.keyword.smalltalk : "show:"
+  [17, 18] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [18, 42] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk : "Block with minimal space"
+  [42, 43] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+  [43, 44] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.terminator.statement.smalltalk : "."
+  [44, 45] source.smalltalk.gnu meta.block.literal.smalltalk constant.numeric.integer.smalltalk : "1"
+  [45, 46] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+  [46, 51] source.smalltalk.gnu variable.other.smalltalk : "value"
+  [51, 52] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: [
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+LINE:     Transcript show: 'Block with generous space.'
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 14] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.type.class.smalltalk : "Transcript"
+  [14, 15] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [15, 20] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.function.keyword.smalltalk : "show:"
+  [20, 21] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [21, 22] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [22, 48] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk : "Block with generous space."
+  [48, 49] source.smalltalk.gnu meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE:     .
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.terminator.statement.smalltalk : "."
+LINE:     2
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.block.literal.smalltalk constant.numeric.integer.smalltalk : "2"
+LINE: ] value.
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+  [1, 2] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [2, 7] source.smalltalk.gnu variable.other.smalltalk : "value"
+  [7, 8] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: [ :arg1
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+  [1, 2] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [2, 3] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.variable.parameter.block.smalltalk : ":"
+  [3, 7] source.smalltalk.gnu meta.block.literal.smalltalk variable.parameter.block.smalltalk : "arg1"
+LINE:     | | " no temps "
+  [0, 8] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    | | "
+  [8, 9] source.smalltalk.gnu meta.block.literal.smalltalk comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [9, 19] source.smalltalk.gnu meta.block.literal.smalltalk comment.block.double-quoted.smalltalk : " no temps "
+  [19, 20] source.smalltalk.gnu meta.block.literal.smalltalk comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE:     arg1 printNl
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 8] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "arg1"
+  [8, 9] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [9, 16] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "printNl"
+LINE: ] value: 'Argument with newlines'.
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+  [1, 2] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [2, 8] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "value:"
+  [8, 9] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [9, 10] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [10, 32] source.smalltalk.gnu string.quoted.single.smalltalk : "Argument with newlines"
+  [32, 33] source.smalltalk.gnu string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+  [33, 34] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: [
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+LINE:     :argA
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.variable.parameter.block.smalltalk : ":"
+  [5, 9] source.smalltalk.gnu meta.block.literal.smalltalk variable.parameter.block.smalltalk : "argA"
+LINE:     :argB
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.variable.parameter.block.smalltalk : ":"
+  [5, 9] source.smalltalk.gnu meta.block.literal.smalltalk variable.parameter.block.smalltalk : "argB"
+LINE:     | | | tempX tempY |
+  [0, 10] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    | | | "
+  [10, 15] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempX"
+  [15, 16] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [16, 21] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempY"
+  [21, 23] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " |"
+LINE:     tempX := argA * argA.
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 9] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempX"
+  [9, 10] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [10, 12] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.assignment.smalltalk : ":="
+  [12, 13] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [13, 17] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "argA"
+  [17, 20] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " * "
+  [20, 24] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "argA"
+  [24, 25] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.terminator.statement.smalltalk : "."
+LINE:     tempY := argB + argB.
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 9] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempY"
+  [9, 10] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [10, 12] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.assignment.smalltalk : ":="
+  [12, 13] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [13, 17] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "argB"
+  [17, 20] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " + "
+  [20, 24] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "argB"
+  [24, 25] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.terminator.statement.smalltalk : "."
+LINE:     tempX + tempY
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 9] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempX"
+  [9, 12] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " + "
+  [12, 17] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "tempY"
+LINE: ]
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+LINE:     value: 5
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 10] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "value:"
+  [10, 11] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [11, 12] source.smalltalk.gnu constant.numeric.integer.smalltalk : "5"
+LINE:     value: 10.
+  [0, 4] source.smalltalk.gnu keyword.operator.binary.smalltalk : "    "
+  [4, 10] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "value:"
+  [10, 11] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [11, 13] source.smalltalk.gnu constant.numeric.integer.smalltalk : "10"
+  [13, 14] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Array literals with varied spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 37] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Array literals with varied spacing "
+  [37, 38] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: #(1 2 3).
+  [0, 2] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.begin.smalltalk : "#("
+  [2, 3] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "1"
+  [3, 4] source.smalltalk.gnu meta.array.literal.smalltalk : " "
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "2"
+  [5, 6] source.smalltalk.gnu meta.array.literal.smalltalk : " "
+  [6, 7] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "3"
+  [7, 8] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.end.smalltalk : ")"
+  [8, 9] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: #( 1 2   3 ).
+  [0, 2] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.begin.smalltalk : "#("
+  [2, 3] source.smalltalk.gnu meta.array.literal.smalltalk : " "
+  [3, 4] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "1"
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk : " "
+  [5, 6] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "2"
+  [6, 9] source.smalltalk.gnu meta.array.literal.smalltalk : "   "
+  [9, 10] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "3"
+  [10, 11] source.smalltalk.gnu meta.array.literal.smalltalk : " "
+  [11, 12] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.end.smalltalk : ")"
+  [12, 13] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: #(
+  [0, 2] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.begin.smalltalk : "#("
+LINE:     1
+  [0, 4] source.smalltalk.gnu meta.array.literal.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk constant.numeric.integer.smalltalk : "1"
+LINE:     'two'
+  [0, 4] source.smalltalk.gnu meta.array.literal.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [5, 8] source.smalltalk.gnu meta.array.literal.smalltalk string.quoted.single.smalltalk : "two"
+  [8, 9] source.smalltalk.gnu meta.array.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE:     $3
+  [0, 4] source.smalltalk.gnu meta.array.literal.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk constant.character.simple.smalltalk punctuation.definition.character.smalltalk : "$"
+  [5, 6] source.smalltalk.gnu meta.array.literal.smalltalk constant.character.simple.smalltalk : "3"
+LINE:     #four
+  [0, 4] source.smalltalk.gnu meta.array.literal.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.literal.smalltalk constant.other.symbol.identifier.smalltalk punctuation.definition.symbol.smalltalk : "#"
+  [5, 9] source.smalltalk.gnu meta.array.literal.smalltalk constant.other.symbol.identifier.smalltalk : "four"
+LINE: ).
+  [0, 1] source.smalltalk.gnu meta.array.literal.smalltalk punctuation.definition.array.end.smalltalk : ")"
+  [1, 2] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Byte array literals with varied spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 42] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Byte array literals with varied spacing "
+  [42, 43] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: #[1 2 3].
+  [0, 2] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.begin.smalltalk : "#["
+  [2, 3] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "1"
+  [3, 4] source.smalltalk.gnu meta.bytearray.literal.smalltalk : " "
+  [4, 5] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "2"
+  [5, 6] source.smalltalk.gnu meta.bytearray.literal.smalltalk : " "
+  [6, 7] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "3"
+  [7, 8] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.end.smalltalk : "]"
+  [8, 9] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: #[ 1  2 3 ].
+  [0, 2] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.begin.smalltalk : "#["
+  [2, 3] source.smalltalk.gnu meta.bytearray.literal.smalltalk : " "
+  [3, 4] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "1"
+  [4, 6] source.smalltalk.gnu meta.bytearray.literal.smalltalk : "  "
+  [6, 7] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "2"
+  [7, 8] source.smalltalk.gnu meta.bytearray.literal.smalltalk : " "
+  [8, 9] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "3"
+  [9, 10] source.smalltalk.gnu meta.bytearray.literal.smalltalk : " "
+  [10, 11] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.end.smalltalk : "]"
+  [11, 12] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: #[
+  [0, 2] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.begin.smalltalk : "#["
+LINE:     10
+  [0, 4] source.smalltalk.gnu meta.bytearray.literal.smalltalk : "    "
+  [4, 6] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "10"
+LINE:     20
+  [0, 4] source.smalltalk.gnu meta.bytearray.literal.smalltalk : "    "
+  [4, 6] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "20"
+LINE:     30
+  [0, 4] source.smalltalk.gnu meta.bytearray.literal.smalltalk : "    "
+  [4, 6] source.smalltalk.gnu meta.bytearray.literal.smalltalk constant.numeric.integer.byte.smalltalk : "30"
+LINE: ].
+  [0, 1] source.smalltalk.gnu meta.bytearray.literal.smalltalk punctuation.definition.bytearray.end.smalltalk : "]"
+  [1, 2] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Array constructor with varied spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 40] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Array constructor with varied spacing "
+  [40, 41] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: {1. 2. 3}.
+  [0, 1] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.begin.gst.smalltalk : "{"
+  [1, 2] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "1"
+  [2, 3] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.separator.array.constructor.gst.smalltalk : "."
+  [3, 4] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [4, 5] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "2"
+  [5, 6] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.separator.array.constructor.gst.smalltalk : "."
+  [6, 7] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [7, 8] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "3"
+  [8, 9] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.end.gst.smalltalk : "}"
+  [9, 10] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: { 1 . 2 . 3 }.
+  [0, 1] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.begin.gst.smalltalk : "{"
+  [1, 2] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [2, 3] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "1"
+  [3, 4] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [4, 5] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.separator.array.constructor.gst.smalltalk : "."
+  [5, 6] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [6, 7] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "2"
+  [7, 8] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [8, 9] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.separator.array.constructor.gst.smalltalk : "."
+  [9, 10] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [10, 11] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "3"
+  [11, 12] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [12, 13] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.end.gst.smalltalk : "}"
+  [13, 14] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: {
+  [0, 1] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.begin.gst.smalltalk : "{"
+LINE:     1 + 1 .
+  [0, 4] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "1"
+  [5, 8] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " + "
+  [8, 9] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk constant.numeric.integer.smalltalk : "1"
+  [9, 10] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " "
+  [10, 11] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.separator.array.constructor.gst.smalltalk : "."
+LINE:     'hello' , ' world'
+  [0, 4] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [5, 10] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk : "hello"
+  [10, 11] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+  [11, 14] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk keyword.operator.binary.smalltalk : " , "
+  [14, 15] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [15, 21] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk : " world"
+  [21, 22] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE: }.
+  [0, 1] source.smalltalk.gnu meta.array.constructor.dynamic.gst.smalltalk punctuation.definition.array.constructor.end.gst.smalltalk : "}"
+  [1, 2] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " Method definition style (scoped) with varied spacing "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 55] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " Method definition style (scoped) with varied spacing "
+  [55, 56] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: Object subclass: #WhitespaceDemo [
+  [0, 6] source.smalltalk.gnu entity.name.type.class.smalltalk : "Object"
+  [6, 7] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [7, 16] source.smalltalk.gnu entity.name.function.keyword.smalltalk : "subclass:"
+  [16, 17] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [17, 18] source.smalltalk.gnu constant.other.symbol.identifier.smalltalk punctuation.definition.symbol.smalltalk : "#"
+  [18, 32] source.smalltalk.gnu constant.other.symbol.identifier.smalltalk : "WhitespaceDemo"
+  [32, 33] source.smalltalk.gnu keyword.operator.binary.smalltalk : " "
+  [33, 34] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+LINE:     WhitespaceDemo >> demoMethod : arg1 with : arg2 [
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 18] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.type.class.smalltalk : "WhitespaceDemo"
+  [18, 22] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " >> "
+  [22, 32] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "demoMethod"
+  [32, 33] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [33, 34] source.smalltalk.gnu meta.block.literal.smalltalk : ":"
+  [34, 35] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [35, 39] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "arg1"
+  [39, 40] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [40, 44] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "with"
+  [44, 45] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [45, 46] source.smalltalk.gnu meta.block.literal.smalltalk : ":"
+  [46, 47] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [47, 51] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "arg2"
+  [51, 52] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [52, 53] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+LINE:         | temp |
+  [0, 10] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "        | "
+  [10, 14] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk variable.other.smalltalk : "temp"
+  [14, 16] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " |"
+LINE:         temp := arg1 +
+  [0, 8] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "        "
+  [8, 12] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk variable.other.smalltalk : "temp"
+  [12, 13] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [13, 15] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.assignment.smalltalk : ":="
+  [15, 16] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [16, 20] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk variable.other.smalltalk : "arg1"
+  [20, 22] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " +"
+LINE:             arg2.
+  [0, 12] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "            "
+  [12, 16] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk variable.other.smalltalk : "arg2"
+  [16, 17] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk punctuation.terminator.statement.smalltalk : "."
+LINE:         ^ temp
+  [0, 8] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "        "
+  [8, 9] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.control.return.smalltalk : "^"
+  [9, 10] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [10, 14] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk variable.other.smalltalk : "temp"
+LINE:     ]
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 5] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+LINE: 
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk : ""
+LINE:     WhitespaceDemo class
+  [0, 4] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "    "
+  [4, 18] source.smalltalk.gnu meta.block.literal.smalltalk entity.name.type.class.smalltalk : "WhitespaceDemo"
+  [18, 19] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : " "
+  [19, 24] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "class"
+LINE:         >>
+  [0, 10] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "        >>"
+LINE:         classDemoMethod
+  [0, 8] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "        "
+  [8, 23] source.smalltalk.gnu meta.block.literal.smalltalk variable.other.smalltalk : "classDemoMethod"
+LINE:             [
+  [0, 12] source.smalltalk.gnu meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "            "
+  [12, 13] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk punctuation.definition.block.begin.smalltalk : "["
+LINE:                 ^'Class side demo'
+  [0, 16] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "                "
+  [16, 17] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.control.return.smalltalk : "^"
+  [17, 18] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.begin.smalltalk : "'"
+  [18, 33] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk string.quoted.single.smalltalk : "Class side demo"
+  [33, 34] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk string.quoted.single.smalltalk punctuation.definition.string.end.smalltalk : "'"
+LINE:             ]
+  [0, 12] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk keyword.operator.binary.smalltalk : "            "
+  [12, 13] source.smalltalk.gnu meta.block.literal.smalltalk meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+LINE: ].
+  [0, 1] source.smalltalk.gnu meta.block.literal.smalltalk punctuation.definition.block.end.smalltalk : "]"
+  [1, 2] source.smalltalk.gnu punctuation.terminator.statement.smalltalk : "."
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""
+LINE: " End of Shebang and Whitespace Variations Test "
+  [0, 1] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.begin.smalltalk : """
+  [1, 48] source.smalltalk.gnu comment.block.double-quoted.smalltalk : " End of Shebang and Whitespace Variations Test "
+  [48, 49] source.smalltalk.gnu comment.block.double-quoted.smalltalk punctuation.definition.comment.end.smalltalk : """
+LINE: !
+  [0, 1] source.smalltalk.gnu keyword.operator.binary.smalltalk : "!"
+LINE: 
+  [0, 1] source.smalltalk.gnu : ""

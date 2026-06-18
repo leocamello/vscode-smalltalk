@@ -1,5 +1,18 @@
 # Tasks & Acceptance Criteria
 
+## Group 0: Research (US-200)
+- [x] AC200.1: Analyze GST source code (lex.c, gst-parse.c).
+- [x] AC200.2: Document syntax rules and findings in `docs/research/`.
+- [x] AC200.3: Research TextMate best practices.
+- [x] AC200.4: Collect GST code snippets for validation.
+- [x] AC200.5: Define implementation strategy (YAML -> JSON).
+
+## Group 6: Verification & Tests (DoD)
+- [x] AC9.1: Create test infrastructure for grammar verification.
+- [x] AC9.2: Generate snapshots for US-200 test cases (`docs/research/gst-syntax/test-cases`).
+- [x] AC9.3: Verify all snapshots match expected output.
+- [x] DoD.1: Add `test:grammar` script to CI/CD (package.json).
+
 ## Group 1: Basics
 - [x] AC1.1: Highlight Comments (`"..."`).
 - [x] AC1.2: Highlight Shebang (`#!...`).

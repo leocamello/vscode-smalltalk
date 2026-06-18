@@ -68,11 +68,13 @@
         "@vscode/test-cli": "^0.0.10",
         "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.3.2",
-        "js-yaml": "^4.1.0"
+        "js-yaml": "^4.1.0",
+        "vscode-tmgrammar-test": "^0.1.3"
     },
     "scripts": {
         "test": "vscode-test",
         "deploy": "vsce publish --yarn",
-        "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json"
+        "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
+        "test:grammar": "node src/test/grammar-verification.js"
     }
 }
