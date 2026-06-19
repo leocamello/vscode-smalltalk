@@ -2,7 +2,7 @@
 
 **ID**: US-301
 **Feature**: Run Current File
-**Status**: Draft
+**Status**: Implemented (shipped v0.3.0)
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-19
 

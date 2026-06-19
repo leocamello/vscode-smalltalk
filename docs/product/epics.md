@@ -5,7 +5,7 @@
 ## EPIC-001: Improve User Onboarding & Documentation
 
 * **ID:** EPIC-001
-* **Status:** Defined
+* **Status:** Done (v0.2.0)
 * **Priority:** High
 * **Phase:** Phase 1
 * **Date Proposed:** 2025-05-02
@@ -41,7 +41,7 @@
 ## EPIC-002: Enhance Declarative Editing Features
 
 * **ID:** EPIC-002
-* **Status:** Proposed
+* **Status:** Done (v0.2.0)
 * **Priority:** Medium
 * **Phase:** Phase 1
 * **Date Proposed:** 2025-05-02
@@ -74,7 +74,7 @@
 ## EPIC-003: Basic Workflow Integration
 
 * **ID:** EPIC-003
-* **Status:** Proposed
+* **Status:** Done (v0.3.0)
 * **Priority:** Low
 * **Phase:** Phase 1
 * **Date Proposed:** 2025-05-02
@@ -105,7 +105,7 @@
 ## EPIC-004: Language Intelligence — TypeScript LSP
 
 * **ID:** EPIC-004
-* **Status:** Proposed
+* **Status:** In Progress (US-410 done; US-411 next)
 * **Priority:** Medium
 * **Phase:** Phase 2
 * **Date Proposed:** 2025-05-02

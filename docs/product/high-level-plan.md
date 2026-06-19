@@ -48,7 +48,7 @@ A separate extension, tentatively named `vscode-smalltalk-debugger`, is envision
 Development of the `vscode-smalltalk` extension will proceed iteratively through the following high-level phases:
 
 * **Phase 1: Solidify Foundation, DX & Technical Investigation**
-    * **Focus:** Enhance and refine declarative features (syntax, snippets, config). Improve user onboarding via clear documentation (README.md). Implement basic workflow commands (e.g., running files via configured `gst`), ensuring alignment with VS Code best practices for future compatibility. Conduct technical investigation and preparatory work for the LSP backend (library research, process management, communication details) to de-risk Phase 2.
+    * **Focus:** Enhance and refine declarative features (syntax, snippets, config). Improve user onboarding via clear documentation (README.md). Implement basic workflow commands (e.g., running files via configured `gst`), ensuring alignment with VS Code best practices. Stand up the bundled TypeScript LSP scaffold (US-410) to de-risk Phase 2. *(The earlier plan to research a Smalltalk LSP backend was superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md).)*
     * **Extension(s):** `vscode-smalltalk`
 * **Phase 2: Language Intelligence (LSP)**
     * **Focus:** Implement and integrate core LSP features. Develop the bundled TypeScript language server (hand-written Smalltalk parser + symbol table) targeting GNU Smalltalk support. Provide features like diagnostics, completion, hover, and navigation.
@@ -70,8 +70,12 @@ Development of the `vscode-smalltalk` extension will proceed iteratively through
 
 ## 8. Next Steps / Current Focus
 
-Our immediate focus is on **executing Phase 1**. We will refine the Epics and User Stories for improving the foundational aspects, developer experience, and performing LSP technical investigation.
+Phase 1 (declarative foundation + onboarding docs) shipped in **v0.2.0**; the TypeScript
+client/server scaffold and the *Run Current File* command shipped in **v0.3.0**. Current focus
+is **M3 / US-411** — the error-tolerant Smalltalk parser + symbol table that powers Phase 2
+language intelligence (completion, navigation, diagnostics).
 
-* Refine initial Epics and define User Stories in `docs/epics.md` and `docs/user-stories.md`.
-* Prioritize work for the first development iterations.
+See [`docs/ROADMAP.md`](../ROADMAP.md) for live milestone status, [`epics.md`](epics.md) and
+[`user-stories.md`](user-stories.md) for the backlog, and [`docs/decisions/`](../decisions/)
+for architecture decisions.
 

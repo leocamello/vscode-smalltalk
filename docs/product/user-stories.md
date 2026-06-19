@@ -1,11 +1,13 @@
 # vscode-smalltalk User Stories
 
+> **Status summary (2026-06-19).** v0.2.0 and v0.3.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0). **Next:** US-411 — error-tolerant parser + symbol table (internal milestone M3). **Planned:** US-412–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
+
 ---
 
 ## US-101: Revamp README Structure & Introduction
 
 * **ID:** US-101
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** High
 * **Estimate:** S
@@ -34,7 +36,7 @@
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -50,7 +52,7 @@
 ## US-102: Add Clear Prerequisites Section to README
 
 * **ID:** US-102
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** High
 * **Estimate:** S
@@ -86,7 +88,7 @@ Scenario: User checks prerequisites
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -103,7 +105,7 @@ Scenario: User checks prerequisites
 ## US-103: Create Quick Start Guide in README
 
 * **ID:** US-103
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** High
 * **Estimate:** M
@@ -143,7 +145,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -159,7 +161,7 @@ Scenario: User follows Quick Start guide
 ## US-104: Update Features List in README
 
 * **ID:** US-104
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** Medium
 * **Estimate:** S
@@ -189,7 +191,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -206,7 +208,7 @@ Scenario: User follows Quick Start guide
 ## US-105: Document Configuration Settings in README
 
 * **ID:** US-105
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** Medium
 * **Estimate:** S
@@ -240,7 +242,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -257,7 +259,7 @@ Scenario: User follows Quick Start guide
 ## US-106: Add Basic Troubleshooting Section to README
 
 * **ID:** US-106
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — documentation)
 * **Epic:** EPIC-001
 * **Priority:** Low
 * **Estimate:** S
@@ -287,7 +289,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -303,7 +305,7 @@ Scenario: User follows Quick Start guide
 ## US-200: Investigate GST Syntax & TextMate Grammar Implementation
 
 * **ID:** US-200
-* **Status:** Ready
+* **Status:** Done (v0.2.0 — research)
 * **Epic:** EPIC-002
 * **Priority:** Medium
 * **Estimate:** M
@@ -334,7 +336,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -353,7 +355,7 @@ Scenario: User follows Quick Start guide
 ## US-201: Refine Syntax Highlighting Grammar
 
 * **ID:** US-201
-* **Status:** Blocked
+* **Status:** Done (v0.2.0)
 * **Epic:** EPIC-002
 * **Priority:** Medium
 * **Estimate:** M (or L)
@@ -387,7 +389,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -407,7 +409,7 @@ Scenario: User follows Quick Start guide
 ## US-202: Create/Update Code Snippets
 
 * **ID:** US-202
-* **Status:** Ready
+* **Status:** Done (v0.2.0)
 * **Epic:** EPIC-002
 * **Priority:** Medium
 * **Estimate:** S
@@ -436,7 +438,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -454,7 +456,7 @@ Scenario: User follows Quick Start guide
 ## US-203: Enhance Language Configuration
 
 * **ID:** US-203
-* **Status:** Ready
+* **Status:** Done (v0.2.0)
 * **Epic:** EPIC-002
 * **Priority:** Medium
 * **Estimate:** S
@@ -484,7 +486,7 @@ Scenario: User follows Quick Start guide
 * [ ] Code implemented & follows style guides (TypeScript & Smalltalk as applicable).
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering ACs).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (if applicable to this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (if applicable to this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (if applicable to this story).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (if applicable).
@@ -503,7 +505,7 @@ Scenario: User follows Quick Start guide
 ## US-301: Implement 'Run Current File' Command
 
 * **ID:** US-301
-* **Status:** Proposed
+* **Status:** Done (v0.3.0)
 * **Epic:** EPIC-003
 * **Priority:** Low
 * **Estimate:** M
@@ -544,7 +546,7 @@ Scenario: User follows Quick Start guide
 * [ ] `smalltalk.runCurrentFile` command implemented in TypeScript.
 * [ ] Code successfully reviewed & merged to main branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (covering setting reading, path resolution, error handling logic, command registration).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (N/A for this story).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (N/A for this story).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (Verifying command execution, terminal output, error messages for missing `gst`).
 * [ ] All Acceptance Criteria demonstrably met.
 * [ ] Performance meets requirements (Command execution is reasonably fast).
@@ -593,7 +595,7 @@ Scenario: User follows Quick Start guide
 * [ ] Research conducted and findings documented.
 * [ ] Analysis and recommendation documented.
 * [ ] **TypeScript Client:** Unit tests written & passing (N/A).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (N/A).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (N/A).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (N/A).
 * [ ] All Acceptance Criteria demonstrably met (Research document produced and reviewed).
 * [ ] Performance meets requirements (N/A).
@@ -641,7 +643,7 @@ Scenario: User follows Quick Start guide
 * [ ] Simple Smalltalk script for testing created.
 * [ ] Code successfully reviewed & potentially merged to a feature/spike branch.
 * [ ] **TypeScript Client:** Unit tests written & passing (Potentially for helper functions used in prototype).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (N/A - simple script).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (N/A - simple script).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (Demonstrating prototype runs within VS Code context).
 * [ ] All Acceptance Criteria demonstrably met (Prototype works as described).
 * [ ] Performance meets requirements (N/A for prototype).
@@ -689,7 +691,7 @@ Scenario: User follows Quick Start guide
 * [ ] Research conducted and findings documented.
 * [ ] Analysis and recommendation documented.
 * [ ] **TypeScript Client:** Unit tests written & passing (N/A).
-* [ ] **Smalltalk Backend:** Unit/Integration tests written & passing (N/A - research).
+* [ ] **Language Server (TypeScript):** Unit/Integration tests written & passing (N/A - research).
 * [ ] **End-to-End:** Integration tests (`@vscode/test-cli`/`@vscode/test-electron`) written & passing (N/A).
 * [ ] All Acceptance Criteria demonstrably met (Research document produced and reviewed).
 * [ ] Performance meets requirements (N/A).
@@ -706,7 +708,7 @@ Scenario: User follows Quick Start guide
 ## US-410: TypeScript LSP Scaffold (Client + Bundled Server)
 
 * **ID:** US-410
-* **Status:** Ready
+* **Status:** Done (v0.3.0)
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** M
@@ -746,7 +748,7 @@ Scenario: User follows Quick Start guide
 ## US-411: Error-Tolerant Smalltalk Parser + Symbol Table
 
 * **ID:** US-411
-* **Status:** Ready
+* **Status:** Ready (next — M3 / internal milestone)
 * **Epic:** EPIC-004
 * **Priority:** High
 * **Estimate:** XL *(compiler front-end; the foundation for every feature)*
@@ -784,7 +786,7 @@ Scenario: User follows Quick Start guide
 ## US-412: Document/Workspace Symbols + Go-To-Definition
 
 * **ID:** US-412
-* **Status:** Ready
+* **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -820,7 +822,7 @@ Scenario: User follows Quick Start guide
 ## US-413: Completion + GNU Smalltalk Kernel Index
 
 * **ID:** US-413
-* **Status:** Ready
+* **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** High *(directly answers issue #1)*
 * **Estimate:** L
@@ -857,7 +859,7 @@ Scenario: User follows Quick Start guide
 ## US-414: Diagnostics (Parser Live; gst Opt-In)
 
 * **ID:** US-414
-* **Status:** Ready
+* **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -893,7 +895,7 @@ Scenario: User follows Quick Start guide
 ## US-415: Hover
 
 * **ID:** US-415
-* **Status:** Ready
+* **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** M
@@ -928,7 +930,7 @@ Scenario: User follows Quick Start guide
 ## US-416: Formatting
 
 * **ID:** US-416
-* **Status:** Ready
+* **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** Low *(droppable from 1.0 to 1.1 if it slips)*
 * **Estimate:** L
