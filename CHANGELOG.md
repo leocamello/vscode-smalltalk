@@ -6,6 +6,14 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-19
+
+### Added
+
+-   **Run Current File** command (`Smalltalk: Run Current File`) — runs the active `.st`/`.gst` file with your GNU Smalltalk interpreter in the integrated terminal. Available from the Command Palette and the editor context menu. Resolves `gst` from the `smalltalk.gnuSmalltalkPath` setting, falling back to your `PATH`, and offers to open the setting if `gst` isn't found.
+-   Groundwork for language intelligence: the extension now ships a bundled TypeScript language server (no external Smalltalk required). It is a no-op for now — completion, navigation, and diagnostics arrive in upcoming releases.
+-   New setting `smalltalk.trace.server` to trace communication with the language server.
+
 ## [0.2.0] - 2026-06-18
 
 ### Added
