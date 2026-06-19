@@ -1,0 +1,10 @@
+{
+  "name": "vscode-smalltalk-client",
+  "version": "0.2.0",
+  "private": true,
+  "description": "VS Code extension client for the Smalltalk language server.",
+  "main": "./src/extension.ts",
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

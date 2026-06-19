@@ -7,9 +7,9 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 | Version | Theme | Exit gate |
 |---|---|---|
 | **0.2.0** | Housekeeping + release the rewritten grammar, snippets, language config; fix bug #2; modernize packaging/CI | Marketplace release; CI green on all OSes |
-| **0.3.0** | TypeScript scaffolding (`client/` + `server/`, esbuild) + "Run Current File" (US-301) | First imperative feature shipped |
+| **0.3.0** | TypeScript + LSP scaffold (`client/` + `server/`, esbuild, bundled no-op server) + "Run Current File" (US-410, then US-301) | Client↔server handshake; first command shipped |
 | **M3** *(internal)* | Error-tolerant Smalltalk parser + symbol table (US-411) | GNU Smalltalk kernel smoke test passes |
-| **0.4.0** | LSP scaffold + outline/workspace symbols + go-to-definition (US-410, US-412) | Navigation works without `gst` |
+| **0.4.0** | Outline/workspace symbols + go-to-definition (US-412) | Navigation works without `gst` |
 | **0.5.0** | Completion + GNU Smalltalk kernel index (US-413) | Closes issue #1 |
 | **0.6.0** | Diagnostics — parser live; `gst` opt-in (US-414) | Squiggles on syntax errors |
 | **0.7.0** | Hover (US-415) | Docs on hover |
