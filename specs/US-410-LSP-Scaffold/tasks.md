@@ -23,5 +23,5 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T900 [AC2] `npm run compile` emits both bundles; `npm run eval` (grammar) still green; `lint` + `check-types` pass.
 - [x] T901 [AC2] `vsce ls` shows `dist/extension.js` + `dist/server.js` + grammar; no source/`node_modules`.
 - [x] T902 [AC4/AC5] Server handshake test passes as plain Node (no `gst`).
-- [ ] T903 [AC3] Manual F5 Extension Host: server reaches `running` (owner to confirm).
-- [ ] T904 CI green on Linux/macOS/Windows.
+- [x] T903 [AC3] Manual F5 Extension Host: server reached `running` (owner-confirmed).
+- [x] T904 CI green on Linux/macOS/Windows.
