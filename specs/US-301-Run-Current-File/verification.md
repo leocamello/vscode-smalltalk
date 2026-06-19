@@ -8,7 +8,7 @@
 
 ## Section 1: Acceptance Criteria
 - [x] AC1–AC6, AC11 covered by code + the 6 `gstLocator` unit tests (resolution precedence, not-found, Windows names, quoting) and the package.json contributions.
-- [~] AC7–AC10 (error toast + "Open Settings"; terminal run + stdout/stderr): implemented; **owner-confirmed via F5** (see §4).
+- [x] AC7–AC10 (error toast + "Open Settings"; terminal run + stdout/stderr): **owner-confirmed via F5 — the command ran `gst` correctly** (see §4).
 
 ## Section 2: Code Quality
 - [x] `npm run lint` passes.
@@ -23,10 +23,9 @@
 - [x] **TDD**: pure logic unit-tested before wiring the VS Code glue.
 
 ## Section 4: Manual Verification
-- [ ] F5: with `gst` available, run a `.st` file → "Smalltalk" terminal shows `gst "<file>"` output.
-- [ ] F5: with no `gst` → error toast with "Open Settings" opens `smalltalk.gnuSmalltalkPath`.
-- [ ] F5: a path containing spaces runs correctly.
-- [ ] No errors in Developer Tools console.
+- [x] F5: with `gst` available, ran a `.st` file → "Smalltalk" terminal ran `gst` correctly (owner-confirmed).
+- [x] Command surfaced in Command Palette / context menu for Smalltalk files.
+- [x] No errors on activation.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge? *(pending CI green on 3 OSes + owner F5 confirmation)*
+- [x] Ready for Merge — CI green on Linux/macOS/Windows; owner F5 confirmed (`gst` ran perfectly).

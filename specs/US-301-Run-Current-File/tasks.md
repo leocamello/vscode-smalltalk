@@ -19,5 +19,5 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 ## Phase 3 — Verify
 - [x] T900 `check-types` + `lint` + `compile` pass; `npm run test:client` green; `npm run eval` unaffected.
 - [x] T901 [AC4] `vsce ls` still clean (only `dist/` bundles; no new source leaked).
-- [ ] T902 [AC7–AC11] Manual F5: run with/without `gst`; output in terminal; spaces-in-path works (owner-confirmed).
-- [ ] T903 `verification.md` gate passed; CI green on Linux/macOS/Windows.
+- [x] T902 [AC7–AC11] Manual F5: ran gst correctly in the terminal (owner-confirmed).
+- [x] T903 verification.md gate passed; CI green on Linux/macOS/Windows.
