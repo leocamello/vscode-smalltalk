@@ -97,9 +97,12 @@ The following settings are available:
 <!-- Commands (US-301) -->
 ## Commands
 
-<!-- TODO: Content for US-301 -->
-<!-- List commands added to the Command Palette, e.g.: -->
-<!-- - `Smalltalk: Run Current File`: Executes the active `.st` file using the configured `gst` interpreter. -->
+Available from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and the editor
+right-click menu when a Smalltalk file is active:
+
+| Command | Description |
+| --- | --- |
+| **Smalltalk: Run Current File** | Saves and runs the active `.st`/`.gst` file with your configured GNU Smalltalk interpreter in the integrated terminal. Uses [`smalltalk.gnuSmalltalkPath`](#configuration) if set, otherwise looks for `gst` on your `PATH`; if neither is found, it offers to open the setting. |
 
 <!-- Troubleshooting (US-106) -->
 ## Troubleshooting

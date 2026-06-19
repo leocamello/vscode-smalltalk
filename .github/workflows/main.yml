@@ -31,6 +31,8 @@ jobs:
       run: npm run lint
     - name: Compile bundles
       run: npm run compile
+    - name: Client unit tests
+      run: npm run test:client
     - name: Server handshake test
       run: npm run test:server
     - name: Output evals (grammar)
