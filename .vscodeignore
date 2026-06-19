@@ -6,6 +6,14 @@ docs/**
 specs/**
 src/**
 evals/**
+client/**
+server/**
+scripts/**
+node_modules/**
+**/*.map
+esbuild.mjs
+eslint.config.mjs
+tsconfig*.json
 .gitignore
 .gitattributes
 CONTRIBUTING.md

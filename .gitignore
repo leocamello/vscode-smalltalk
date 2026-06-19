@@ -8,8 +8,9 @@ yarn-error.log*
 # VS Code specific
 .vscode/
 *.vsix
-out/ # If using TypeScript compilation output directory
-dist/ # Common build output directory
+# TypeScript / esbuild output (inline comments are NOT valid in .gitignore)
+out/
+dist/
 
 # VS Code Editor specific
 .vscode/*
