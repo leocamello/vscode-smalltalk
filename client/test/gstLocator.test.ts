@@ -1,6 +1,7 @@
 // Pure unit tests for gst resolution + command-string quoting (US-301 AC5/AC6/AC11).
 // Runs in Node via tsx — no VS Code required.
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { buildRunCommand, defaultExeNames, resolveGst } from '../src/gstLocator.ts';
 
 let passed = 0;
@@ -36,14 +37,17 @@ test('configured-but-invalid resolves to undefined (no silent PATH fallback)', (
 });
 
 test('falls back to PATH when setting empty (AC6)', () => {
+  // resolveGst joins dir + exe with the OS separator, so build the expected
+  // candidate the same way to stay platform-independent (Windows uses '\').
+  const expected = path.join('/usr/bin', 'gst');
   const r = resolveGst({
     configuredPath: '   ',
-    pathEnv: '/usr/local/bin:/usr/bin',
+    pathEnv: ['/usr/local/bin', '/usr/bin'].join(SEP),
     delimiter: SEP,
     exeNames: ['gst'],
-    isExecutable: onPath(new Set(['/usr/bin/gst'])),
+    isExecutable: onPath(new Set([expected])),
   });
-  assert.deepEqual(r, { path: '/usr/bin/gst', source: 'path' });
+  assert.deepEqual(r, { path: expected, source: 'path' });
 });
 
 test('returns undefined when not found anywhere (AC7)', () => {
