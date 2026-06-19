@@ -17,5 +17,6 @@ tsconfig*.json
 .gitignore
 .gitattributes
 CONTRIBUTING.md
+CLAUDE.md
 package-lock.json
 syntaxes/gnu-smalltalk.YAML-tmLanguage
