@@ -1,15 +1,21 @@
 import * as path from 'path';
-import { type ExtensionContext, window } from 'vscode';
+import { commands, type ExtensionContext, window } from 'vscode';
 import {
   LanguageClient,
   TransportKind,
   type LanguageClientOptions,
   type ServerOptions,
 } from 'vscode-languageclient/node';
+import { runCurrentFile } from './commands/runCurrentFile';
 
 let client: LanguageClient | undefined;
 
 export function activate(context: ExtensionContext): void {
+  // Commands (workflow features; independent of the language server).
+  context.subscriptions.push(
+    commands.registerCommand('smalltalk.runCurrentFile', runCurrentFile),
+  );
+
   // The server is bundled next to the client in dist/.
   const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
   const serverOptions: ServerOptions = {

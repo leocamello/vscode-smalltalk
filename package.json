@@ -62,6 +62,28 @@
                 "path": "./snippets/snippets.json"
             }
         ],
+        "commands": [
+            {
+                "command": "smalltalk.runCurrentFile",
+                "title": "Run Current File",
+                "category": "Smalltalk"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "smalltalk.runCurrentFile",
+                    "when": "editorLangId == smalltalk"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "smalltalk.runCurrentFile",
+                    "when": "editorLangId == smalltalk",
+                    "group": "navigation"
+                }
+            ]
+        },
         "configuration": {
             "title": "SmallTalk",
             "properties": {
@@ -92,6 +114,7 @@
         "esbuild": "^0.23.0",
         "eslint": "^9.9.0",
         "js-yaml": "^4.1.0",
+        "tsx": "^4.19.0",
         "typescript": "^5.5.0",
         "typescript-eslint": "^8.0.0",
         "vscode-tmgrammar-test": "^0.1.3"
@@ -102,6 +125,7 @@
         "watch": "node esbuild.mjs --watch",
         "check-types": "tsc --noEmit -p client/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
         "test:server": "node server/test/handshake.test.mjs",
+        "test:client": "tsx client/test/gstLocator.test.ts",
         "lint": "eslint client/src server/src",
         "test": "vscode-test",
         "package": "vsce package --no-dependencies",
