@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-20
+
+### Added
+
+-   **Code navigation** for GNU Smalltalk, powered by a new bundled language engine — no external tools or `gst` required:
+    -   **Outline & breadcrumbs** (`textDocument/documentSymbol`) — classes with their instance- and class-side methods (selector + arity) and instance/class variables, for both brace-style (`Object subclass: Foo [ … ]`) and chunk-style (`!Foo methodsFor: '…'! … ! !`) files.
+    -   **Workspace symbol search** (`Ctrl/Cmd+T`) — find classes and method selectors across the whole workspace; respects `files.exclude` and updates as you edit.
+    -   **Go to Definition** (`F12` / `Ctrl/Cmd+Click`) — jump from a class reference to its definition, or from a message send to every implementor of that selector.
+-   Under the hood: an **error-tolerant lexer, recursive-descent parser, and per-document symbol table** (the engine behind navigation). It never throws on malformed/half-typed code and parses the entire GNU Smalltalk 3.2.5 kernel (122 files) cleanly. The bundled language server is no longer a no-op.
+
 ## [0.3.0] - 2026-06-19
 
 ### Added

@@ -31,7 +31,7 @@ Delivered in three slices (each its own PR): **A** documentSymbol → **B** work
 - [x] T033 `check-types`/`lint`/`test:parser`/`test:server` + e2e green; package smoke clean; open Slice C PR.
 
 ## Phase 5 — Verify & Release (0.4.0)
-- [ ] T900 Automated: unit + LSP server + Electron e2e green; `npm run eval` (grammar) unaffected.
-- [ ] T901 **Manual matrix in `verification.md` executed and passed** (real-corpus workspace, outline, search, go-to-def, live editing, robustness, no-`gst`, cross-platform, clean-install VSIX). *(release gate)*
-- [ ] T902 CI green on Linux/macOS/Windows.
-- [ ] T903 Bump `version` + CHANGELOG; confirm `MARKETPLACE` PAT valid; cut `v0.4.0` (CI publishes).
+- [x] T900 Automated: unit + LSP server + Electron e2e green; `npm run eval` (grammar) unaffected.
+- [x] T901 **Manual matrix in `verification.md` executed and passed** — M1–M14, real kernel corpus, clean-install VSIX. Two bugs found & fixed (#39, #40). *(release gate cleared)*
+- [x] T902 CI green on Linux/macOS/Windows (all slice + fix PRs).
+- [~] T903 Bump `version` (0.4.0) + 0.4.0 CHANGELOG done in the release PR; `MARKETPLACE` PAT current (0.3.0 published 2026-06-19). **Cut the `v0.4.0` GitHub Release** → CI publishes. *(tag = owner's one-click step)*
