@@ -1,10 +1,12 @@
 # Smalltalk Language Support for Visual Studio Code
 
-<!-- Badges: VS Code Marketplace Version, Installs, Rating, GitHub Actions CI -->
+<!-- Badges: GitHub Actions CI, VS Code Marketplace Version / Installs / Rating.
+     shields.io retired its visual-studio-marketplace badges, so the Marketplace
+     ones use vsmarketplacebadges.dev. -->
 [![Build Status](https://img.shields.io/github/actions/workflow/status/leocamello/vscode-smalltalk/main.yml?branch=master&style=flat-square&logo=github)](https://github.com/leocamello/vscode-smalltalk/actions?query=workflow:main)
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/leocamello.vscode-smalltalk?style=flat-square&label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
-[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/leocamello.vscode-smalltalk?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
-[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/leocamello.vscode-smalltalk?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
+[![Visual Studio Marketplace Version](https://vsmarketplacebadges.dev/version-short/leocamello.vscode-smalltalk.svg)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
+[![Visual Studio Marketplace Installs](https://vsmarketplacebadges.dev/installs-short/leocamello.vscode-smalltalk.svg)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
+[![Visual Studio Marketplace Rating](https://vsmarketplacebadges.dev/rating-short/leocamello.vscode-smalltalk.svg)](https://marketplace.visualstudio.com/items?itemName=leocamello.vscode-smalltalk)
 
 <!-- Introduction (US-101 AC2) -->
 ## Introduction
