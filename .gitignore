@@ -36,3 +36,4 @@ build/
 
 # Other entries
 syntaxes/gnu-smalltalk.tmLanguage.json
+.vscode-test/

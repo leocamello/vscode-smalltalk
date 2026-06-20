@@ -129,6 +129,7 @@
         "test:parser": "tsx server/test/run.ts",
         "lint": "eslint client/src server/src",
         "test": "vscode-test",
+        "test:e2e": "npm run compile && vscode-test",
         "package": "vsce package --no-dependencies",
         "deploy": "vsce publish",
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
