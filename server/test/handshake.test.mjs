@@ -1,21 +1,28 @@
 // Verifies the bundled server (dist/server.js) speaks LSP: spawn it as a plain
-// Node process (no gst, no VS Code) and complete an initialize/shutdown handshake.
-// Covers US-410 AC4 (server advertises capabilities) and AC5 (no Smalltalk runtime).
+// Node process (no gst, no VS Code) and drive a real session.
+//   - initialize/shutdown handshake + advertised capabilities (US-410)
+//   - textDocument/documentSymbol returns an outline (US-412 slice A)
+//   - workspace/symbol searches an indexed folder (US-412 slice B)
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const serverPath = path.join(root, 'dist', 'server.js');
+const fixtureDir = path.join(root, 'docs', 'research', 'gst-syntax', 'test-cases');
 
 const child = spawn(process.execPath, [serverPath, '--stdio'], {
   stdio: ['pipe', 'pipe', 'inherit'],
 });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function send(msg) {
   const json = JSON.stringify(msg);
   child.stdin.write(`Content-Length: ${Buffer.byteLength(json)}\r\n\r\n${json}`);
+}
+function respond(id, result) {
+  send({ jsonrpc: '2.0', id, result });
 }
 
 let buffer = Buffer.alloc(0);
@@ -35,6 +42,15 @@ child.stdout.on('data', (chunk) => {
     const body = buffer.subarray(bodyStart, bodyStart + len).toString('utf8');
     buffer = buffer.subarray(bodyStart + len);
     const msg = JSON.parse(body);
+    // Auto-answer server→client requests (e.g. workspace/configuration) so the
+    // server's initialization (and folder indexing) can proceed.
+    if (msg.method && msg.id !== undefined) {
+      const result = msg.method === 'workspace/configuration'
+        ? (msg.params?.items ?? [{}]).map(() => ({ exclude: {} }))
+        : null;
+      respond(msg.id, result);
+      continue;
+    }
     if (waiter) {
       const resolve = waiter;
       waiter = null;
@@ -48,45 +64,43 @@ child.stdout.on('data', (chunk) => {
 function receive() {
   return queue.length ? Promise.resolve(queue.shift()) : new Promise((r) => (waiter = r));
 }
-
 async function receiveId(id) {
   for (;;) {
     const msg = await receive();
     if (msg.id === id) return msg;
   }
 }
-
 function fail(message) {
-  console.error(`Server handshake FAILED: ${message}`);
+  console.error(`Server LSP test FAILED: ${message}`);
   child.kill();
   process.exit(1);
 }
 
-const timeout = setTimeout(() => fail('timed out waiting for the server'), 10000);
+const timeout = setTimeout(() => fail('timed out waiting for the server'), 15000);
 
+// --- initialize (with a workspace folder so the index can populate) ---
 send({
   jsonrpc: '2.0',
   id: 1,
   method: 'initialize',
-  params: { processId: process.pid, rootUri: null, capabilities: {} },
+  params: {
+    processId: process.pid,
+    rootUri: null,
+    workspaceFolders: [{ uri: pathToFileURL(fixtureDir).href, name: 'fixtures' }],
+    capabilities: { workspace: { configuration: true, workspaceFolders: true } },
+  },
 });
 
 const initResult = await receiveId(1);
 assert.ok(initResult.result?.capabilities, 'initialize must return capabilities');
-assert.equal(
-  initResult.result.capabilities.textDocumentSync,
-  2,
-  'expected incremental textDocumentSync (2)',
-);
-assert.equal(
-  initResult.result.capabilities.documentSymbolProvider,
-  true,
-  'expected documentSymbolProvider (US-412)',
-);
+const caps = initResult.result.capabilities;
+assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2)');
+assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
+assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
-// US-412: open a brace-format document and request its outline from the real server.
+// --- documentSymbol (US-412 slice A) ---
 const uri = 'file:///docsymbol-test.st';
 send({
   jsonrpc: '2.0',
@@ -107,11 +121,23 @@ assert.deepEqual(
   'Foo must contain field `a` and method `bar`',
 );
 
+// --- workspace/symbol (US-412 slice B) — poll until the folder index is ready ---
+let wsResult = [];
+for (let i = 0; i < 25 && wsResult.length === 0; i++) {
+  send({ jsonrpc: '2.0', id: 100 + i, method: 'workspace/symbol', params: { query: 'MySimpleClass' } });
+  wsResult = (await receiveId(100 + i)).result ?? [];
+  if (wsResult.length === 0) await sleep(100);
+}
+const mySimple = wsResult.find((s) => s.name === 'MySimpleClass');
+assert.ok(mySimple, 'workspace/symbol must find MySimpleClass from the indexed fixtures');
+assert.equal(mySimple.kind, 5, 'MySimpleClass must be a Class (5)');
+assert.match(mySimple.location.uri, /11_/, 'MySimpleClass must resolve to fixture 11');
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities advertised, documentSymbol works, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
