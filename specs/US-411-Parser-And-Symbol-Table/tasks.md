@@ -34,9 +34,19 @@ S3 GST containers (AC3) → S4 symbol table + recovery (AC4, AC5).
 - [x] T040 `npm run check-types`, `npm run lint`, `npm run test:parser` all green.
 - [ ] T041 Open slice-1 PR (links #23); lexer fixtures snapshot cleanly, no `Error` on well-formed input.
 
+## Phase 5 — Slice 2: Expression parser (AC2) — branch `feature/US-411-expression-parser`
+- [x] T050 `server/src/parser/ast.ts` — `NodeKind` + node interfaces with offsets + LSP positions (`Program`, `Block`, `Return`, `Assignment`, `Message`, `Cascade`, `CascadeReceiver`, `Variable`, `Literal`, `LiteralArray`, `ByteArray`, `DynamicArray`, `ErrorNode`).
+- [x] T051 `server/src/parser/parser.ts` — `parse()`: tokenize, drop `Comment` trivia, `Program` = `| temps |` (incl. interspersed REPL redeclarations) + statement sequence; never-throws scaffold with synchronization on `.`/`]`/`!`/EOF.
+- [x] T052 Primaries: variables, scalar literals, **negative numeric literals** (folded `-` from the lexer), `#(…)` literal array, `#[…]` byte array, `{…}` dynamic array, `(…)` parenthesized. *(AC2)*
+- [x] T053 Message precedence: unary run → binary run (incl. lone `|`) → single keyword message. *(AC2)*
+- [x] T054 Assignment (right-assoc, `:=`/`_`) and `^` return statements. *(AC2)*
+- [x] T055 Cascades: receiver = first send's receiver; segments are full message **chains** rooted at a `CascadeReceiver` marker. *(AC2)*
+- [x] T056 Blocks: params `(':' id)*`, arg-terminator `|`, `| temps |` with `looksLikeTemporaries` lookahead (handles `||` separator and empty `| |`), body sequence. *(AC2)*
+- [x] T057 `server/test/parser.test.ts` — unit assertions per construct + recovery tests (malformed statement → `ErrorNode` + diagnostic, no throw) + AST snapshots over fixtures `06,07,08`; `run.ts` runs lexer+parser suites under `test:parser`.
+- [x] T058 `check-types`, `lint`, `test:parser` green; open slice-2 PR (links #23).
+
 ## Later slices (tracked here, planned per-slice when started)
-- [ ] S2 Expression parser (AC2): `ast.ts`, `parser.ts` (unary>binary>keyword, cascades, blocks, statements).
-- [ ] S3 GST containers (AC3): `Container` interface, brace + chunk plug-ins, method patterns + primitives.
+- [ ] S3 GST containers (AC3): `Container` interface, brace + chunk plug-ins, **method patterns + primitives** (moved here from S2, see plan.md).
 - [ ] S4 Symbol table + recovery (AC4, AC5): `symbolTable.ts`, synchronization, kernel smoke test.
 
 ## Story-level Done (after S4)

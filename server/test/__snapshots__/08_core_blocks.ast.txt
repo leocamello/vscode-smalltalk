@@ -1,0 +1,314 @@
+Program temps=[aBlock, result, blockTaker, anArray, selectedArray, aCollection, transformedCollection] @79..4420
+  Assignment target='aBlock' @153..172
+    Block params=[] temps=[] @163..172
+      Message binary '+' @165..170
+        Literal integer "1" @165..166
+        Literal integer "1" @169..170
+  Assignment target='result' @174..196
+    Message unary 'value' @184..196
+      Variable 'aBlock' @184..190
+  Message unary 'printNl' @198..212
+    Variable 'result' @198..204
+  Assignment target='aBlock' @250..365
+    Block params=[] temps=[] @260..365
+      Message keyword 'show:' @266..299
+        Variable 'Transcript' @266..276
+        Literal string "'Inside block. '" @283..299
+      Message binary '*' @305..310
+        Literal integer "2" @305..306
+        Literal integer "3" @309..310
+  Assignment target='result' @367..389
+    Message unary 'value' @377..389
+      Variable 'aBlock' @377..383
+  Message unary 'printNl' @391..405
+    Variable 'result' @391..397
+  Assignment target='aBlock' @424..436
+    Block params=[] temps=[] @434..436
+  Assignment target='result' @438..460
+    Message unary 'value' @448..460
+      Variable 'aBlock' @448..454
+  Message unary 'printNl' @509..523
+    Variable 'result' @509..515
+  Assignment target='aBlock' @589..613
+    Block params=[x] temps=[] @599..613
+      Message binary '*' @606..611
+        Variable 'x' @606..607
+        Variable 'x' @610..611
+  Assignment target='result' @615..640
+    Message keyword 'value:' @625..640
+      Variable 'aBlock' @625..631
+      Literal integer "5" @639..640
+  Message unary 'printNl' @658..672
+    Variable 'result' @658..664
+  Assignment target='aBlock' @709..736
+    Block params=[a, b] temps=[] @719..736
+      Message binary '+' @729..734
+        Variable 'a' @729..730
+        Variable 'b' @733..734
+  Assignment target='result' @738..774
+    Message keyword 'value:value:' @748..774
+      Variable 'aBlock' @748..754
+      Literal integer "10" @762..764
+      Literal integer "20" @772..774
+  Message unary 'printNl' @802..816
+    Variable 'result' @802..808
+  Assignment target='aBlock' @875..912
+    Block params=[name] temps=[] @885..912
+      Message binary ',' @895..910
+        Literal string "'Hello, '" @895..904
+        Variable 'name' @906..910
+  Message unary 'printNl' @915..953
+    Message keyword 'value:' @915..944
+      Variable 'aBlock' @915..921
+      Literal string "'GNU Smalltalk'" @929..944
+  Assignment target='aBlock' @1015..1047
+    Block params=[val] temps=[] @1025..1047
+      Message unary 'inspect' @1034..1045
+        Variable 'val' @1034..1037
+  Assignment target='aBlock' @1182..1256
+    Block params=[] temps=[temp] @1192..1256
+      Assignment target='temp' @1207..1217
+        Literal integer "10" @1215..1217
+      Assignment target='temp' @1223..1239
+        Message binary '+' @1231..1239
+          Variable 'temp' @1231..1235
+          Literal integer "5" @1238..1239
+      Message binary '*' @1245..1253
+        Variable 'temp' @1245..1249
+        Literal integer "2" @1252..1253
+  Assignment target='result' @1258..1280
+    Message unary 'value' @1268..1280
+      Variable 'aBlock' @1268..1274
+  Message unary 'printNl' @1282..1296
+    Variable 'result' @1282..1288
+  Assignment target='aBlock' @1343..1443
+    Block params=[] temps=[temp1, temp2, sum] @1353..1443
+      Assignment target='temp1' @1379..1389
+        Literal integer "5" @1388..1389
+      Assignment target='temp2' @1395..1405
+        Literal integer "7" @1404..1405
+      Assignment target='sum' @1411..1431
+        Message binary '+' @1418..1431
+          Variable 'temp1' @1418..1423
+          Variable 'temp2' @1426..1431
+      Variable 'sum' @1437..1440
+  Assignment target='result' @1445..1467
+    Message unary 'value' @1455..1467
+      Variable 'aBlock' @1455..1461
+  Message unary 'printNl' @1469..1483
+    Variable 'result' @1469..1475
+  Assignment target='aBlock' @1520..1543
+    Block params=[] temps=[] @1530..1543
+      Message binary '+' @1536..1541
+        Literal integer "1" @1536..1537
+        Literal integer "1" @1540..1541
+  Message unary 'printNl' @1580..1601
+    Message unary 'value' @1580..1592
+      Variable 'aBlock' @1580..1586
+  Assignment target='aBlock' @1701..1786
+    Block params=[x, y] temps=[tempProduct] @1711..1786
+      Assignment target='tempProduct' @1741..1761
+        Message binary '*' @1756..1761
+          Variable 'x' @1756..1757
+          Variable 'y' @1760..1761
+      Message binary '+' @1767..1783
+        Variable 'tempProduct' @1767..1778
+        Literal integer "10" @1781..1783
+  Assignment target='result' @1788..1822
+    Message keyword 'value:value:' @1798..1822
+      Variable 'aBlock' @1798..1804
+      Literal integer "3" @1812..1813
+      Literal integer "4" @1821..1822
+  Message unary 'printNl' @1837..1851
+    Variable 'result' @1837..1843
+  Assignment target='aBlock' @2174..2319
+    Block params=[input] temps=[processedInput] @2184..2319
+      Assignment target='processedInput' @2218..2250
+        Message unary 'reversed' @2236..2250
+          Variable 'input' @2236..2241
+      Cascade @2256..2291
+        Variable 'Transcript' @2256..2266
+        ;
+          Message keyword 'show:' @2256..2287
+            CascadeReceiver @2266..2266
+            Variable 'processedInput' @2273..2287
+        ;
+          Message unary 'cr' @2266..2291
+            CascadeReceiver @2266..2266
+      Message unary 'size' @2297..2316
+        Variable 'processedInput' @2297..2311
+  Message unary 'printNl' @2322..2351
+    Message keyword 'value:' @2322..2342
+      Variable 'aBlock' @2322..2328
+      Literal string "'test'" @2336..2342
+  Assignment target='aBlock' @2436..2532
+    Block params=[str1, str2] temps=[] @2446..2532
+      Message binary ',' @2514..2529
+        Message binary ',' @2514..2523
+          Variable 'str1' @2514..2518
+          Literal string "' '" @2520..2523
+        Variable 'str2' @2525..2529
+  Assignment target='result' @2534..2580
+    Message keyword 'value:value:' @2544..2580
+      Variable 'aBlock' @2544..2550
+      Literal string "'Hello'" @2558..2565
+      Literal string "'World'" @2573..2580
+  Message unary 'printNl' @2582..2596
+    Variable 'result' @2582..2588
+  Assignment target='aBlock' @2626..2834
+    Block params=[] temps=[outerVar] @2636..2834
+      Assignment target='outerVar' @2655..2670
+        Literal integer "100" @2667..2670
+      Message unary 'value' @2676..2807
+        Block params=[] temps=[innerVar] @2676..2801
+          Assignment target='innerVar' @2699..2713
+            Literal integer "20" @2711..2713
+          Message binary '+' @2723..2742
+            Variable 'outerVar' @2723..2731
+            Variable 'innerVar' @2734..2742
+  Assignment target='result' @2836..2858
+    Message unary 'value' @2846..2858
+      Variable 'aBlock' @2846..2852
+  Message unary 'printNl' @2860..2874
+    Variable 'result' @2860..2866
+  Assignment target='blockTaker' @2973..3027
+    Block params=[actionBlock] temps=[] @2987..3027
+      Message binary '+' @3004..3025
+        Message unary 'value' @3004..3021
+          Variable 'actionBlock' @3004..3015
+        Literal integer "1" @3024..3025
+  Assignment target='result' @3029..3066
+    Message keyword 'value:' @3039..3066
+      Variable 'blockTaker' @3039..3049
+      Block params=[] temps=[] @3057..3066
+        Message binary '*' @3059..3064
+          Literal integer "5" @3059..3060
+          Literal integer "5" @3063..3064
+  Message unary 'printNl' @3068..3082
+    Variable 'result' @3068..3074
+  Message unary 'printNl' @3122..3158
+    Message unary 'value' @3122..3149
+      Block params=[] temps=[] @3122..3143
+        Message unary 'value' @3124..3141
+          Block params=[] temps=[] @3124..3135
+            Message binary '+' @3126..3133
+              Literal integer "10" @3126..3128
+              Literal integer "10" @3131..3133
+  Assignment target='aBlock' @3221..3329
+    Block params=[x] temps=[y] @3231..3329
+      Assignment target='y' @3245..3273
+        Message keyword 'value:' @3250..3273
+          Block params=[z] temps=[] @3250..3264
+            Message binary '*' @3257..3262
+              Variable 'z' @3257..3258
+              Literal integer "2" @3261..3262
+          Variable 'x' @3272..3273
+      Message binary '+' @3322..3327
+        Variable 'y' @3322..3323
+        Literal integer "5" @3326..3327
+  Message unary 'printNl' @3332..3356
+    Message keyword 'value:' @3332..3347
+      Variable 'aBlock' @3332..3338
+      Literal integer "7" @3346..3347
+  Message keyword 'to:do:' @3401..3476
+    Literal integer "1" @3401..3402
+    Literal integer "3" @3407..3408
+    Block params=[i] temps=[] @3413..3476
+      Cascade @3424..3473
+        Variable 'Transcript' @3424..3434
+        ;
+          Message keyword 'show:' @3424..3459
+            CascadeReceiver @3434..3434
+            Literal string "'Loop iteration: '" @3441..3459
+        ;
+          Message keyword 'print:' @3434..3469
+            CascadeReceiver @3434..3434
+            Variable 'i' @3468..3469
+        ;
+          Message unary 'cr' @3434..3473
+            CascadeReceiver @3434..3434
+  Message keyword 'ifTrue:' @3479..3524
+    Variable 'true' @3479..3483
+    Block params=[] temps=[] @3492..3524
+      Message unary 'printNl' @3494..3522
+        Literal string "'Condition is true.'" @3494..3514
+  Message keyword 'ifFalse:ifTrue:' @3527..3614
+    Variable 'false' @3527..3532
+    Block params=[] temps=[] @3542..3575
+      Message unary 'printNl' @3544..3573
+        Literal string "'Condition is false.'" @3544..3565
+    Block params=[] temps=[] @3590..3614
+  Assignment target='anArray' @3687..3712
+    LiteralArray @3698..3712
+      Literal integer "1" @3700..3701
+      Literal integer "2" @3702..3703
+      Literal integer "3" @3704..3705
+      Literal integer "4" @3706..3707
+      Literal integer "5" @3708..3709
+      Literal integer "6" @3710..3711
+  Assignment target='selectedArray' @3714..3770
+    Message keyword 'select:' @3731..3770
+      Variable 'anArray' @3731..3738
+      Block params=[each] temps=[] @3747..3770
+        Message unary 'isEven' @3757..3768
+          Variable 'each' @3757..3761
+  Message unary 'printNl' @3772..3793
+    Variable 'selectedArray' @3772..3785
+  Assignment target='aCollection' @3924..3967
+    LiteralArray @3939..3967
+      Literal integer "1" @3941..3942
+      Literal string "'special'" @3943..3952
+      Literal integer "2" @3953..3954
+      Literal string "'another'" @3955..3964
+      Literal integer "3" @3965..3966
+  Assignment target='transformedCollection' @3969..4102
+    Message keyword 'collect:' @3994..4102
+      Variable 'aCollection' @3994..4005
+      Block params=[item] temps=[] @4015..4102
+        Message keyword 'ifTrue:ifFalse:' @4026..4100
+          Message unary 'isString' @4026..4039
+            Variable 'item' @4026..4030
+          Block params=[] temps=[] @4048..4075
+            Message unary 'value' @4050..4073
+              Block params=[] temps=[] @4050..4067
+                Message unary 'reversed' @4052..4065
+                  Variable 'item' @4052..4056
+          Block params=[] temps=[] @4085..4100
+            Message binary '*' @4087..4098
+              Variable 'item' @4087..4091
+              Variable 'item' @4094..4098
+  Message unary 'printNl' @4104..4133
+    Variable 'transformedCollection' @4104..4125
+  Assignment target='aBlock' @4181..4230
+    Block params=[] temps=[] @4191..4230
+      Return @4193..4197
+        Literal integer "42" @4195..4197
+      Message unary 'printNl' @4199..4228
+        Literal string "'This is not reached'" @4199..4220
+  Message unary 'printNl' @4233..4254
+    Message unary 'value' @4233..4245
+      Variable 'aBlock' @4233..4239
+  Assignment target='aBlock' @4257..4337
+    Block params=[x] temps=[] @4267..4337
+      Message keyword 'ifTrue:ifFalse:' @4274..4312
+        Message binary '>' @4274..4279
+          Variable 'x' @4274..4275
+          Literal integer "0" @4278..4279
+        Block params=[] temps=[] @4288..4295
+          Return @4290..4293
+            Variable 'x' @4292..4293
+        Block params=[] temps=[] @4305..4312
+          Return @4307..4310
+            Literal integer "0" @4309..4310
+      Message unary 'printNl' @4314..4335
+        Literal string "'Unreachable'" @4314..4327
+  Message unary 'printNl' @4340..4364
+    Message keyword 'value:' @4340..4355
+      Variable 'aBlock' @4340..4346
+      Literal integer "5" @4354..4355
+  Message unary 'printNl' @4367..4392
+    Message keyword 'value:' @4367..4383
+      Variable 'aBlock' @4367..4373
+      Literal integer "-5" @4381..4383
+
+--- diagnostics ---
