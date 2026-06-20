@@ -44,6 +44,31 @@ suite('US-412 navigation (e2e)', () => {
     assert.ok((results || []).some((s) => s.name === 'Sample'), 'expected Sample in workspace symbols');
   });
 
+  test('AC2 files.exclude removes a file from workspace symbols after a settings change', async () => {
+    const filesConfig = () => vscode.workspace.getConfiguration('files');
+    const original = filesConfig().get('exclude') || {};
+    // Sanity: Sample is present before excluding it.
+    const before = await vscode.commands.executeCommand('vscode.executeWorkspaceSymbolProvider', 'Sample');
+    assert.ok((before || []).some((s) => s.name === 'Sample'), 'Sample should be present before exclusion');
+    try {
+      await filesConfig().update(
+        'exclude',
+        { ...original, '**/sample.st': true },
+        vscode.ConfigurationTarget.Workspace,
+      );
+      const after = await waitFor(
+        () => vscode.commands.executeCommand('vscode.executeWorkspaceSymbolProvider', 'Sample'),
+        (r) => Array.isArray(r) && !r.some((s) => s.name === 'Sample'),
+      );
+      assert.ok(
+        !(after || []).some((s) => s.name === 'Sample'),
+        'Sample must disappear from workspace symbols once files.exclude is updated at runtime',
+      );
+    } finally {
+      await filesConfig().update('exclude', original, vscode.ConfigurationTarget.Workspace);
+    }
+  });
+
   test('AC3 definition resolves the greet message send', async () => {
     const text = (await vscode.workspace.openTextDocument(sampleUri)).getText();
     const lines = text.split('\n');

@@ -1,8 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
+import path from 'node:path';
 import {
   createConnection,
   ProposedFeatures,
+  DidChangeConfigurationNotification,
   TextDocuments,
   TextDocumentSyncKind,
   type DefinitionParams,
@@ -28,6 +30,9 @@ const index = new WorkspaceIndex();
 const INDEX_DEBOUNCE_MS = 250;
 const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let workspaceFolders: string[] = [];
+// The exclude predicate in force; refreshed from `files.exclude` on init and on
+// configuration change so the index honors it consistently.
+let currentExclude: ExcludePredicate = defaultExclude;
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
   // Language-intelligence providers are built on the US-411 front end and run
@@ -48,19 +53,19 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(async () => {
   connection.console.log('Smalltalk language server initialized.');
-  let exclude: ExcludePredicate = defaultExclude;
+  // Ask the client to push `workspace/didChangeConfiguration` so edits to
+  // `files.exclude` re-trigger indexing (the client does not send these by default).
   try {
-    const files = (await connection.workspace.getConfiguration('files')) as
-      | { exclude?: Record<string, boolean> }
-      | undefined;
-    exclude = excludeFromConfig(files?.exclude);
+    await connection.client.register(DidChangeConfigurationNotification.type, undefined);
   } catch {
-    // Client without configuration support — fall back to the default exclude.
+    // Client without dynamic registration — the initial index still applies files.exclude.
   }
-  for (const folder of workspaceFolders) {
-    index.indexFolder(folder, exclude);
-  }
-  connection.console.log(`Indexed ${index.size} Smalltalk file(s).`);
+  await rebuildIndex();
+});
+
+// Re-scan when settings change so edits to `files.exclude` take effect.
+connection.onDidChangeConfiguration(() => {
+  void rebuildIndex();
 });
 
 connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => {
@@ -97,7 +102,7 @@ documents.onDidClose((e) => {
   const fsPath = uriToPath(e.document.uri);
   if (fsPath !== undefined && fs.existsSync(fsPath)) {
     try {
-      index.setFile(e.document.uri, fs.readFileSync(fsPath, 'utf8'));
+      indexDoc(e.document.uri, fs.readFileSync(fsPath, 'utf8'));
       return;
     } catch {
       // fall through to removal
@@ -105,6 +110,26 @@ documents.onDidClose((e) => {
   }
   index.removeFile(e.document.uri);
 });
+
+/** Re-pull `files.exclude`, re-scan the folders, then re-apply non-excluded open docs. */
+async function rebuildIndex(): Promise<void> {
+  try {
+    const files = (await connection.workspace.getConfiguration('files')) as
+      | { exclude?: Record<string, boolean> }
+      | undefined;
+    currentExclude = excludeFromConfig(files?.exclude);
+  } catch {
+    currentExclude = defaultExclude;
+  }
+  index.clear();
+  for (const folder of workspaceFolders) {
+    index.indexFolder(folder, currentExclude);
+  }
+  for (const doc of documents.all()) {
+    indexDoc(doc.uri, doc.getText());
+  }
+  connection.console.log(`Indexed ${index.size} Smalltalk file(s).`);
+}
 
 function scheduleIndex(uri: string, text: string): void {
   const existing = indexTimers.get(uri);
@@ -115,9 +140,19 @@ function scheduleIndex(uri: string, text: string): void {
     uri,
     setTimeout(() => {
       indexTimers.delete(uri);
-      index.setFile(uri, text);
+      indexDoc(uri, text);
     }, INDEX_DEBOUNCE_MS),
   );
+}
+
+/** Index a document unless `files.exclude` excludes it. */
+function indexDoc(uri: string, text: string): void {
+  const fsPath = uriToPath(uri);
+  if (fsPath !== undefined && currentExclude(fsPath, path.basename(fsPath), false)) {
+    index.removeFile(uri);
+    return;
+  }
+  index.setFile(uri, text);
 }
 
 function uriToPath(uri: string): string | undefined {
