@@ -1,0 +1,23 @@
+temporary myInstance @285..295
+temporary myExtendedInstance @296..314
+temporary demoObj @1947..1954
+temporary demoObj2 @2619..2627
+temporary result @2628..2634
+class myInstance @344..704
+  instanceVariable extensionVar @416..428
+  method initializeExtension (unary/0) @482..613
+  method greetFromExtension (unary/0) @619..702
+class MyScopedMethodDemo (Object) @1366..1487
+  instanceVariable data @1411..1415
+  method initializeWith: (keyword/1) @1422..1485
+    temporary aValue @1460..1466
+  method printData (unary/0) @1556..1690
+  method classSideUtility (class unary/0) @1761..1915
+  method processData (unary/0) @2143..2276
+    temporary temp @2185..2189
+  method getData (unary/0) @2362..2406
+  method + (binary/1) @2462..2614
+    temporary anotherDemoObject @2486..2503
+  method update:ifOld: (keyword/2) @2785..2940
+    temporary newData @2815..2822
+    temporary oldDataBlock @2830..2842

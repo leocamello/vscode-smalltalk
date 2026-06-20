@@ -138,6 +138,20 @@ test('keyword vs assignment vs scope at a colon', () => {
   assert.deepEqual(kinds('a := b'), [TokenKind.Identifier, TokenKind.Assign, TokenKind.Identifier]);
 });
 
+test('a dot between identifier chars (no whitespace) is a scope separator, like GST', () => {
+  // `Kernel.PackageDirectories` -> Identifier :: Identifier (lex.c scan_ident reads `.` as `::`).
+  assert.deepEqual(kinds('Kernel.PackageDirectories'), [
+    TokenKind.Identifier,
+    TokenKind.Scope,
+    TokenKind.Identifier,
+  ]);
+  assert.equal(lex('Kernel.PackageDirectories')[1]?.text, '.');
+  // With whitespace, the dot stays a statement period.
+  assert.deepEqual(kinds('a. b'), [TokenKind.Identifier, TokenKind.Period, TokenKind.Identifier]);
+  // A dot after a non-identifier (a number) is also a period.
+  assert.deepEqual(kinds('3.b'), [TokenKind.Integer, TokenKind.Period, TokenKind.Identifier]);
+});
+
 // --- Operators & structural tokens (AC1.6) ----------------------------------
 test('literal-collection starts are distinct combined tokens', () => {
   assert.deepEqual(kinds('#(1 2)'), [

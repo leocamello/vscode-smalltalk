@@ -3,20 +3,20 @@ Program temps=[constructedArray, anotherArray] @228..1913
     Message keyword 'subclass:' @228..262
       Variable 'Object' @228..234
       Literal symbol "#MyClassWithAttrs" @245..262
-    Pragma 'classCategory:' @269..307
+    Pragma 'gstclassCategory:' @269..307
       Literal string "'Test-Attributes'" @289..306
     InstanceVariables [myVar] @341..350
-    Pragma 'methodCategory:' @356..389
+    Pragma 'gstmethodCategory:' @356..389
       Literal string "'accessing'" @377..388
     MethodDefinition unary 'getMyVar' params=[] temps=[] @394..503
       Variable 'MyClassWithAttrs' @394..410
-      Pragma 'methodComment:' @433..482
+      Pragma 'gstmethodComment:' @433..482
         Literal string "'Returns the value of myVar'" @453..481
       Return @491..497
         Variable 'myVar' @492..497
     MethodDefinition keyword 'setMyVar:' params=[newValue] temps=[] @509..623
       Variable 'MyClassWithAttrs' @509..525
-      Pragma 'methodCategory:' @558..590
+      Pragma 'gstmethodCategory:' @558..590
         Literal string "'mutating'" @579..589
       Assignment target='myVar' @599..616
         Variable 'newValue' @608..616
