@@ -20,8 +20,25 @@ async function waitFor(fn, ok, tries = 60) {
 
 suite('US-412 navigation (e2e)', () => {
   suiteSetup(async () => {
+    // The extension must activate from `workspaceContains:**/*.{st,gst}` — i.e. before
+    // any Smalltalk file is opened — so workspace symbol search works on a fresh window.
+    const ext = vscode.extensions.getExtension('leocamello.vscode-smalltalk');
+    assert.ok(ext, 'extension should be present');
+    await waitFor(() => Promise.resolve(ext.isActive), (active) => active === true);
+    assert.ok(ext.isActive, 'extension must activate from workspaceContains, not only onLanguage');
+
     const doc = await vscode.workspace.openTextDocument(sampleUri);
     await vscode.window.showTextDocument(doc);
+  });
+
+  test('AC2 workspace/symbol works before any document is opened (fresh window)', async () => {
+    // Activation already happened in suiteSetup without opening a file (the assertion above),
+    // so the server is indexing on startup; a query resolves from the indexed fixtures.
+    const results = await waitFor(
+      () => vscode.commands.executeCommand('vscode.executeWorkspaceSymbolProvider', 'Sample'),
+      (r) => Array.isArray(r) && r.some((s) => s.name === 'Sample'),
+    );
+    assert.ok((results || []).some((s) => s.name === 'Sample'));
   });
 
   test('AC1 documentSymbol outline lists the class and its methods', async () => {

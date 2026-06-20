@@ -41,7 +41,7 @@ Developer Tools) and confirm **no errors/exceptions** throughout.
 | M3 | **Brace-format outline detail** | Open `test-cases/11`/`12`/`13`; check Outline. | Namespaces → classes → instance/class methods + ivars/cvars; class-side methods marked. | ☐ | |
 | M4 | **Workspace symbol — class** | `Ctrl/Cmd+T`, type a class name (e.g. `Array`). | Class appears (possibly several files); selecting opens the definition site. | ☐ | |
 | M5 | **Workspace symbol — selector** | `Ctrl/Cmd+T`, type a common selector (e.g. `printOn:`). | Multiple implementors across files; each opens correctly. | ☐ | |
-| M6 | **`files.exclude` honored** | Add a folder to `files.exclude`; repeat M4/M5. | Excluded files do not appear in results. | ☐ | |
+| M6 | **`files.exclude` honored** | Add a pattern (e.g. `**/Array.st`) to `files.exclude`; repeat M4/M5. | Excluded files do not appear in results. | ☐ re-test | **FAIL on first pass** — exclude was applied only at startup; changing it at runtime had no effect. **Fixed** (#39: server now registers for `didChangeConfiguration` and re-indexes; regression e2e added). Re-test after reloading the Ext Dev Host. |
 | M7 | **Go-to-def — class ref** | In a kernel file, put the cursor on a superclass/class name; `F12` and `Ctrl/Cmd+Click`. | Jumps to the class definition; if multiple, a peek list. | ☐ | |
 | M8 | **Go-to-def — message send** | Cursor on a unary and a keyword message send; `F12`. | All implementor candidates listed (peek when >1); same-file first. | ☐ | |
 | M9 | **Live editing / debounce** | Add a new method to an open class; wait ~½s; re-open Outline / re-query `Ctrl+T`. | New symbol appears within ~300 ms; rapid typing does not spike CPU or flash errors. | ☐ | |
