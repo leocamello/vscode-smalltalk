@@ -78,13 +78,40 @@ assert.equal(
   2,
   'expected incremental textDocumentSync (2)',
 );
+assert.equal(
+  initResult.result.capabilities.documentSymbolProvider,
+  true,
+  'expected documentSymbolProvider (US-412)',
+);
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
-send({ jsonrpc: '2.0', id: 2, method: 'shutdown' });
-await receiveId(2);
+
+// US-412: open a brace-format document and request its outline from the real server.
+const uri = 'file:///docsymbol-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: { uri, languageId: 'smalltalk', version: 1, text: 'Object subclass: Foo [ | a | bar [ ^1 ] ]' },
+  },
+});
+send({ jsonrpc: '2.0', id: 2, method: 'textDocument/documentSymbol', params: { textDocument: { uri } } });
+const symResult = await receiveId(2);
+assert.ok(Array.isArray(symResult.result), 'documentSymbol must return an array');
+const foo = symResult.result.find((s) => s.name === 'Foo');
+assert.ok(foo, 'expected class Foo in the document symbols');
+assert.equal(foo.kind, 5, 'Foo must be a Class (SymbolKind 5)');
+assert.deepEqual(
+  (foo.children ?? []).map((s) => s.name).sort(),
+  ['a', 'bar'],
+  'Foo must contain field `a` and method `bar`',
+);
+
+send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
+await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server handshake OK: capabilities advertised, shutdown clean.');
+console.log('Server LSP OK: capabilities advertised, documentSymbol works, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
