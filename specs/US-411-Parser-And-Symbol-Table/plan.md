@@ -76,3 +76,62 @@ Hand-written single-pass scanner, mirroring the `char_table` dispatch from
 - Slice exit: lexer-relevant fixtures snapshot cleanly with no `Error` token on well-formed input.
   (Full-story `npm run eval`, kernel smoke test, and `verification.md` are completed at the end of
   the story, after the symbol-table slice.)
+
+---
+
+# Slice 2 — Expression parser (AC2)
+
+**Status:** in progress (slice 1 merged in PR #31). Branch `feature/US-411-expression-parser`.
+
+## Summary
+A recursive-descent parser over the slice-1 token stream that produces an **AST with positions**
+for the ANSI expression/statement core: literals & primaries, message sends with
+**unary > binary > keyword** precedence, assignment chains, cascades, and blocks (params +
+temporaries + body). Like the lexer it **never throws** — on a malformed statement it records a
+diagnostic, emits an `Error` node, and synchronizes to the next `.`/`]`/`!`/EOF, always returning
+an AST.
+
+## Scope refinement
+- **In:** `parse(source) → { ast, diagnostics }`; `Program` = optional `| temps |` + statement
+  sequence; statements (`^expr` / `expr`); assignment (right-assoc, `:=` and `_`); cascades;
+  message precedence; blocks; primaries — variables, scalar literals, literal arrays `#(…)`, byte
+  arrays `#[…]`, dynamic arrays `{…}`, parenthesized expressions.
+- **Out (moved to slice 3):** **method patterns + `<primitive: …>`** — these only appear at a
+  container boundary (chunk `!sel…!` / brace `Foo >> sel [ … ]`), which slice 3 introduces. Slice 2
+  delivers the statement-sequence/expression core that method bodies reuse. (AC2 names method
+  patterns; the spec stays the source of truth and this is a documented decomposition, re-confirmed
+  in slice 3's plan.)
+
+## Approach — files
+- **`server/src/parser/ast.ts`** — `NodeKind` + node interfaces, all carrying `start/end` offsets
+  and `startPos/endPos` (reusing `Position` from `token.ts`): `Program`, `Block`, `Return`,
+  `Assignment`, `Message` (receiver, selector, arguments, `messageType`), `Cascade`, `Variable`,
+  `Literal` (scalar), `LiteralArray`, `ByteArray`, `DynamicArray`, and `ErrorNode`.
+- **`server/src/parser/parser.ts`** — `parse(source): { ast, diagnostics }`. Tokenizes via the
+  lexer, drops `Comment` trivia, then a `Parser` walks the token array. Precedence climb:
+  `parseExpression` (assignment) → `parseCascade` → `parseKeywordMessage` → `parseBinaryMessage`
+  → `parseUnaryMessage` → `parsePrimary`.
+- **`server/test/parser.test.ts`** + `__snapshots__/*.ast.txt` — unit assertions + AST snapshots
+  over fixtures `06,07,08` (message sends, assignments/cascades, blocks).
+
+## Key parsing decisions (recorded so snapshots are intentional)
+- **Precedence**: unary binds tightest (a run of trailing `Identifier` sends), then binary
+  (left-assoc run of `BinarySelector` — **and a lone `Pipe`** acting as the `|` binary selector,
+  e.g. `true | false`), then keyword (one keyword message whose args are binary-level expressions).
+- **Assignment** is right-associative and only when `Identifier` is immediately followed by
+  `Assign`; `var1 := var2 := 100` nests. Covers both `:=` and `_`.
+- **Cascades**: `recv msg ; msg ; …` — the cascade receiver is the *receiver of the first message
+  send*; subsequent `;`-messages target it. A `Cascade` node holds `receiver` + `messages[]`.
+- **Block header** (the subtle part): `params = (':' Identifier)*`; if params present, consume one
+  `|` arg-terminator; then the body is a statement sequence that itself parses an optional
+  `| temps |`. Temporaries are only committed when a **closing `|`** is confirmed by lookahead
+  (`looksLikeTemporaries`), so `[ :a :b || a , b ]` (doubled-pipe separator, no temps) and
+  `[ :x | | t | … ]` (separator then real temps) both parse — and `[ | | … ]` is empty temps.
+- **Trivia**: `Comment` tokens are filtered before parsing; positions still come from real tokens.
+- **Recovery**: `parsePrimary` on an unexpected token emits an `ErrorNode` + diagnostic and the
+  statement loop synchronizes on `.`/`]`/`!`/EOF — never throws.
+
+## Verification
+- `npm run test:parser` covers lexer **and** parser suites (unit + AST snapshots for `06,07,08`).
+- `check-types` + `lint` clean. Slice exit: fixtures `06,07,08` produce no `Error` node /
+  diagnostic; recovery tests prove no-throw on malformed input.

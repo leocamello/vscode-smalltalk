@@ -1,0 +1,248 @@
+Program temps=[var, anArray, aString, aNumber, count] @110..3746
+  Assignment target='var' @142..151
+    Literal integer "10" @149..151
+  Assignment target='anArray' @153..172
+    LiteralArray @164..172
+      Literal integer "1" @166..167
+      Literal integer "2" @168..169
+      Literal integer "3" @170..171
+  Assignment target='aString' @174..196
+    Literal string "'smalltalk'" @185..196
+  Assignment target='aNumber' @198..210
+    Literal integer "5" @209..210
+  Message unary 'printNl' @240..251
+    Variable 'var' @240..243
+  Message unary 'printNl' @253..273
+    Message unary 'size' @253..265
+      Variable 'anArray' @253..260
+  Message unary 'printNl' @275..299
+    Message unary 'reversed' @275..291
+      Variable 'aString' @275..282
+  Message unary 'printNl' @301..330
+    Message unary 'name' @301..322
+      Message unary 'class' @301..317
+        Message unary 'new' @301..311
+          Variable 'Object' @301..307
+  Message unary 'printNl' @360..380
+    Message unary 'class' @360..372
+      Message binary '+' @360..365
+        Literal integer "1" @360..361
+        Literal integer "2" @364..365
+  Message unary 'printNl' @430..453
+    Message unary 'value' @430..445
+      Block params=[] temps=[] @430..439
+        Message binary '+' @432..437
+          Literal integer "1" @432..433
+          Literal integer "1" @436..437
+  Message unary 'printNl' @507..527
+    Message unary 'factorial' @507..519
+      Literal integer "10" @507..509
+  Message unary 'printNl' @575..591
+    Message binary '+' @575..582
+      Variable 'var' @575..578
+      Literal integer "5" @581..582
+  Message unary 'printNl' @594..614
+    Message binary '*' @594..605
+      Variable 'aNumber' @594..601
+      Literal integer "2" @604..605
+  Message unary 'printNl' @617..634
+    Message binary '/' @617..625
+      Literal integer "100" @617..620
+      Literal integer "10" @623..625
+  Message unary 'printNl' @637..653
+    Message binary '\\' @637..644
+      Literal integer "10" @637..639
+      Literal integer "3" @643..644
+  Message unary 'printNl' @667..689
+    Message binary '-' @667..680
+      Variable 'var' @667..670
+      Variable 'aNumber' @673..680
+  Message unary 'printNl' @731..753
+    Message binary '>' @731..744
+      Variable 'var' @731..734
+      Variable 'aNumber' @737..744
+  Message unary 'printNl' @756..777
+    Message binary '<' @756..768
+      Variable 'aNumber' @756..763
+      Literal integer "10" @766..768
+  Message unary 'printNl' @780..797
+    Message binary '=' @780..788
+      Variable 'var' @780..783
+      Literal integer "10" @786..788
+  Message unary 'printNl' @800..821
+    Message binary '~=' @800..812
+      Variable 'aNumber' @800..807
+      Literal integer "5" @811..812
+  Message unary 'printNl' @838..856
+    Message binary '>=' @838..847
+      Variable 'var' @838..841
+      Literal integer "10" @845..847
+  Message unary 'printNl' @859..880
+    Message binary '<=' @859..871
+      Variable 'aNumber' @859..866
+      Literal integer "5" @870..871
+  Message unary 'printNl' @942..963
+    Message binary '&' @942..954
+      Variable 'true' @942..946
+      Variable 'false' @949..954
+  Message unary 'printNl' @966..987
+    Message binary '|' @966..978
+      Variable 'true' @966..970
+      Variable 'false' @973..978
+  Message binary ',' @1017..1050
+    Variable 'anArray' @1017..1024
+    Message unary 'printNl' @1026..1050
+      LiteralArray @1026..1042
+        Literal string "'add'" @1028..1033
+        Literal symbol "," @1033..1034
+        Literal string "'this'" @1035..1041
+  Message unary 'printNl' @1087..1106
+    Message binary '->' @1087..1097
+      Literal integer "1" @1087..1088
+      Literal string "'one'" @1092..1097
+  Message unary 'printNl' @1208..1230
+    Message binary '+' @1208..1221
+      Message binary '+' @1208..1217
+        Message binary '+' @1208..1213
+          Literal integer "1" @1208..1209
+          Literal integer "2" @1212..1213
+        Literal integer "3" @1216..1217
+      Literal integer "4" @1220..1221
+  Message unary 'printNl' @1250..1269
+    Message binary '*' @1250..1260
+      Message binary '-' @1250..1256
+        Literal integer "10" @1250..1252
+        Literal integer "2" @1255..1256
+      Literal integer "3" @1259..1260
+  Message unary 'printNl' @1597..1618
+    Message binary '-' @1597..1609
+      Literal integer "10" @1597..1599
+      Message binary '*' @1603..1608
+        Literal integer "2" @1603..1604
+        Literal integer "3" @1607..1608
+  Assignment target='count' @1682..1692
+    Literal integer "0" @1691..1692
+  Assignment target='count' @1694..1712
+    Message binary '+' @1703..1712
+      Variable 'count' @1703..1708
+      Literal integer "1" @1711..1712
+  Message unary 'printNl' @1714..1727
+    Variable 'count' @1714..1719
+  Message unary 'printNl' @1768..1786
+    Message binary '==' @1768..1777
+      Variable 'var' @1768..1771
+      Literal integer "10" @1775..1777
+  Message unary 'printNl' @1847..1865
+    Message binary '~~' @1847..1856
+      Variable 'var' @1847..1850
+      Literal integer "11" @1854..1856
+  Message unary 'printNl' @1908..1929
+    Message binary '<=' @1908..1920
+      Variable 'aNumber' @1908..1915
+      Literal integer "5" @1919..1920
+  Message keyword 'at:put:' @1981..2003
+    Variable 'anArray' @1981..1988
+    Literal integer "1" @1993..1994
+    Literal integer "100" @2000..2003
+  Message unary 'printNl' @2005..2020
+    Variable 'anArray' @2005..2012
+  Message keyword 'at:put:' @2022..2065
+    Variable 'Smalltalk' @2022..2031
+    Literal symbol "#MyGlobal" @2036..2045
+    Literal string "'Hello Global'" @2051..2065
+  Message unary 'printNl' @2067..2083
+    Variable 'MyGlobal' @2067..2075
+  Message keyword 'new:' @2127..2140
+    Variable 'Array' @2127..2132
+    Literal integer "10" @2138..2140
+  Message keyword 'copyFrom:to:' @2193..2218
+    Variable 'anArray' @2193..2200
+    Literal integer "1" @2211..2212
+    Literal integer "2" @2217..2218
+  Message keyword 'copyReplaceAll:with:' @2220..2264
+    Variable 'aString' @2220..2227
+    Literal string "'talk'" @2244..2250
+    Literal string "'rocks'" @2257..2264
+  Message unary 'printNl' @2266..2281
+    Variable 'aString' @2266..2273
+  Message keyword 'newDay:month:year:' @2284..2326
+    Variable 'Date' @2284..2288
+    Literal integer "1" @2297..2298
+    Literal string "'January'" @2306..2315
+    Literal integer "2024" @2322..2326
+  Message keyword 'to:do:' @2372..2402
+    Literal integer "1" @2372..2373
+    Literal integer "5" @2378..2379
+    Block params=[i] temps=[] @2384..2402
+      Message unary 'printNl' @2391..2400
+        Variable 'i' @2391..2392
+  Message keyword 'ifTrue:ifFalse:' @2445..2521
+    Variable 'true' @2445..2449
+    Block params=[] temps=[] @2458..2484
+      Message unary 'printNl' @2460..2482
+        Literal string "'It was true!'" @2460..2474
+    Block params=[] temps=[] @2494..2521
+      Message unary 'printNl' @2496..2519
+        Literal string "'It was false!'" @2496..2511
+  Message keyword 'at:put:' @2587..2626
+    Variable 'anArray' @2587..2594
+    Message binary '+' @2600..2605
+      Literal integer "1" @2600..2601
+      Literal integer "1" @2604..2605
+    Message unary 'size' @2613..2625
+      Variable 'aString' @2613..2620
+  Message unary 'printNl' @2628..2643
+    Variable 'anArray' @2628..2635
+  Cascade @2674..2784
+    Message unary 'new' @2675..2689
+      Variable 'Dictionary' @2675..2685
+    ;
+      Message keyword 'at:put:' @2675..2726
+        CascadeReceiver @2689..2689
+        Literal string "'name'" @2699..2705
+        Literal string "'GNU Smalltalk'" @2711..2726
+    ;
+      Message keyword 'at:put:' @2689..2770
+        CascadeReceiver @2689..2689
+        Literal string "'version'" @2736..2745
+        Message unary 'version' @2752..2769
+          Variable 'Smalltalk' @2752..2761
+    ;
+      Message unary 'yourself' @2689..2784
+        CascadeReceiver @2689..2689
+  Message keyword 'show:' @2827..2866
+    Variable 'Transcript' @2827..2837
+    Message unary 'monthName' @2845..2865
+      Message unary 'today' @2845..2855
+        Variable 'Date' @2845..2849
+  Message unary 'printNl' @3024..3057
+    Message unary 'name' @3024..3049
+      Message unary 'dayOfWeek' @3024..3044
+        Message unary 'today' @3024..3034
+          Variable 'Date' @3024..3028
+  Message unary 'printNl' @3101..3146
+    Message unary 'size' @3101..3138
+      Message keyword 'at:put:' @3101..3132
+        Message keyword 'new:' @3101..3113
+          Variable 'Array' @3101..3106
+          Literal integer "5" @3112..3113
+        Literal integer "1" @3119..3120
+        Literal string "'test'" @3126..3132
+  Message unary 'printNl' @3360..3386
+    Message keyword 'at:' @3360..3377
+      LiteralArray @3360..3371
+        Literal integer "10" @3362..3364
+        Literal integer "20" @3365..3367
+        Literal integer "30" @3368..3370
+      Literal integer "1" @3376..3377
+  Message unary 'printNl' @3422..3443
+    Message unary 'size' @3422..3434
+      Literal string "'hello'" @3422..3429
+  Message unary 'printNl' @3502..3526
+    Message unary 'value' @3502..3517
+      Block params=[] temps=[] @3502..3511
+        Message binary '*' @3504..3509
+          Literal integer "2" @3504..3505
+          Literal integer "3" @3508..3509
+
+--- diagnostics ---

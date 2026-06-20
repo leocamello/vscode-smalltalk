@@ -1,0 +1,108 @@
+Program temps=[var1, var2, var3, anObject] @101..1875
+  Assignment target='var1' @212..222
+    Literal integer "10" @220..222
+  Message unary 'printNl' @224..236
+    Variable 'var1' @224..228
+  Assignment target='var2' @303..312
+    Literal integer "20" @310..312
+  Message unary 'printNl' @314..326
+    Variable 'var2' @314..318
+  Assignment target='var3' @374..398
+    Message unary 'reversed' @382..398
+      Literal string "'hello'" @382..389
+  Message unary 'printNl' @400..412
+    Variable 'var3' @400..404
+  Assignment target='var1' @507..534
+    Assignment target='var2' @515..534
+      Assignment target='var3' @523..534
+        Literal integer "100" @531..534
+  Message unary 'printNl' @536..548
+    Variable 'var1' @536..540
+  Message unary 'printNl' @550..562
+    Variable 'var2' @550..554
+  Message unary 'printNl' @564..576
+    Variable 'var3' @564..568
+  Assignment target='var1' @579..603
+    Assignment target='var2' @586..603
+      Assignment target='var3' @593..603
+        Literal integer "200" @600..603
+  Message unary 'printNl' @605..617
+    Variable 'var1' @605..609
+  Message unary 'printNl' @619..631
+    Variable 'var2' @619..623
+  Message unary 'printNl' @633..645
+    Variable 'var3' @633..637
+  Assignment target='anObject' @834..867
+    Message unary 'new' @846..867
+      Variable 'OrderedCollection' @846..863
+  Cascade @889..932
+    Variable 'anObject' @889..897
+    ;
+      Message keyword 'add:' @889..908
+        CascadeReceiver @897..897
+        Literal integer "1" @907..908
+    ;
+      Message keyword 'add:' @897..920
+        CascadeReceiver @897..897
+        Literal integer "2" @919..920
+    ;
+      Message keyword 'add:' @897..932
+        CascadeReceiver @897..897
+        Literal integer "3" @931..932
+  Message unary 'printNl' @934..950
+    Variable 'anObject' @934..942
+  Cascade @994..1112
+    Variable 'anObject' @994..1002
+    ;
+      Message keyword 'addLast:' @994..1017
+        CascadeReceiver @1002..1002
+        Literal integer "4" @1016..1017
+    ;
+      Message unary 'reverse' @1002..1047
+        CascadeReceiver @1002..1002
+    ;
+      Message keyword 'addAll:' @1002..1085
+        CascadeReceiver @1002..1002
+        LiteralArray @1079..1085
+          Literal integer "5" @1081..1082
+          Literal integer "6" @1083..1084
+    ;
+      Message unary 'yourself' @1002..1112
+        CascadeReceiver @1002..1002
+  Message unary 'printNl' @1188..1204
+    Variable 'anObject' @1188..1196
+  Cascade @1485..1517
+    Variable 'anObject' @1485..1493
+    ;
+      Message unary 'removeFirst' @1485..1505
+        CascadeReceiver @1493..1493
+    ;
+      Message unary 'removeLast' @1493..1517
+        CascadeReceiver @1493..1493
+  Message unary 'printNl' @1519..1535
+    Variable 'anObject' @1519..1527
+  Cascade @1582..1719
+    Message keyword 'newFromPairs:' @1583..1646
+      Variable 'Dictionary' @1583..1593
+      DynamicArray @1608..1646
+        Message binary '->' @1610..1626
+          Literal string "'key1'" @1610..1616
+          Literal string "'val1'" @1620..1626
+        Message binary '->' @1628..1644
+          Literal string "'key2'" @1628..1634
+          Literal string "'val2'" @1638..1644
+    ;
+      Message keyword 'at:put:' @1583..1674
+        CascadeReceiver @1646..1646
+        Literal string "'key3'" @1656..1662
+        Literal string "'val3'" @1668..1674
+    ;
+      Message keyword 'removeKey:' @1646..1697
+        CascadeReceiver @1646..1646
+        Literal string "'key1'" @1691..1697
+    ;
+      Message unary 'printNl' @1646..1719
+        Message unary 'yourself' @1646..1711
+          CascadeReceiver @1646..1646
+
+--- diagnostics ---
