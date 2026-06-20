@@ -3,3 +3,4 @@
 import './lexer.test.ts';
 import './parser.test.ts';
 import './container.test.ts';
+import './chunk.test.ts';

@@ -1,0 +1,103 @@
+Program temps=[bindingToTranscript, bindingToArray, bindingToNamespacedClass, compileTimeNow, compileTimeCalculation, emptyCompileTime, tempsOnlyCompileTime, message] @286..1988
+  Assignment target='bindingToTranscript' @325..361
+    BindingConstant 'Transcript' @348..361
+  Assignment target='bindingToArray' @363..389
+    BindingConstant 'Array' @381..389
+  Cascade @392..485
+    Message unary 'value' @392..417
+      Variable 'bindingToTranscript' @392..411
+    ;
+      Message keyword 'show:' @392..448
+        CascadeReceiver @417..417
+        Literal string "'Accessed via binding: '" @424..448
+    ;
+      Message keyword 'show:' @417..481
+        CascadeReceiver @417..417
+        Message unary 'name' @456..481
+          Message unary 'value' @456..476
+            Variable 'bindingToArray' @456..470
+    ;
+      Message unary 'cr' @417..485
+        CascadeReceiver @417..417
+  Definition namespace name='TestBindings' @522..596
+    Message keyword 'current:' @522..554
+      Variable 'Namespace' @522..531
+      Literal symbol "#TestBindings" @541..554
+    Definition subclass name='MyBoundClass' @561..594
+      Message keyword 'subclass:' @561..591
+        Variable 'Object' @561..567
+        Literal symbol "#MyBoundClass" @578..591
+  Assignment target='bindingToNamespacedClass' @628..685
+    BindingConstant 'TestBindings::MyBoundClass' @656..685
+  Message unary 'printNl' @687..729
+    Message unary 'new' @687..721
+      Message unary 'value' @687..717
+        Variable 'bindingToNamespacedClass' @687..711
+  Assignment target='compileTimeNow' @884..916
+    CompileTimeConstant temps=[] @902..916
+      Message unary 'now' @906..914
+        Variable 'Time' @906..910
+  Message unary 'print' @918..944
+    Literal string "'Compile time was: '" @918..938
+  Message unary 'printNl' @946..968
+    Variable 'compileTimeNow' @946..960
+  Assignment target='compileTimeCalculation' @1085..1261
+    CompileTimeConstant temps=[a, b, product] @1111..1261
+      Assignment target='a' @1139..1145
+        Literal integer "5" @1144..1145
+      Assignment target='b' @1151..1158
+        Literal integer "10" @1156..1158
+      Assignment target='product' @1164..1180
+        Message binary '*' @1175..1180
+          Variable 'a' @1175..1176
+          Variable 'b' @1179..1180
+      Message binary '+' @1186..1216
+        Variable 'product' @1186..1193
+        Message unary 'dayOfYear' @1196..1216
+          Message unary 'today' @1196..1206
+            Variable 'Date' @1196..1200
+  Message unary 'print' @1263..1304
+    Literal string "'Compile-time calculation result: '" @1263..1298
+  Message unary 'printNl' @1306..1336
+    Variable 'compileTimeCalculation' @1306..1328
+  Assignment target='emptyCompileTime' @1421..1445
+    CompileTimeConstant temps=[] @1441..1445
+  Message keyword 'ifTrue:' @1447..1527
+    Message unary 'isNil' @1447..1469
+      Variable 'emptyCompileTime' @1447..1463
+    Block params=[] temps=[] @1478..1527
+      Message unary 'printNl' @1480..1525
+        Literal string "'Empty compile-time constant is nil.'" @1480..1517
+  Assignment target='tempsOnlyCompileTime' @1619..1656
+    CompileTimeConstant temps=[x, y] @1643..1656
+  Message keyword 'ifTrue:' @1658..1747
+    Message unary 'isNil' @1658..1684
+      Variable 'tempsOnlyCompileTime' @1658..1678
+    Block params=[] temps=[] @1693..1747
+      Message unary 'printNl' @1695..1745
+        Literal string "'Temps-only compile-time constant is nil.'" @1695..1737
+  Assignment target='message' @1811..1915
+    Message binary ',' @1822..1915
+      Literal string "'Program started at: '" @1822..1844
+      CompileTimeConstant temps=[] @1846..1915
+        Message keyword 'printFormat:' @1850..1913
+          Message unary 'today' @1850..1860
+            Variable 'Date' @1850..1854
+          LiteralArray @1874..1913
+            Literal integer "1" @1876..1877
+            Literal integer "2" @1878..1879
+            Literal integer "3" @1880..1881
+            Literal character "$ " @1882..1884
+            Literal character "$-" @1885..1887
+            Literal integer "1900" @1888..1892
+            Literal integer "1" @1893..1894
+            Literal integer "1" @1895..1896
+            Literal character "$m" @1897..1899
+            Literal character "$-" @1900..1902
+            Literal character "$d" @1903..1905
+            Literal character "$-" @1906..1908
+            Literal character "$Y" @1909..1911
+  Message unary 'printNl' @1917..1932
+    Variable 'message' @1917..1924
+
+--- diagnostics ---
