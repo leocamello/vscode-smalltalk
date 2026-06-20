@@ -223,8 +223,17 @@ class Lexer {
     if (this.peek() === ':' && this.peek(1) !== '=' && this.peek(1) !== ':') {
       this.advance(); // ':'
       this.push(TokenKind.Keyword, sOff, sLine, sChar);
-    } else {
-      this.push(TokenKind.Identifier, sOff, sLine, sChar);
+      return;
+    }
+    this.push(TokenKind.Identifier, sOff, sLine, sChar);
+    // GST (lex.c `scan_ident`): a `.` immediately between two identifier chars — no whitespace
+    // either side — is a namespace scope separator (`A.B` ≡ `A::B`), not a statement period.
+    if (this.peek() === '.' && this.isIdentChar(this.peek(1))) {
+      const dotOff = this.pos;
+      const dotLine = this.line;
+      const dotChar = this.character;
+      this.advance(); // consume the '.'
+      this.push(TokenKind.Scope, dotOff, dotLine, dotChar);
     }
   }
 

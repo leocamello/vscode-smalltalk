@@ -147,6 +147,23 @@ test('literal array, byte array, dynamic array', () => {
   assert.equal((d as { elements: Node[] }).elements.length, 2);
 });
 
+// --- Scoped names & implicit-receiver messages (GST) ------------------------
+test('dotted and :: scoped names parse as a single variable', () => {
+  const dotted = firstStmt('Kernel.PackageDirectories new');
+  const recv = asMessage(dotted).receiver as { name?: string };
+  assert.equal(recv.name, 'Kernel.PackageDirectories');
+  const scoped = firstStmt('Smalltalk::Object new');
+  assert.equal((asMessage(scoped).receiver as { name?: string }).name, 'Smalltalk::Object');
+});
+
+test('a receiver-less keyword statement is a message to an implicit receiver, not an error', () => {
+  const r = parse('name: #Foo. import: Smalltalk');
+  assert.equal(r.diagnostics.length, 0);
+  const first = asMessage(r.ast.statements[0] as Node);
+  assert.equal(first.selector, 'name:');
+  assert.equal(first.receiver.kind, NodeKind.ImplicitReceiver);
+});
+
 // --- Recovery / never-throws (AC4 preview, required for AC2 robustness) ------
 test('malformed input recovers with an Error node and never throws', () => {
   const r = parse(') + + .');

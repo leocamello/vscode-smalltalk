@@ -174,20 +174,20 @@ Program temps=[] @259..6625
     Message keyword 'subclass:' @4148..4187
       Variable 'Object' @4148..4154
       Literal symbol "#MyClassWithAttributes" @4165..4187
-    Pragma 'classCategory:' @4194..4232
+    Pragma 'gstclassCategory:' @4194..4232
       Literal string "'Test-Attributes'" @4214..4231
     InstanceVariables [ivar] @4266..4274
-    Pragma 'methodCategory:' @4280..4313
+    Pragma 'gstmethodCategory:' @4280..4313
       Literal string "'accessing'" @4301..4312
     MethodDefinition unary 'getIvar' params=[] temps=[] @4318..4429
       Variable 'MyClassWithAttributes' @4318..4339
-      Pragma 'methodComment:' @4361..4409
+      Pragma 'gstmethodComment:' @4361..4409
         Literal string "'Returns the value of ivar'" @4381..4408
       Return @4418..4423
         Variable 'ivar' @4419..4423
     MethodDefinition keyword 'setIvar:' params=[newValue] temps=[] @4435..4552
       Variable 'MyClassWithAttributes' @4435..4456
-      Pragma 'methodCategory:' @4488..4520
+      Pragma 'gstmethodCategory:' @4488..4520
         Literal string "'mutating'" @4509..4519
       Assignment target='ivar' @4529..4545
         Variable 'newValue' @4537..4545
@@ -205,17 +205,15 @@ Program temps=[] @259..6625
     ;
       Message unary 'yourself' @4743..4798
         CascadeReceiver @4743..4743
-  Variable 'MyFixtureNamespace' @4863..4881
-  Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @4882..5064
-    Variable 'MyTraditionalClass' @4882..4900
+  Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @4863..5064
+    Variable 'MyFixtureNamespace.MyTraditionalClass' @4863..4900
     Literal symbol "#Object" @4911..4918
     Literal string "'ivarA ivarB'" @4943..4956
     Literal string "'ClassVarA ClassVarB'" @4978..4999
     Literal string "''" @5019..5021
     Literal string "'MyCategory-MyFixtureNamespace'" @5033..5064
-  Variable 'MyFixtureNamespace' @5067..5085
-  Message keyword 'compile:' @5086..5131
-    Variable 'MyTraditionalClass' @5086..5104
+  Message keyword 'compile:' @5067..5131
+    Variable 'MyFixtureNamespace.MyTraditionalClass' @5067..5104
     Literal string "'myMethod ^ivarA'" @5114..5131
   Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @5258..5451
     Variable 'Object' @5258..5264
@@ -239,25 +237,36 @@ Program temps=[] @259..6625
     Message unary 'class' @5898..5925
       Variable 'MyParserDetailedClass' @5898..5919
     Literal string "'initializeClassVars MyClassVar := nil.'" @5935..5975
-  Variable 'Smalltalk' @6099..6108
-  Message keyword 'definition:' @6109..6624
-    Variable 'Namespace' @6109..6118
+  Message keyword 'definition:' @6099..6624
+    Variable 'Smalltalk.Namespace' @6099..6118
     Block params=[] temps=[] @6131..6624
-      Error "Unexpected Keyword" @6137..6142
-      Message unary 'Smalltalk' @6166..6183
-        Error "Unexpected Keyword" @6166..6173
-      Variable 'OuterParserSpace' @6190..6206
-      Message keyword 'definition:' @6207..6621
-        Variable 'Object' @6207..6213
+      Message keyword 'name:' @6137..6160
+        ImplicitReceiver @6137..6137
+        Literal symbol "#OuterParserSpace" @6143..6160
+      Message keyword 'import:' @6166..6183
+        ImplicitReceiver @6166..6166
+        Variable 'Smalltalk' @6174..6183
+      Message keyword 'definition:' @6190..6621
+        Variable 'OuterParserSpace.Object' @6190..6213
         Block params=[] temps=[] @6226..6621
-          Error "Unexpected Keyword" @6236..6241
-          Message unary 'Smalltalk' @6269..6290
-            Error "Unexpected Keyword" @6269..6280
-          Variable 'Object' @6291..6297
-          Error "Unexpected Keyword" @6307..6325
-          Error "Unexpected Keyword" @6347..6362
-          Error "Unexpected Keyword" @6394..6411
-          Error "Unexpected Keyword" @6424..6433
+          Message keyword 'name:' @6236..6259
+            ImplicitReceiver @6236..6236
+            Literal symbol "#InnerParserClass" @6242..6259
+          Message keyword 'superclass:' @6269..6297
+            ImplicitReceiver @6269..6269
+            Variable 'Smalltalk.Object' @6281..6297
+          Message keyword 'instanceVariables:' @6307..6337
+            ImplicitReceiver @6307..6307
+            Literal string "'innerIvar'" @6326..6337
+          Message keyword 'classVariables:' @6347..6384
+            ImplicitReceiver @6347..6347
+            Literal string "'InnerParserClassVar'" @6363..6384
+          Message keyword 'poolDictionaries:' @6394..6414
+            ImplicitReceiver @6394..6394
+            Literal string "''" @6412..6414
+          Message keyword 'category:' @6424..6465
+            ImplicitReceiver @6424..6424
+            Literal string "'OuterParserSpace-InnerClasses'" @6434..6465
           Message keyword 'compile:' @6476..6527
             Variable 'InnerParserClass' @6476..6492
             Literal string "'getInnerIvar ^innerIvar'" @6502..6527
@@ -267,11 +276,3 @@ Program temps=[] @259..6625
             Literal string "'initializeInner InnerParserClassVar := 100.'" @6569..6614
 
 --- diagnostics ---
-Error "Unexpected Keyword \"name:\"" @6137..6142
-Error "Unexpected Keyword \"import:\"" @6166..6173
-Error "Unexpected Keyword \"name:\"" @6236..6241
-Error "Unexpected Keyword \"superclass:\"" @6269..6280
-Error "Unexpected Keyword \"instanceVariables:\"" @6307..6325
-Error "Unexpected Keyword \"classVariables:\"" @6347..6362
-Error "Unexpected Keyword \"poolDictionaries:\"" @6394..6411
-Error "Unexpected Keyword \"category:\"" @6424..6433

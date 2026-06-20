@@ -203,3 +203,43 @@ The container layer is **layered over the slice-2 core** (the expression parser 
 - Verification: `server/test/chunk.test.ts` (chunk sections, class-side, section-termination,
   bindings, compile-time) + no-throw sweep over `05/10/14` + AST snapshot `14`. `check-types`/`lint`
   clean; `test:parser` runs lexer + parser + container + chunk suites (69 checks).
+
+---
+
+# Slice 4 — Symbol table (AC5) + recovery hardening (AC4) + kernel gate
+
+**Status:** in progress on `feature/US-411-symbol-table`. Final slice — completes US-411.
+
+## Symbol table (`symbols.ts`)
+`buildSymbolTable(program) → SymbolNode[]`: a DocumentSymbol-like tree (offsets + LSP positions)
+recording **classes** (merged per name across brace bodies, `Class >> sel`, `extend`, and
+`methodsFor:` chunks; superclass in `detail`), **methods** (selector + arity + instance/class side),
+**instance/class/temporary variables**, and **namespaces** (containing their classes). Class-side
+scopes (`Class class [ … ]`) contribute class variables (from `Var := …` assignments) and class-side
+methods. Pure; the LSP `DocumentSymbol` mapping lives in US-412.
+
+## Recovery hardening (driven by the kernel corpus)
+The kernel (all 122 files brace-format) surfaced parser gaps, fixed here so the gate passes:
+- **Method-pattern `[` lookahead** (`methodPatternEndsWithBracket`): `self >> method methodCategory: …`
+  (a `>>` *expression*) is no longer misread as a method definition; a def now requires the trailing `[`.
+- **`<` disambiguation**: a bare `<` is an attribute (`<primitive:>`, `<category:>`, `<gst.x:>`,
+  `<reentrant>`) unless it is the binary method `< arg [ … ]`. Unary pragmas are recognized.
+- **Pragmas interleaved with temporaries** in a method header (`<cat> | t | <primitive: …>`).
+- **`#{…}` binding constants inside literal arrays**; **bare-identifier class names** (`subclass: Array`).
+- **Dotted-namespace `A.B` paths** — the lexer reads a `.` that sits directly between two identifier
+  chars (no whitespace) as a scope separator, mirroring GST `lex.c` `scan_ident` (which rewrites such
+  a `.` to `::`). `parsePrimary` joins the scope run into one `Variable`.
+- **Implicit-receiver keyword messages** — a statement starting with a `Keyword` (e.g.
+  `name: #X. import: Y.` inside a `definition: [ … ]` block) parses as a message to a zero-width
+  `ImplicitReceiver` marker instead of erroring.
+
+## Kernel smoke test (`kernel.test.ts`) — the AC4 gate
+Parses every `../smalltalk-3.2.5/kernel/*.st`; asserts **0 crashes**, **0 diagnostics** (all files
+clean), and ≥1 class per file. Result: **122 files, 0 crashes, 0 diagnostics, 122 clean, 206 classes**.
+The corpus is outside the repo, so the test **skips gracefully in CI** and runs as a local gate.
+Passing it satisfies the gate for US-412+.
+
+## Verification
+`server/test/symbols.test.ts` (class/method/var/namespace/merge unit tests + symbol snapshot `12`) and
+`kernel.test.ts`. `check-types`/`lint` clean; `test:parser` runs all six suites (70 checks). See
+`verification.md` for the full Verify-phase gate.

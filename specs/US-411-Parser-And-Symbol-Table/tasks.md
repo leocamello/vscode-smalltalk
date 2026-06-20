@@ -59,12 +59,18 @@ S3 GST containers (AC3) → S4 symbol table + recovery (AC4, AC5).
 - [x] T071 GST primaries: `#{…}` binding constants (`BindingConstant`), `##(…)` compile-time constants (`CompileTimeConstant`); fixture 14 now parses with **zero diagnostics**. *(AC3)*
 - [x] T072 `server/test/chunk.test.ts` — unit tests + no-throw sweep over `05/10/14` + AST snapshot `14`.
 - [x] T073 `check-types`, `lint`, `test:parser` green; open slice-3b PR (links #23).
-- [ ] S3b-NOTE (documented limitation, not blocking AC3): implicit-receiver `definition: [ name: … ]` blocks and dotted-namespace `A.B` paths (fixture 11 tail) remain unsupported — not named by any AC; revisit if a feature needs them.
+- [x] S3b-NOTE: the implicit-receiver `definition: [ name: … ]` blocks and dotted-namespace `A.B` paths (fixture 11 tail) — initially deferred — are **now fixed in slice 4** (T084/T085).
 
-## Later slices (tracked here, planned per-slice when started)
-- [ ] S4 Symbol table + recovery (AC4, AC5): `symbolTable.ts`, synchronization, kernel smoke test.
+## Phase 8 — Slice 4: Symbol table + recovery hardening (AC4, AC5) — branch `feature/US-411-symbol-table`
+- [x] T080 `server/src/parser/symbols.ts` — `buildSymbolTable(program)`: classes (merged per name), methods (selector + arity + side), instance/class/temporary variables, namespaces; LSP-shaped ranges. *(AC5)*
+- [x] T081 Recovery hardening from the kernel corpus: method-pattern `[`-lookahead (`self >> x kw:` no longer misread as a def); `<`-attribute vs `< arg [` binary method; unary pragmas `<reentrant>`; pragmas interleaved with temporaries; `#{…}` in literal arrays; bare-identifier class names (`subclass: Array`). *(AC4)*
+- [x] T082 `server/test/symbols.test.ts` — unit tests (class/method/ivar/classvar/namespace/temps, merging) + symbol snapshot `12`. *(AC5)*
+- [x] T083 `server/test/kernel.test.ts` — the gate: parse all 122 kernel files, assert 0 crashes + **0 diagnostics** + classes extracted; skips gracefully when the corpus is absent (CI). *(AC4)*
+- [x] T084 Dotted-namespace `A.B` paths: lexer reads a `.` between identifier chars (no whitespace) as a scope separator, per GST `lex.c` `scan_ident`. Cleared all 18 kernel diagnostics → 122/122 clean.
+- [x] T085 Implicit-receiver keyword messages (`name: #X. import: Y.` in `definition: [ … ]` blocks) → `ImplicitReceiver` marker; fixture 11 → 0 diagnostics. Lexer + parser unit tests added.
+- [x] T086 `check-types`, `lint`, `test:parser` green; open slice-4 PR (closes #23).
 
 ## Story-level Done (after S4)
-- [ ] T900 Output eval / tests pass (`npm run eval` + AST/symbol snapshots + kernel smoke test).
-- [ ] T901 `verification.md` gate passed.
-- [ ] T902 CI green on Linux/macOS/Windows.
+- [x] T900 Output eval / tests pass (AST/symbol snapshots + kernel smoke test; grammar `npm run eval` unaffected).
+- [x] T901 `verification.md` gate passed.
+- [ ] T902 CI green on Linux/macOS/Windows (pending the slice-4 PR run).

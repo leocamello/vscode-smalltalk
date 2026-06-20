@@ -174,17 +174,13 @@ class Parser {
     };
   }
 
-  /** A chunk is a method when it starts with a method pattern, not a `receiver keyword:` doit. */
+  /** A chunk is a method when it starts with a method pattern, not a `receiver keyword:` doit.
+   *  (Chunk method bodies have no brackets, so this can't use the `[` lookahead.) */
   private chunkLooksLikeMethod(): boolean {
     if (this.at(TokenKind.Keyword)) {
       return true;
     }
-    if (
-      this.at(TokenKind.BinarySelector) &&
-      this.current().text !== '<' &&
-      this.current().text !== '>' &&
-      this.peek(1).kind === TokenKind.Identifier
-    ) {
+    if (this.at(TokenKind.BinarySelector) && this.peek(1).kind === TokenKind.Identifier) {
       return true;
     }
     return this.at(TokenKind.Identifier) && this.peek(1).kind !== TokenKind.Keyword;
@@ -270,7 +266,9 @@ class Parser {
 
   // --- GST brace container (AC3) ---------------------------------------------
 
-  /** Lookahead for `Identifier [class] >>` — the start of a scoped method definition. */
+  /** Lookahead for `Identifier [class] >> pattern [` — a scoped method definition.
+   *  Requires the trailing `[`, so `self >> method methodCategory: …` (a `>>` expression)
+   *  is not misread as a definition. */
   private looksLikeMethodDef(): boolean {
     if (!this.at(TokenKind.Identifier)) {
       return false;
@@ -279,7 +277,35 @@ class Parser {
     if (this.peek(k).kind === TokenKind.Identifier && this.peek(k).text === 'class') {
       k++;
     }
-    return this.peek(k).kind === TokenKind.BinarySelector && this.peek(k).text === '>>';
+    if (!(this.peek(k).kind === TokenKind.BinarySelector && this.peek(k).text === '>>')) {
+      return false;
+    }
+    return this.methodPatternEndsWithBracket(k + 1);
+  }
+
+  /** True if a method pattern starting at lookahead offset `k` is immediately followed by `[`. */
+  private methodPatternEndsWithBracket(k: number): boolean {
+    const t = this.peek(k);
+    if (t.kind === TokenKind.Keyword) {
+      while (this.peek(k).kind === TokenKind.Keyword) {
+        k++;
+        if (this.peek(k).kind !== TokenKind.Identifier) {
+          return false;
+        }
+        k++;
+      }
+      return this.peek(k).kind === TokenKind.LBracket;
+    }
+    if (t.kind === TokenKind.BinarySelector || t.kind === TokenKind.Pipe) {
+      if (this.peek(k + 1).kind !== TokenKind.Identifier) {
+        return false;
+      }
+      return this.peek(k + 2).kind === TokenKind.LBracket;
+    }
+    if (t.kind === TokenKind.Identifier) {
+      return this.peek(k + 1).kind === TokenKind.LBracket;
+    }
+    return false;
   }
 
   private parseMethodDefinition(): Node {
@@ -311,18 +337,7 @@ class Parser {
 
   /** Lookahead for a short-form method `pattern [ … ]` (no `Class >>`), valid inside a body. */
   private looksLikeShortMethodDef(): boolean {
-    if (this.at(TokenKind.Keyword)) {
-      return true; // a leading keyword has no receiver, so it is a keyword method pattern
-    }
-    if (
-      this.at(TokenKind.BinarySelector) &&
-      this.current().text !== '<' &&
-      this.current().text !== '>' &&
-      this.peek(1).kind === TokenKind.Identifier
-    ) {
-      return true; // `+ arg [ … ]`
-    }
-    return this.at(TokenKind.Identifier) && this.peek(1).kind === TokenKind.LBracket; // `sel [ … ]`
+    return this.methodPatternEndsWithBracket(0);
   }
 
   private parseShortMethodDefinition(): Node {
@@ -382,15 +397,22 @@ class Parser {
 
   private parseMethodBody(): { pragmas: PragmaNode[]; temporaries: NameRef[]; statements: Node[] } {
     const pragmas: PragmaNode[] = [];
+    const temporaries: NameRef[] = [];
     if (this.at(TokenKind.LBracket)) {
       this.advance();
     } else {
       this.diag('Expected "[" to open method body', this.current());
     }
-    while (this.atPragma()) {
-      pragmas.push(this.parsePragma());
+    // A method header interleaves pragmas and a `| temps |` declaration in any order.
+    while (this.atPragma() || this.looksLikeTemporaries()) {
+      if (this.atPragma()) {
+        pragmas.push(this.parsePragma());
+      } else {
+        temporaries.push(...this.parseTemporaries());
+      }
     }
-    const { temporaries, statements } = this.parseSequenceBody(TokenKind.RBracket);
+    const { temporaries: bodyTemps, statements } = this.parseSequenceBody(TokenKind.RBracket);
+    temporaries.push(...bodyTemps);
     if (this.at(TokenKind.RBracket)) {
       this.advance();
     } else {
@@ -462,7 +484,12 @@ class Parser {
   }
 
   private atPragma(): boolean {
-    return this.at(TokenKind.BinarySelector) && this.current().text === '<';
+    if (!(this.at(TokenKind.BinarySelector) && this.current().text === '<')) {
+      return false;
+    }
+    // A bare `<` opens an attribute (`<primitive: …>`, `<category: …>`, `<gst.x: …>`,
+    // `<reentrant>`), unless it is the binary method pattern `< arg [ … ]`.
+    return !(this.peek(1).kind === TokenKind.Identifier && this.peek(2).kind === TokenKind.LBracket);
   }
 
   private parsePragma(): PragmaNode {
@@ -479,6 +506,9 @@ class Parser {
         selector += this.current().text;
         this.advance();
         args.push(this.parsePrimary()); // primary only, so the closing '>' is not consumed
+      } else if (this.at(TokenKind.Identifier) && selector === '' && args.length === 0) {
+        selector = this.current().text; // unary pragma name, e.g. <exceptionHandlerSearch>
+        this.advance();
       } else {
         this.advance(); // tolerate namespace qualifiers / stray tokens
       }
@@ -513,11 +543,14 @@ class Parser {
     return { definitionKind: 'scoped' };
   }
 
-  /** The first symbol-literal argument's name (without the leading `#`/quotes), if any. */
+  /** The class/namespace name argument — a symbol `#Foo` or a bare identifier `Foo`. */
   private symbolName(args: Node[]): string | undefined {
     for (const a of args) {
       if (a.kind === NodeKind.Literal && a.literalKind === 'symbol') {
         return a.value.replace(/^#/, '').replace(/^'(.*)'$/, '$1');
+      }
+      if (a.kind === NodeKind.Variable) {
+        return a.name;
       }
     }
     return undefined;
@@ -597,8 +630,22 @@ class Parser {
     };
   }
 
+  /** A zero-width implicit-receiver marker at the current position. */
+  private implicitReceiver(): Node {
+    const t = this.current();
+    return {
+      kind: NodeKind.ImplicitReceiver,
+      start: t.start,
+      end: t.start,
+      startPos: t.startPos,
+      endPos: t.startPos,
+    };
+  }
+
   private parseKeywordMessage(): Node {
-    let receiver = this.parseBinaryMessage();
+    // A statement starting with a keyword has no receiver — a GST `definition: [ name: … ]`
+    // block of messages to an implicit receiver. Use a zero-width marker rather than erroring.
+    let receiver = this.at(TokenKind.Keyword) ? this.implicitReceiver() : this.parseBinaryMessage();
     if (this.at(TokenKind.Keyword)) {
       let selector = '';
       const args: Node[] = [];
@@ -662,12 +709,13 @@ class Parser {
     }
     switch (t.kind) {
       case TokenKind.Identifier: {
-        // Scoped name: `Namespace::Class` (a run of `:: Identifier`).
+        // Scoped name: `Namespace::Class` or `Namespace.Class` (a run of `<scope> Identifier`).
         this.advance();
         let name = t.text;
         while (this.at(TokenKind.Scope) && this.peek(1).kind === TokenKind.Identifier) {
-          this.advance(); // ::
-          name += `::${this.current().text}`;
+          const separator = this.current().text; // '::' or '.'
+          this.advance();
+          name += `${separator}${this.current().text}`;
           this.advance(); // identifier
         }
         return {
@@ -756,6 +804,8 @@ class Parser {
         return this.parseCollection(NodeKind.LiteralArray, TokenKind.RParen);
       case TokenKind.HashBracket:
         return this.parseCollection(NodeKind.ByteArray, TokenKind.RBracket);
+      case TokenKind.HashBrace:
+        return this.parseBindingConstant();
       default:
         this.advance();
         this.diag(`Unexpected ${t.kind} in literal array`, t);

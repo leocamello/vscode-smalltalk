@@ -22,6 +22,9 @@ export enum NodeKind {
   Cascade = 'Cascade',
   /** A zero-width marker standing in for the cascade receiver inside each cascade segment. */
   CascadeReceiver = 'CascadeReceiver',
+  /** A zero-width marker for the implicit receiver of a receiver-less keyword message
+   *  (`name: … import: …` inside a GST `definition: [ … ]` block). */
+  ImplicitReceiver = 'ImplicitReceiver',
   /** A variable / identifier reference. */
   Variable = 'Variable',
   /** A GST binding constant `#{Namespace::Class}`. */
@@ -121,6 +124,11 @@ export interface CascadeReceiverNode extends NodeBase {
   readonly kind: NodeKind.CascadeReceiver;
 }
 
+/** Zero-width placeholder for the implicit receiver of a receiver-less keyword message. */
+export interface ImplicitReceiverNode extends NodeBase {
+  readonly kind: NodeKind.ImplicitReceiver;
+}
+
 export interface VariableNode extends NodeBase {
   readonly kind: NodeKind.Variable;
   readonly name: string;
@@ -214,6 +222,7 @@ export type Node =
   | MessageNode
   | CascadeNode
   | CascadeReceiverNode
+  | ImplicitReceiverNode
   | VariableNode
   | DefinitionNode
   | MethodDefinitionNode

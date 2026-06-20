@@ -748,7 +748,7 @@ Scenario: User follows Quick Start guide
 ## US-411: Error-Tolerant Smalltalk Parser + Symbol Table
 
 * **ID:** US-411
-* **Status:** Ready (next — M3 / internal milestone)
+* **Status:** In review — final slice (M3 / internal milestone). Delivered as 4 slices: lexer (#31), expression parser (#32), GST brace containers (#33), GST chunk + primaries (#34); symbol table + recovery hardening in the final PR. Kernel smoke test green (122 files, 0 crashes), satisfying the gate for US-412+.
 * **Epic:** EPIC-004
 * **Priority:** High
 * **Estimate:** XL *(compiler front-end; the foundation for every feature)*

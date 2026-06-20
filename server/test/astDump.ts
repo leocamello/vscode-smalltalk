@@ -44,6 +44,9 @@ export function dump(node: Node, indent: string, out: string[]): void {
     case NodeKind.CascadeReceiver:
       out.push(`${indent}CascadeReceiver ${at}`);
       break;
+    case NodeKind.ImplicitReceiver:
+      out.push(`${indent}ImplicitReceiver ${at}`);
+      break;
     case NodeKind.Definition:
       out.push(`${indent}Definition ${node.definitionKind}${node.name ? ` name='${node.name}'` : ''} ${at}`);
       dump(node.definer, child, out);
