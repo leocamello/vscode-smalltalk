@@ -186,3 +186,20 @@ The container layer is **layered over the slice-2 core** (the expression parser 
   `11,12,13`. Shared `astDump.ts` serializer.
 - Slice exit: fixtures `12,13` snapshot with **zero diagnostics**; fixture `11`'s brace core is
   clean — its only diagnostics are in the slice-3b tail (implicit-receiver `definition:` blocks).
+
+## Slice 3b — chunk container + GST primaries (completes AC3's named formats)
+- **Chunk method format** (`parser.ts`): a top-level statement whose selector includes `methodsFor:`,
+  immediately followed by `!`, starts a `Definition` (`definitionKind: 'methodsFor'`) whose body is
+  `MethodDefinition`s — one per `!`-delimited chunk (pattern + body up to the next `!`). The section
+  ends on the empty `! !` chunk **or** the first chunk that reads as a doit rather than a method
+  pattern (`chunkLooksLikeMethod`: a doit is `Identifier Keyword…`; a pattern is a lone `Keyword`,
+  `BinarySelector Identifier`, or `Identifier` not followed by a keyword). Validated on fixture 05's
+  loose (no `! !`) style: both `methodsFor:` sections resolve to the right methods.
+- **GST primaries** (`parsePrimary`): `#{ … }` → `BindingConstant` (`path`, incl. `A::B`); `##( … )`
+  (lexed as `Hash` + `HashParen`) → `CompileTimeConstant` (temporaries + statements). Fixture 14 now
+  parses with **zero diagnostics**.
+- **Documented limitation** (not an AC requirement): the fixture-11 tail's implicit-receiver
+  `definition: [ name: … ]` blocks and dotted-namespace `A.B` paths remain unsupported.
+- Verification: `server/test/chunk.test.ts` (chunk sections, class-side, section-termination,
+  bindings, compile-time) + no-throw sweep over `05/10/14` + AST snapshot `14`. `check-types`/`lint`
+  clean; `test:parser` runs lexer + parser + container + chunk suites (69 checks).

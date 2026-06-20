@@ -119,8 +119,94 @@ class Parser {
         }
         this.synchronize(stop);
       }
+      // GST chunk container: `Class methodsFor: '…'! method ! … ! !` (top level only).
+      if (stop === TokenKind.EOF && this.isMethodsForHeader(stmt) && this.at(TokenKind.Bang)) {
+        statements[statements.length - 1] = this.parseMethodsForSection(stmt);
+      }
     }
     return { temporaries, statements };
+  }
+
+  // --- GST chunk container (AC3) ---------------------------------------------
+
+  private isMethodsForHeader(stmt: Node): boolean {
+    return (
+      stmt.kind === NodeKind.Message &&
+      stmt.messageType === 'keyword' &&
+      stmt.selector.includes('methodsFor:')
+    );
+  }
+
+  private parseMethodsForSection(header: Node): Node {
+    let target: Node = header;
+    let classSide = false;
+    if (header.kind === NodeKind.Message) {
+      const recv = header.receiver;
+      if (recv.kind === NodeKind.Message && recv.messageType === 'unary' && recv.selector === 'class') {
+        classSide = true;
+        target = recv.receiver;
+      } else {
+        target = recv;
+      }
+    }
+    this.advance(); // '!' after the header
+    const body: Node[] = [];
+    while (!this.atEnd()) {
+      if (this.at(TokenKind.Bang)) {
+        this.advance(); // chunk separator / empty terminating chunk
+        continue;
+      }
+      // The section ends at the first chunk that reads as a doit, not a method pattern.
+      if (!this.chunkLooksLikeMethod()) {
+        break;
+      }
+      body.push(this.parseChunkMethod(target, classSide));
+    }
+    return {
+      kind: NodeKind.Definition,
+      definitionKind: 'methodsFor',
+      definer: header,
+      body,
+      start: header.start,
+      end: this.prev.end,
+      startPos: header.startPos,
+      endPos: this.prev.endPos,
+    };
+  }
+
+  /** A chunk is a method when it starts with a method pattern, not a `receiver keyword:` doit. */
+  private chunkLooksLikeMethod(): boolean {
+    if (this.at(TokenKind.Keyword)) {
+      return true;
+    }
+    if (
+      this.at(TokenKind.BinarySelector) &&
+      this.current().text !== '<' &&
+      this.current().text !== '>' &&
+      this.peek(1).kind === TokenKind.Identifier
+    ) {
+      return true;
+    }
+    return this.at(TokenKind.Identifier) && this.peek(1).kind !== TokenKind.Keyword;
+  }
+
+  private parseChunkMethod(target: Node, classSide: boolean): Node {
+    const startTok = this.current();
+    const pattern = this.parseMethodPattern();
+    const { temporaries, statements } = this.parseSequenceBody(TokenKind.Bang);
+    const node: MethodDefinitionNode = {
+      kind: NodeKind.MethodDefinition,
+      target,
+      classSide,
+      selector: pattern.selector,
+      messageType: pattern.messageType,
+      parameters: pattern.parameters,
+      pragmas: [],
+      temporaries,
+      statements,
+      ...this.span(startTok),
+    };
+    return node;
   }
 
   private parseTemporaries(): NameRef[] {
@@ -603,6 +689,15 @@ class Parser {
         return this.parseDynamicArray();
       case TokenKind.LBracket:
         return this.parseBlock();
+      case TokenKind.HashBrace:
+        return this.parseBindingConstant();
+      case TokenKind.Hash:
+        if (this.peek(1).kind === TokenKind.HashParen) {
+          return this.parseCompileTimeConstant();
+        }
+        this.advance();
+        this.diag('Unexpected "#"', t);
+        return { kind: NodeKind.Error, message: 'Unexpected "#"', ...this.range(t) };
       default:
         this.advance(); // consume the offending token to guarantee progress
         this.diag(`Unexpected ${t.kind} "${t.text}"`, t);
@@ -693,6 +788,40 @@ class Parser {
       this.diag('Expected "}"', this.current());
     }
     return { kind: NodeKind.DynamicArray, temporaries, elements, ...this.span(startTok) };
+  }
+
+  /** `#{ Namespace::Class }` binding constant. */
+  private parseBindingConstant(): Node {
+    const startTok = this.current();
+    this.advance(); // '#{'
+    const parts: string[] = [];
+    while (!this.atEnd() && !this.at(TokenKind.RBrace)) {
+      const t = this.current();
+      if (t.kind === TokenKind.Identifier || t.kind === TokenKind.Scope || t.kind === TokenKind.Period) {
+        parts.push(t.text);
+      }
+      this.advance();
+    }
+    if (this.at(TokenKind.RBrace)) {
+      this.advance();
+    } else {
+      this.diag('Expected "}" to close binding constant', this.current());
+    }
+    return { kind: NodeKind.BindingConstant, path: parts.join(''), ...this.span(startTok) };
+  }
+
+  /** `##( … )` compile-time constant — a temporaries + statement sequence. */
+  private parseCompileTimeConstant(): Node {
+    const startTok = this.current();
+    this.advance(); // '#'
+    this.advance(); // '#('
+    const { temporaries, statements } = this.parseSequenceBody(TokenKind.RParen);
+    if (this.at(TokenKind.RParen)) {
+      this.advance();
+    } else {
+      this.diag('Expected ")" to close compile-time constant', this.current());
+    }
+    return { kind: NodeKind.CompileTimeConstant, temporaries, statements, ...this.span(startTok) };
   }
 
   /** `[ (':' id)* '|'? '| temps |'? statements ]`. */

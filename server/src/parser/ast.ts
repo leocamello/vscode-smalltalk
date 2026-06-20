@@ -24,6 +24,10 @@ export enum NodeKind {
   CascadeReceiver = 'CascadeReceiver',
   /** A variable / identifier reference. */
   Variable = 'Variable',
+  /** A GST binding constant `#{Namespace::Class}`. */
+  BindingConstant = 'BindingConstant',
+  /** A GST compile-time constant `##( … )`. */
+  CompileTimeConstant = 'CompileTimeConstant',
   /** A GST scoped definition: `<expr> [ … ]` (subclass / namespace / extend / class-side scope). */
   Definition = 'Definition',
   /** A GST scoped method: `Class [class] >> pattern [ … ]`. */
@@ -122,8 +126,8 @@ export interface VariableNode extends NodeBase {
   readonly name: string;
 }
 
-/** How a `<expr> [ … ]` scoped definition reads, derived from the defining expression. */
-export type DefinitionKind = 'subclass' | 'namespace' | 'extend' | 'classScope' | 'scoped';
+/** How a definition reads: a `<expr> [ … ]` scoped form, or a `methodsFor:` chunk section. */
+export type DefinitionKind = 'subclass' | 'namespace' | 'extend' | 'classScope' | 'scoped' | 'methodsFor';
 
 export interface DefinitionNode extends NodeBase {
   readonly kind: NodeKind.Definition;
@@ -159,6 +163,18 @@ export interface PragmaNode extends NodeBase {
 export interface InstanceVariablesNode extends NodeBase {
   readonly kind: NodeKind.InstanceVariables;
   readonly names: NameRef[];
+}
+
+export interface BindingConstantNode extends NodeBase {
+  readonly kind: NodeKind.BindingConstant;
+  /** The bound name, e.g. `Transcript` or `TestBindings::MyBoundClass`. */
+  readonly path: string;
+}
+
+export interface CompileTimeConstantNode extends NodeBase {
+  readonly kind: NodeKind.CompileTimeConstant;
+  readonly temporaries: NameRef[];
+  readonly statements: Node[];
 }
 
 export interface LiteralNode extends NodeBase {
@@ -203,6 +219,8 @@ export type Node =
   | MethodDefinitionNode
   | PragmaNode
   | InstanceVariablesNode
+  | BindingConstantNode
+  | CompileTimeConstantNode
   | LiteralNode
   | LiteralArrayNode
   | ByteArrayNode

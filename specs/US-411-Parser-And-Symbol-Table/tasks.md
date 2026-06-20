@@ -54,10 +54,12 @@ S3 GST containers (AC3) → S4 symbol table + recovery (AC4, AC5).
 - [x] T065 `server/test/container.test.ts` + shared `astDump.ts` — unit tests + no-throw sweep over `10–14` + AST snapshots `11,12,13`.
 - [x] T066 `check-types`, `lint`, `test:parser` green; open slice-3a PR (links #23).
 
-## Phase 7 — Slice 3b: GST chunk container + GST primaries (AC3, remainder)
-- [ ] S3b-1 Chunk method format `!Class methodsFor: '…'! … ! !` (mode switch over `!` chunks).
-- [ ] S3b-2 GST primaries: `#{…}` binding constants, `##(…)` compile-time constants (fixture 14).
-- [ ] S3b-3 Esoteric tail: implicit-receiver `definition: [ name: … ]` blocks, dotted-namespace `A.B` paths (fixture 11 tail).
+## Phase 7 — Slice 3b: GST chunk container + GST primaries (AC3, remainder) — branch `feature/US-411-gst-chunk-primaries`
+- [x] T070 Chunk method format `Class [class] methodsFor: '…'! method ! … ! !` → `Definition` (`methodsFor`) with `MethodDefinition` bodies; section ends on the empty `! !` chunk or the first doit chunk (`chunkLooksLikeMethod` heuristic, validated on fixture 05's loose style). *(AC3)*
+- [x] T071 GST primaries: `#{…}` binding constants (`BindingConstant`), `##(…)` compile-time constants (`CompileTimeConstant`); fixture 14 now parses with **zero diagnostics**. *(AC3)*
+- [x] T072 `server/test/chunk.test.ts` — unit tests + no-throw sweep over `05/10/14` + AST snapshot `14`.
+- [x] T073 `check-types`, `lint`, `test:parser` green; open slice-3b PR (links #23).
+- [ ] S3b-NOTE (documented limitation, not blocking AC3): implicit-receiver `definition: [ name: … ]` blocks and dotted-namespace `A.B` paths (fixture 11 tail) remain unsupported — not named by any AC; revisit if a feature needs them.
 
 ## Later slices (tracked here, planned per-slice when started)
 - [ ] S4 Symbol table + recovery (AC4, AC5): `symbolTable.ts`, synchronization, kernel smoke test.

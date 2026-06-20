@@ -70,6 +70,13 @@ export function dump(node: Node, indent: string, out: string[]): void {
     case NodeKind.Variable:
       out.push(`${indent}Variable '${node.name}' ${at}`);
       break;
+    case NodeKind.BindingConstant:
+      out.push(`${indent}BindingConstant '${node.path}' ${at}`);
+      break;
+    case NodeKind.CompileTimeConstant:
+      out.push(`${indent}CompileTimeConstant temps=[${names(node.temporaries)}] ${at}`);
+      node.statements.forEach((s) => dump(s, child, out));
+      break;
     case NodeKind.Literal:
       out.push(`${indent}Literal ${node.literalKind} ${JSON.stringify(node.value)} ${at}`);
       break;
