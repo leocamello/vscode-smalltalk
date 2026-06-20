@@ -6,3 +6,4 @@ import './container.test.ts';
 import './chunk.test.ts';
 import './symbols.test.ts';
 import './kernel.test.ts';
+import './providers.test.ts';
