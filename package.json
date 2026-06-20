@@ -126,6 +126,7 @@
         "check-types": "tsc --noEmit -p client/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
         "test:server": "node server/test/handshake.test.mjs",
         "test:client": "tsx client/test/gstLocator.test.ts",
+        "test:parser": "tsx server/test/lexer.test.ts",
         "lint": "eslint client/src server/src",
         "test": "vscode-test",
         "package": "vsce package --no-dependencies",
