@@ -9,6 +9,7 @@ import { buildSymbolTable, SymbolKind } from '../src/parser/symbols.ts';
 import { toDocumentSymbols } from '../src/providers/documentSymbol.ts';
 import { WorkspaceIndex, defaultExclude, excludeFromConfig } from '../src/providers/workspaceIndex.ts';
 import { toWorkspaceSymbols } from '../src/providers/workspaceSymbol.ts';
+import { findDefinitions, resolveDefinitionQuery } from '../src/providers/definition.ts';
 
 const FIXTURE_DIR = path.join(process.cwd(), 'docs/research/gst-syntax/test-cases');
 
@@ -113,6 +114,38 @@ test('exclude predicates skip build/VCS dirs and files.exclude entries', () => {
   const fromCfg = excludeFromConfig({ '**/vendored': true, '**/keepme': false });
   assert.equal(fromCfg('/x/vendored', 'vendored', true), true);
   assert.equal(fromCfg('/x/keepme', 'keepme', true), false);
+});
+
+// --- Go-to-definition (AC3) -------------------------------------------------
+const at = (src: string, sub: string) => resolveDefinitionQuery(src, src.indexOf(sub) + 1);
+
+test('resolveDefinitionQuery distinguishes class refs from message selectors', () => {
+  assert.deepEqual(at('Array new', 'Array'), { target: 'class', name: 'Array' });
+  assert.deepEqual(at('obj printNl', 'printNl'), { target: 'selector', name: 'printNl' });
+  assert.deepEqual(at('a foo: b', 'foo:'), { target: 'selector', name: 'foo:' });
+  assert.deepEqual(at('a foo: b', 'b'), { target: 'class', name: 'b' });
+  assert.deepEqual(at('a foo: b', 'a'), { target: 'class', name: 'a' });
+  // Innermost send wins.
+  assert.deepEqual(at('a foo bar', 'bar'), { target: 'selector', name: 'bar' });
+  assert.deepEqual(at('a foo bar', 'foo'), { target: 'selector', name: 'foo' });
+});
+
+test('findDefinitions returns class definitions and all selector implementors', () => {
+  const idx = new WorkspaceIndex();
+  idx.setFile('file:///a.st', 'Object subclass: Foo [ greet [ ^1 ] ]');
+  idx.setFile('file:///b.st', 'Object subclass: Bar [ greet [ ^2 ] ]'); // another `greet` implementor
+
+  const classQ = at('Foo new', 'Foo');
+  assert.ok(classQ);
+  const classLocs = findDefinitions(idx, classQ!, 'file:///other.st');
+  assert.deepEqual(classLocs.map((l) => l.uri), ['file:///a.st']);
+
+  const selQ = at('x greet', 'greet');
+  assert.ok(selQ);
+  const selLocs = findDefinitions(idx, selQ!, 'file:///b.st');
+  assert.deepEqual(selLocs.map((l) => l.uri).sort(), ['file:///a.st', 'file:///b.st']);
+  // Same-file first: querying from b.st puts b.st's implementor first.
+  assert.equal(selLocs[0]?.uri, 'file:///b.st');
 });
 
 console.log(`providers: ${passed} tests passed.`);

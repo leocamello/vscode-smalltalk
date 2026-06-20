@@ -97,6 +97,7 @@ const caps = initResult.result.capabilities;
 assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2)');
 assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
+assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -133,11 +134,41 @@ assert.ok(mySimple, 'workspace/symbol must find MySimpleClass from the indexed f
 assert.equal(mySimple.kind, 5, 'MySimpleClass must be a Class (5)');
 assert.match(mySimple.location.uri, /11_/, 'MySimpleClass must resolve to fixture 11');
 
+// --- textDocument/definition (US-412 slice C) — open a doc with a def + a use ---
+const defUri = 'file:///definition-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: {
+      uri: defUri,
+      languageId: 'smalltalk',
+      version: 1,
+      text: 'Object subclass: Greeter [ greet [ ^1 ] ]\nGreeter new greet',
+    },
+  },
+});
+// Cursor on the `greet` send (line 1); poll until the debounced index has the doc.
+let defResult = [];
+for (let i = 0; i < 25 && defResult.length === 0; i++) {
+  send({
+    jsonrpc: '2.0',
+    id: 200 + i,
+    method: 'textDocument/definition',
+    params: { textDocument: { uri: defUri }, position: { line: 1, character: 14 } },
+  });
+  defResult = (await receiveId(200 + i)).result ?? [];
+  if (defResult.length === 0) await sleep(100);
+}
+assert.ok(defResult.length >= 1, 'definition must resolve the `greet` send');
+assert.equal(defResult[0].uri, defUri, 'definition resolves within the same file');
+assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);

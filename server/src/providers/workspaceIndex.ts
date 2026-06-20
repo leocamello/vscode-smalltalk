@@ -144,6 +144,15 @@ export class WorkspaceIndex {
     return out;
   }
 
+  /** Every entry across all indexed files. */
+  all(): IndexEntry[] {
+    const out: IndexEntry[] = [];
+    for (const entries of this.byUri.values()) {
+      out.push(...entries);
+    }
+    return out;
+  }
+
   get size(): number {
     return this.byUri.size;
   }

@@ -25,10 +25,10 @@ Delivered in three slices (each its own PR): **A** documentSymbol → **B** work
 - [x] T023 `check-types`/`lint`/`test:parser`/`test:server` green + package smoke; open Slice B PR.
 
 ## Phase 4 — Slice C: definition + freshness (AC3, AC4)
-- [ ] T030 `server/src/providers/definition.ts` — position → identifier/selector → class defs / all implementors → `Location[]` (same-file first); `onDefinition`; advertise capability.
-- [ ] T031 Cache freshness on edit (debounce ~250–300 ms) + index invalidation; tests.
-- [ ] T032 Electron integration harness: `.vscode-test.mjs` + fixture workspace + first e2e (`executeDocumentSymbolProvider`/`executeDefinitionProvider`); wire into CI.
-- [ ] T033 Slice C PR.
+- [x] T030 `server/src/providers/definition.ts` — AST walk resolves the cursor to a class ref or a message selector; `findDefinitions` returns class defs / **all** selector implementors as `Location[]` (same-file first); `onDefinition` + `definitionProvider` advertised.
+- [x] T031 Debounced (250 ms) workspace-index refresh on `didChangeContent`; outline stays immediate via the version-keyed cache; index reverted from disk on close.
+- [x] T032 Electron e2e harness: `.vscode-test.mjs` + `client/test-e2e/` fixture workspace + `navigation.test.js` (executes documentSymbol/workspaceSymbol/definition providers in a real VS Code). **Ran locally — 3/3 passing.** `test:e2e` script added; not wired into the default CI job (downloads ~256 MB VS Code + needs a display) — runs locally + is the basis of the manual matrix.
+- [x] T033 `check-types`/`lint`/`test:parser`/`test:server` + e2e green; package smoke clean; open Slice C PR.
 
 ## Phase 5 — Verify & Release (0.4.0)
 - [ ] T900 Automated: unit + LSP server + Electron e2e green; `npm run eval` (grammar) unaffected.

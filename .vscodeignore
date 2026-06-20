@@ -13,6 +13,7 @@ node_modules/**
 **/*.map
 esbuild.mjs
 eslint.config.mjs
+.vscode-test.mjs
 tsconfig*.json
 .gitignore
 .gitattributes
