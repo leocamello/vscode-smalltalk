@@ -2,7 +2,7 @@
 
 **ID**: US-412
 **Feature**: Navigation — outline, workspace symbol search, go-to-definition
-**Status**: Draft
+**Status**: Implemented (shipped in v0.4.0)
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-20
 

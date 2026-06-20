@@ -8,16 +8,16 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 |---|---|---|---|
 | ✅ Shipped | **0.2.0** | Housekeeping + release the rewritten grammar, snippets, language config; fix bug #2; modernize packaging/CI | Marketplace release; CI green on all OSes |
 | ✅ Shipped | **0.3.0** | TypeScript + LSP scaffold (`client/` + `server/`, esbuild, bundled no-op server) + "Run Current File" (US-410, US-301) | Client↔server handshake; first command shipped |
-| ⏭️ **Next** | **M3** *(internal)* | Error-tolerant Smalltalk parser + symbol table (US-411, #23) | GNU Smalltalk kernel smoke test passes |
-| ⬜ Planned | **0.4.0** | Outline/workspace symbols + go-to-definition (US-412) | Navigation works without `gst` |
-| ⬜ Planned | **0.5.0** | Completion + GNU Smalltalk kernel index (US-413) | Closes issue #1 |
+| ✅ Done | **M3** *(internal)* | Error-tolerant Smalltalk parser + symbol table (US-411, #23) | Kernel smoke test passes — 122 files, 0 crashes/diagnostics |
+| ✅ Shipped | **0.4.0** | Outline/workspace symbols + go-to-definition (US-412) | Navigation works without `gst` |
+| ⏭️ **Next** | **0.5.0** | Completion + GNU Smalltalk kernel index (US-413) | Closes issue #1 |
 | ⬜ Planned | **0.6.0** | Diagnostics — parser live; `gst` opt-in (US-414) | Squiggles on syntax errors |
 | ⬜ Planned | **0.7.0** | Hover (US-415) | Docs on hover |
 | ⬜ Planned | **0.8.0** | Formatting (US-416) — *droppable to 1.1 if it slips* | Idempotent, opt-in |
 | ⬜ Planned | **0.9.0** | Hardening, performance, beta polish | No P1 bugs for 2+ weeks |
 | ⬜ Planned | **1.0.0** | Product polish; remove `preview`; publish to Open VSX | Marketing-grade README + demos |
 
-_Last updated: 2026-06-19 — 0.3.0 shipped; M3 (the parser) is the current focus._
+_Last updated: 2026-06-20 — 0.4.0 shipped (navigation: outline, workspace symbols, go-to-definition); M3 parser/symbol-table done. Next focus: 0.5.0 / US-413 (completion)._
 
 **Dialect scope:** GNU Smalltalk now; the parser is layered (core ANSI + pluggable GST
 container formats) so other dialects (e.g. Pharo/Tonel) can be added later without a

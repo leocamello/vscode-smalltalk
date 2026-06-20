@@ -71,9 +71,11 @@ Development of the `vscode-smalltalk` extension will proceed iteratively through
 ## 8. Next Steps / Current Focus
 
 Phase 1 (declarative foundation + onboarding docs) shipped in **v0.2.0**; the TypeScript
-client/server scaffold and the *Run Current File* command shipped in **v0.3.0**. Current focus
-is **M3 / US-411** — the error-tolerant Smalltalk parser + symbol table that powers Phase 2
-language intelligence (completion, navigation, diagnostics).
+client/server scaffold and the *Run Current File* command shipped in **v0.3.0**. Phase 2 is
+underway: the error-tolerant parser + symbol table (**M3 / US-411**) and the first navigation
+features — outline, workspace symbol search, and go-to-definition (**US-412**) — shipped in
+**v0.4.0**. Current focus is **US-413** — completion + a GNU Smalltalk kernel index (0.5.0);
+diagnostics, hover, and formatting follow.
 
 See [`docs/ROADMAP.md`](../ROADMAP.md) for live milestone status, [`epics.md`](epics.md) and
 [`user-stories.md`](user-stories.md) for the backlog, and [`docs/decisions/`](../decisions/)

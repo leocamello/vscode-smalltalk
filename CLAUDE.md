@@ -7,14 +7,19 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-19)
-- **Shipped:** v0.3.0 — rewritten TextMate grammar, snippets, language config; **Run Current
-  File** command (US-301); and a **bundled TypeScript language server** scaffold (US-410, no-op
-  so far). Runs without `gst`.
-- **Next:** **M3 / US-411** (GitHub #23) — the error-tolerant Smalltalk **lexer + parser +
-  symbol table**. Internal milestone behind 0.4.0 navigation. Blueprint:
-  `docs/research/gst-syntax/01-gst-lexer-token-analysis.md` + `02-gst-parser-syntactic-structures.md`;
-  fixtures in `docs/research/gst-syntax/test-cases/*.st`; kernel corpus at `../smalltalk-3.2.5/kernel/`.
+## Current status (2026-06-20)
+- **Shipped:** v0.4.0 — **code navigation** (Outline/breadcrumbs, workspace symbol search,
+  go-to-definition) for GNU Smalltalk, all with no `gst`. Built on the **error-tolerant lexer +
+  parser + symbol table** (US-411, internal M3) wired into LSP providers (US-412). The bundled
+  TypeScript server is now functional. Earlier: v0.3.0 grammar/snippets/config + **Run Current
+  File** (US-301) + the LSP scaffold (US-410).
+  - Parser/symbol-table source: `server/src/parser/` (`lexer.ts`, `parser.ts`, `ast.ts`,
+    `symbols.ts`, container/chunk in `parser.ts`); providers: `server/src/providers/` +
+    `server/src/documents/parseCache.ts`. Blueprints: `docs/research/gst-syntax/01-*`, `02-*`;
+    fixtures `docs/research/gst-syntax/test-cases/*.st`; kernel corpus `../smalltalk-3.2.5/kernel/`
+    (122 files parse clean). Tests: `npm run test:parser` (unit/snapshot/kernel), `test:server`
+    (real-server LSP), `test:e2e` (Electron, local).
+- **Next:** **0.5.0 / US-413** — completion + GNU Smalltalk kernel index (closes #1).
 
 ## How we work (spec-driven)
 Per user story (`US-XXX`): **Clarify → Spec → Plan → Task → Implement → Verify**.

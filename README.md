@@ -14,7 +14,7 @@ Provides comprehensive language support for **Smalltalk**, with an initial focus
 <!-- Prerequisites (US-102) -->
 ## Prerequisites
 
-This extension requires **GNU Smalltalk** to be installed on your system to provide its full functionality, especially for features planned in future phases (like code execution or language server integration).
+**GNU Smalltalk (`gst`) is optional.** Editing and language intelligence — syntax highlighting, snippets, the outline, workspace symbol search, and go-to-definition — all work **without** it. You only need `gst` installed and on your `PATH` (or set via `smalltalk.gnuSmalltalkPath`) for the **Run Current File** command, which executes your code.
 
 1.  **Install GNU Smalltalk:**
     *   You need a working installation of GNU Smalltalk. We recommend using the **latest stable version**.
@@ -73,14 +73,17 @@ Install the **Smalltalk Language Support** extension from the [Visual Studio Cod
 *   **Auto Indentation:** Basic indentation support.
 *   **Folding:** Code folding based on markers (e.g., comments like `"{--"` and `"--}"`).
 
-### Language Intelligence Features (LSP - Planned for Phase 2)
+### Language Intelligence Features (LSP)
 
-*   _(Coming Soon)_ Hover Information
+Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation required** for these:
+
+*   **Outline & Breadcrumbs:** the document structure (classes → methods, with instance/class variables) for both brace- and chunk-format files.
+*   **Workspace Symbol Search:** `Ctrl/Cmd+T` to find classes and method selectors across the workspace.
+*   **Go to Definition:** `F12` / `Ctrl/Cmd+Click` — from a class reference to its definition, or from a message send to every implementor.
 *   _(Coming Soon)_ Auto Completion
-*   _(Coming Soon)_ Jump to Definition
 *   _(Coming Soon)_ Diagnostics (Error Checking)
+*   _(Coming Soon)_ Hover Information
 *   _(Coming Soon)_ Formatting
-*   _(Coming Soon)_ Refactoring
 
 <!-- Configuration (US-105) -->
 ## Configuration

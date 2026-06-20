@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-19).** v0.2.0 and v0.3.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0). **Next:** US-411 — error-tolerant parser + symbol table (internal milestone M3). **Planned:** US-412–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
+> **Status summary (2026-06-20).** v0.2.0, v0.3.0, and v0.4.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3) and **US-412** (outline + workspace symbols + go-to-definition, v0.4.0). **Next:** US-413 (completion, 0.5.0). **Planned:** US-413–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
 
 ---
 
@@ -748,7 +748,7 @@ Scenario: User follows Quick Start guide
 ## US-411: Error-Tolerant Smalltalk Parser + Symbol Table
 
 * **ID:** US-411
-* **Status:** In review — final slice (M3 / internal milestone). Delivered as 4 slices: lexer (#31), expression parser (#32), GST brace containers (#33), GST chunk + primaries (#34); symbol table + recovery hardening in the final PR. Kernel smoke test green (122 files, 0 crashes), satisfying the gate for US-412+.
+* **Status:** Done (M3 / internal milestone — foundation for v0.4.0). Delivered as 5 PRs: lexer (#31), expression parser (#32), GST brace containers (#33), GST chunk + primaries (#34), symbol table + recovery hardening (#35). Kernel smoke test green (122 files, 0 crashes, 0 diagnostics, 206 classes), satisfying the gate for US-412+.
 * **Epic:** EPIC-004
 * **Priority:** High
 * **Estimate:** XL *(compiler front-end; the foundation for every feature)*
@@ -772,21 +772,21 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized (XL).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Lexer, parser, container layers, AST, and symbol table implemented.
-* [ ] **Language Server:** Snapshot AST/symbol tests reuse the 15 `test-cases/*.st` categories; mutation tests confirm no-throw recovery.
-* [ ] **Kernel smoke test:** all `../smalltalk-3.2.5/kernel/*.st` parse with zero crashes and a bounded error count.
-* [ ] Documentation updated (parser design notes).
-* [ ] PO accepts the story.
+* [X] Lexer, parser, container layers, AST, and symbol table implemented (`server/src/parser/`).
+* [X] **Language Server:** Snapshot AST/symbol tests reuse the 15 `test-cases/*.st` categories; mutation/garbage-input tests confirm no-throw recovery.
+* [X] **Kernel smoke test:** all 122 `../smalltalk-3.2.5/kernel/*.st` parse with **0 crashes and 0 diagnostics** (`server/test/kernel.test.ts`).
+* [X] Documentation updated — design notes in `specs/US-411-Parser-And-Symbol-Table/plan.md`.
+* [X] PO accepts the story (foundation accepted; shipped behind v0.4.0 navigation).
 
 **Notes / Questions / Assumptions:**
-* Gate: no LSP feature work (US-412+) begins until the kernel smoke test passes.
+* Gate: no LSP feature work (US-412+) begins until the kernel smoke test passes. **(Met — gate cleared.)**
 
 ---
 
 ## US-412: Document/Workspace Symbols + Go-To-Definition
 
 * **ID:** US-412
-* **Status:** Planned
+* **Status:** Done (v0.4.0). Delivered as 3 slices — documentSymbol (#36), workspace/symbol (#37), definition + freshness + Electron e2e (#38) — plus two manual-QA fixes (#39 `files.exclude` at runtime, #40 activate on `workspaceContains`). Manual matrix M1–M14 passed.
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -808,14 +808,14 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] documentSymbol, workspace/symbol, definition implemented.
-* [ ] **Language Server:** unit tests for symbol extraction.
-* [ ] **End-to-End:** integration tests asserting outline/symbol/definition results on a fixture workspace.
-* [ ] Works with no `gst` present.
-* [ ] PO accepts the story.
+* [X] documentSymbol, workspace/symbol, definition implemented (`server/src/providers/`).
+* [X] **Language Server:** unit tests for symbol extraction + provider mapping (`server/test/providers.test.ts`).
+* [X] **End-to-End:** integration tests asserting outline/symbol/definition on a fixture workspace (`client/test-e2e/`, Electron; `npm run test:e2e`) + real-server LSP tests (`server/test/handshake.test.mjs`).
+* [X] Works with no `gst` present (verified: navigation has zero `gst`/process dependency).
+* [X] PO accepts the story (manual-QA matrix M1–M14 passed; shipped in v0.4.0).
 
 **Notes / Questions / Assumptions:**
-* Semantic `foldingRange` and `documentHighlight` are near-free bonuses if time allows.
+* Semantic `foldingRange` and `documentHighlight` are near-free bonuses if time allows. *(Deferred — not built in 0.4.0.)*
 
 ---
 

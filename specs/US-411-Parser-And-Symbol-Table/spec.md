@@ -2,7 +2,7 @@
 
 **ID**: US-411
 **Feature**: Error-tolerant Smalltalk lexer + parser + symbol table
-**Status**: Draft
+**Status**: Implemented (shipped behind v0.4.0; internal milestone M3)
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-20
 
