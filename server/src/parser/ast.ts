@@ -24,6 +24,14 @@ export enum NodeKind {
   CascadeReceiver = 'CascadeReceiver',
   /** A variable / identifier reference. */
   Variable = 'Variable',
+  /** A GST scoped definition: `<expr> [ … ]` (subclass / namespace / extend / class-side scope). */
+  Definition = 'Definition',
+  /** A GST scoped method: `Class [class] >> pattern [ … ]`. */
+  MethodDefinition = 'MethodDefinition',
+  /** A `<…>` attribute / pragma (e.g. `<primitive: 80>`, `<gst.methodCategory: '…'>`). */
+  Pragma = 'Pragma',
+  /** A `| a b |` instance-variable declaration inside a class body. */
+  InstanceVariables = 'InstanceVariables',
   /** A scalar literal: integer, float, scaled decimal, string, symbol, character. */
   Literal = 'Literal',
   /** `#( … )`. */
@@ -114,6 +122,45 @@ export interface VariableNode extends NodeBase {
   readonly name: string;
 }
 
+/** How a `<expr> [ … ]` scoped definition reads, derived from the defining expression. */
+export type DefinitionKind = 'subclass' | 'namespace' | 'extend' | 'classScope' | 'scoped';
+
+export interface DefinitionNode extends NodeBase {
+  readonly kind: NodeKind.Definition;
+  readonly definitionKind: DefinitionKind;
+  /** The expression preceding the `[` (e.g. `Object subclass: #Foo`). */
+  readonly definer: Node;
+  /** The class/namespace name, when derivable from the definer's symbol argument. */
+  readonly name?: string;
+  /** Body items: instance-var decls, pragmas, method/nested definitions, statements. */
+  readonly body: Node[];
+}
+
+export interface MethodDefinitionNode extends NodeBase {
+  readonly kind: NodeKind.MethodDefinition;
+  /** The owning class reference (e.g. `Foo`); absent for the short form `sel [ … ]` inside a body. */
+  readonly target?: Node;
+  /** True for `Foo class >> …`. */
+  readonly classSide: boolean;
+  readonly selector: string;
+  readonly messageType: MessageType;
+  readonly parameters: NameRef[];
+  readonly pragmas: PragmaNode[];
+  readonly temporaries: NameRef[];
+  readonly statements: Node[];
+}
+
+export interface PragmaNode extends NodeBase {
+  readonly kind: NodeKind.Pragma;
+  readonly selector: string;
+  readonly arguments: Node[];
+}
+
+export interface InstanceVariablesNode extends NodeBase {
+  readonly kind: NodeKind.InstanceVariables;
+  readonly names: NameRef[];
+}
+
 export interface LiteralNode extends NodeBase {
   readonly kind: NodeKind.Literal;
   readonly literalKind: LiteralKind;
@@ -133,6 +180,8 @@ export interface ByteArrayNode extends NodeBase {
 
 export interface DynamicArrayNode extends NodeBase {
   readonly kind: NodeKind.DynamicArray;
+  /** Constructor-local temporaries (`{ | t | … }`); usually empty. */
+  readonly temporaries: NameRef[];
   readonly elements: Node[];
 }
 
@@ -150,6 +199,10 @@ export type Node =
   | CascadeNode
   | CascadeReceiverNode
   | VariableNode
+  | DefinitionNode
+  | MethodDefinitionNode
+  | PragmaNode
+  | InstanceVariablesNode
   | LiteralNode
   | LiteralArrayNode
   | ByteArrayNode

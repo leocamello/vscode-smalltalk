@@ -15,6 +15,7 @@ import {
   type AssignmentNode,
   type BlockNode,
 } from '../src/parser/ast.ts';
+import { serializeAst } from './astDump.ts';
 
 const UPDATE = process.argv.includes('--update');
 const ROOT = process.cwd();
@@ -174,76 +175,10 @@ const SNAPSHOT_FIXTURES = [
   '08_core_blocks',
 ];
 
-function names(list: ReadonlyArray<{ name: string }>): string {
-  return list.map((n) => n.name).join(', ');
-}
-
-function dump(node: Node, indent: string, out: string[]): void {
-  const at = `@${node.start}..${node.end}`;
-  const child = indent + '  ';
-  switch (node.kind) {
-    case NodeKind.Program:
-      out.push(`${indent}Program temps=[${names(node.temporaries)}] ${at}`);
-      node.statements.forEach((s) => dump(s, child, out));
-      break;
-    case NodeKind.Block:
-      out.push(`${indent}Block params=[${names(node.parameters)}] temps=[${names(node.temporaries)}] ${at}`);
-      node.statements.forEach((s) => dump(s, child, out));
-      break;
-    case NodeKind.Return:
-      out.push(`${indent}Return ${at}`);
-      dump(node.value, child, out);
-      break;
-    case NodeKind.Assignment:
-      out.push(`${indent}Assignment target='${node.target.name}' ${at}`);
-      dump(node.value, child, out);
-      break;
-    case NodeKind.Message:
-      out.push(`${indent}Message ${node.messageType} '${node.selector}' ${at}`);
-      dump(node.receiver, child, out);
-      node.arguments.forEach((a) => dump(a, child, out));
-      break;
-    case NodeKind.Cascade:
-      out.push(`${indent}Cascade ${at}`);
-      dump(node.receiver, child, out);
-      node.messages.forEach((m) => {
-        out.push(`${child};`);
-        dump(m, child + '  ', out);
-      });
-      break;
-    case NodeKind.CascadeReceiver:
-      out.push(`${indent}CascadeReceiver ${at}`);
-      break;
-    case NodeKind.Variable:
-      out.push(`${indent}Variable '${node.name}' ${at}`);
-      break;
-    case NodeKind.Literal:
-      out.push(`${indent}Literal ${node.literalKind} ${JSON.stringify(node.value)} ${at}`);
-      break;
-    case NodeKind.LiteralArray:
-    case NodeKind.ByteArray:
-    case NodeKind.DynamicArray:
-      out.push(`${indent}${node.kind} ${at}`);
-      node.elements.forEach((e) => dump(e, child, out));
-      break;
-    case NodeKind.Error:
-      out.push(`${indent}Error ${JSON.stringify(node.message)} ${at}`);
-      break;
-  }
-}
-
-function serialize(src: string): string {
-  const { ast, diagnostics } = parse(src);
-  const out: string[] = [];
-  dump(ast, '', out);
-  const diag = diagnostics.map((d) => `${d.severity} ${JSON.stringify(d.message)} @${d.start}..${d.end}`);
-  return [...out, '', '--- diagnostics ---', ...diag, ''].join('\n');
-}
-
 for (const name of SNAPSHOT_FIXTURES) {
   test(`ast snapshot: ${name}`, () => {
     const src = fs.readFileSync(path.join(FIXTURE_DIR, `${name}.st`), 'utf8');
-    const actual = serialize(src);
+    const actual = serializeAst(src);
     const snapPath = path.join(SNAPSHOT_DIR, `${name}.ast.txt`);
     if (UPDATE) {
       fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });

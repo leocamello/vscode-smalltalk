@@ -1,0 +1,141 @@
+Program temps=[myInstance, myExtendedInstance, demoObj, demoObj2, result] @283..3166
+  Assignment target='myInstance' @317..341
+    Message unary 'new' @331..341
+      Variable 'Object' @331..337
+  Definition extend @344..704
+    Message unary 'extend' @344..361
+      Variable 'myInstance' @344..354
+    InstanceVariables [extensionVar] @414..430
+    MethodDefinition unary 'initializeExtension' params=[] temps=[] @482..613
+      Assignment target='extensionVar' @512..539
+        Literal string "'Extended!'" @528..539
+      Cascade @549..606
+        Variable 'Transcript' @549..559
+        ;
+          Message keyword 'show:' @549..602
+            CascadeReceiver @559..559
+            Literal string "'Instance extended and initialized.'" @566..602
+        ;
+          Message unary 'cr' @559..606
+            CascadeReceiver @559..559
+    MethodDefinition unary 'greetFromExtension' params=[] temps=[] @619..702
+      Return @648..695
+        Message binary ',' @649..695
+          Literal string "'Hello from extended instance: '" @649..681
+          Variable 'extensionVar' @683..695
+  Message unary 'initializeExtension' @751..781
+    Variable 'myInstance' @751..761
+  Message unary 'printNl' @784..822
+    Message unary 'greetFromExtension' @784..813
+      Variable 'myInstance' @784..794
+  Assignment target='myExtendedInstance' @881..913
+    Variable 'myInstance' @903..913
+  Assignment target='myInstance' @936..960
+    Message unary 'new' @950..960
+      Variable 'Object' @950..956
+  Definition subclass name='MyScopedMethodDemo' @1366..1487
+    Message keyword 'subclass:' @1366..1402
+      Variable 'Object' @1366..1372
+      Literal symbol "#MyScopedMethodDemo" @1383..1402
+    InstanceVariables [data] @1409..1417
+    MethodDefinition keyword 'initializeWith:' params=[aValue] temps=[] @1422..1485
+      Variable 'MyScopedMethodDemo' @1422..1440
+      Assignment target='data' @1469..1483
+        Variable 'aValue' @1477..1483
+  MethodDefinition unary 'printData' params=[] temps=[] @1556..1690
+    Variable 'MyScopedMethodDemo' @1556..1574
+    Cascade @1645..1687
+      Variable 'Transcript' @1645..1655
+      ;
+        Message keyword 'show:' @1645..1670
+          CascadeReceiver @1655..1655
+          Literal string "'Data: '" @1662..1670
+      ;
+        Message keyword 'print:' @1655..1683
+          CascadeReceiver @1655..1655
+          Variable 'data' @1679..1683
+      ;
+        Message unary 'cr' @1655..1687
+          CascadeReceiver @1655..1655
+  MethodDefinition class unary 'classSideUtility' params=[] temps=[] @1761..1915
+    Variable 'MyScopedMethodDemo' @1761..1779
+    Return @1881..1912
+      Literal string "'Utility method on class side'" @1882..1912
+  Assignment target='demoObj' @1957..1990
+    Message unary 'new' @1968..1990
+      Variable 'MyScopedMethodDemo' @1968..1986
+  Message keyword 'initializeWith:' @1992..2027
+    Variable 'demoObj' @1992..1999
+    Literal string "'Test Data'" @2016..2027
+  Message unary 'printData' @2029..2046
+    Variable 'demoObj' @2029..2036
+  Message unary 'printNl' @2049..2093
+    Message unary 'classSideUtility' @2049..2084
+      Variable 'MyScopedMethodDemo' @2049..2067
+  MethodDefinition unary 'processData' params=[] temps=[temp] @2143..2276
+    Variable 'MyScopedMethodDemo' @2143..2161
+    Assignment target='temp' @2196..2217
+      Message unary 'reversed' @2204..2217
+        Variable 'data' @2204..2208
+    Return @2253..2273
+      Message binary ',' @2254..2273
+        Literal string "'Processed: '" @2254..2267
+        Variable 'temp' @2269..2273
+  Message unary 'printNl' @2279..2307
+    Message unary 'processData' @2279..2298
+      Variable 'demoObj' @2279..2286
+  MethodDefinition unary 'getData' params=[] temps=[] @2362..2406
+    Variable 'MyScopedMethodDemo' @2362..2380
+    Return @2398..2403
+      Variable 'data' @2399..2403
+  Message unary 'printNl' @2409..2433
+    Message unary 'getData' @2409..2424
+      Variable 'demoObj' @2409..2416
+  MethodDefinition binary '+' params=[anotherDemoObject] temps=[] @2462..2614
+    Variable 'MyScopedMethodDemo' @2462..2480
+    Return @2571..2611
+      Message binary ',' @2572..2611
+        Message unary 'getData' @2572..2584
+          Variable 'self' @2572..2576
+        Message unary 'getData' @2586..2611
+          Variable 'anotherDemoObject' @2586..2603
+  Assignment target='demoObj2' @2637..2671
+    Message unary 'new' @2649..2671
+      Variable 'MyScopedMethodDemo' @2649..2667
+  Message keyword 'initializeWith:' @2673..2709
+    Variable 'demoObj2' @2673..2681
+    Literal string "'More Data'" @2698..2709
+  Assignment target='result' @2711..2739
+    Message binary '+' @2721..2739
+      Variable 'demoObj' @2721..2728
+      Variable 'demoObj2' @2731..2739
+  Message unary 'printNl' @2741..2755
+    Variable 'result' @2741..2747
+  MethodDefinition keyword 'update:ifOld:' params=[newData, oldDataBlock] temps=[] @2785..2940
+    Variable 'MyScopedMethodDemo' @2785..2803
+    Message keyword 'ifTrue:' @2849..2895
+      Message binary '=' @2849..2863
+        Variable 'data' @2849..2853
+        Variable 'newData' @2856..2863
+      Block params=[] temps=[] @2872..2895
+        Return @2874..2893
+          Message unary 'value' @2875..2893
+            Variable 'oldDataBlock' @2875..2887
+    Assignment target='data' @2901..2916
+      Variable 'newData' @2909..2916
+    Return @2922..2937
+      Literal string "'Data updated'" @2923..2937
+  Message unary 'printNl' @2944..3014
+    Message keyword 'update:ifOld:' @2944..3005
+      Variable 'demoObj' @2944..2951
+      Literal string "'New Data'" @2960..2970
+      Block params=[] temps=[] @2978..3005
+        Literal string "'Data was already new!'" @2980..3003
+  Message unary 'printNl' @3017..3087
+    Message keyword 'update:ifOld:' @3017..3078
+      Variable 'demoObj' @3017..3024
+      Literal string "'New Data'" @3033..3043
+      Block params=[] temps=[] @3051..3078
+        Literal string "'Data was already new!'" @3053..3076
+
+--- diagnostics ---

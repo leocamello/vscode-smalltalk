@@ -1,0 +1,92 @@
+Program temps=[constructedArray, anotherArray] @228..1913
+  Definition subclass name='MyClassWithAttrs' @228..625
+    Message keyword 'subclass:' @228..262
+      Variable 'Object' @228..234
+      Literal symbol "#MyClassWithAttrs" @245..262
+    Pragma 'classCategory:' @269..307
+      Literal string "'Test-Attributes'" @289..306
+    InstanceVariables [myVar] @341..350
+    Pragma 'methodCategory:' @356..389
+      Literal string "'accessing'" @377..388
+    MethodDefinition unary 'getMyVar' params=[] temps=[] @394..503
+      Variable 'MyClassWithAttrs' @394..410
+      Pragma 'methodComment:' @433..482
+        Literal string "'Returns the value of myVar'" @453..481
+      Return @491..497
+        Variable 'myVar' @492..497
+    MethodDefinition keyword 'setMyVar:' params=[newValue] temps=[] @509..623
+      Variable 'MyClassWithAttrs' @509..525
+      Pragma 'methodCategory:' @558..590
+        Literal string "'mutating'" @579..589
+      Assignment target='myVar' @599..616
+        Variable 'newValue' @608..616
+  Assignment target='constructedArray' @936..979
+    DynamicArray @956..979
+      Literal integer "1" @958..959
+      Literal string "'two'" @961..966
+      Literal character "$c" @968..970
+      Literal symbol "#four" @972..977
+  Message unary 'printNl' @981..1005
+    Variable 'constructedArray' @981..997
+  Assignment target='anotherArray' @1047..1133
+    DynamicArray @1063..1133
+      Message binary '+' @1065..1070
+        Literal integer "1" @1065..1066
+        Literal integer "2" @1069..1070
+      Message unary 'today' @1072..1082
+        Variable 'Date' @1072..1076
+      Message unary 'version' @1084..1101
+        Variable 'Smalltalk' @1084..1093
+      Cascade @1104..1130
+        Message unary 'new' @1104..1113
+          Variable 'Array' @1104..1109
+        ;
+          Message keyword 'add:' @1104..1120
+            CascadeReceiver @1113..1113
+            Literal integer "5" @1119..1120
+        ;
+          Message unary 'yourself' @1113..1130
+            CascadeReceiver @1113..1113
+  Message unary 'printNl' @1135..1155
+    Variable 'anotherArray' @1135..1147
+  DynamicArray @1214..1216
+  DynamicArray @1263..1275
+    Literal string "'lonely'" @1265..1273
+  DynamicArray @1331..1371
+    Message unary 'value' @1333..1354
+      Block params=[] temps=[] @1333..1348
+        Message unary 'factorial' @1335..1346
+          Literal integer "3" @1335..1336
+    Literal string "'after block'" @1356..1369
+  DynamicArray @1419..1466
+    Literal integer "1" @1421..1422
+    DynamicArray @1424..1442
+      Literal string "'nested'" @1426..1434
+      Variable 'true' @1436..1440
+    LiteralArray @1444..1464
+      Literal string "'literal array'" @1447..1462
+  Assignment target='constructedArray' @1528..1833
+    DynamicArray temps=[temp] @1548..1833
+      Assignment target='temp' @1567..1577
+        Literal integer "10" @1575..1577
+      Message keyword 'show:' @1583..1628
+        Variable 'Transcript' @1583..1593
+        Literal string "'First element construction'" @1600..1628
+      Message binary '*' @1634..1645
+        Variable 'temp' @1634..1638
+        Variable 'temp' @1641..1645
+      Message keyword 'show:' @1670..1716
+        Variable 'Transcript' @1670..1680
+        Literal string "'Second element construction'" @1687..1716
+      Literal string "'String element'" @1722..1738
+      Message keyword 'collect:' @1765..1801
+        Message keyword 'to:' @1765..1772
+          Literal integer "1" @1765..1766
+          Literal integer "3" @1771..1772
+        Block params=[i] temps=[] @1783..1801
+          Message unary 'squared' @1790..1799
+            Variable 'i' @1790..1791
+  Message unary 'printNl' @1835..1859
+    Variable 'constructedArray' @1835..1851
+
+--- diagnostics ---
