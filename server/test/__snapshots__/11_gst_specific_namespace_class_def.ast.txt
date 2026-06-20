@@ -1,0 +1,277 @@
+Program temps=[] @259..6625
+  Definition namespace name='TestSpace1' @259..862
+    Message keyword 'current:' @259..289
+      Variable 'Namespace' @259..268
+      Literal symbol "#TestSpace1" @278..289
+    Cascade @337..378
+      Variable 'Transcript' @337..347
+      ;
+        Message keyword 'show:' @337..374
+          CascadeReceiver @347..347
+          Literal string "'Inside TestSpace1.'" @354..374
+      ;
+        Message unary 'cr' @347..378
+          CascadeReceiver @347..347
+    Definition subclass name='MyClassInTestSpace1' @385..860
+      Message keyword 'subclass:' @385..422
+        Variable 'Object' @385..391
+        Literal symbol "#MyClassInTestSpace1" @402..422
+      InstanceVariables [instVarInNamespace] @483..505
+      MethodDefinition class unary 'new' params=[] temps=[] @515..604
+        Variable 'MyClassInTestSpace1' @515..534
+        Return @562..594
+          Message unary 'initializeInNamespace' @563..594
+            Message unary 'new' @563..572
+              Variable 'super' @563..568
+      MethodDefinition unary 'initializeInNamespace' params=[] temps=[] @614..784
+        Assignment target='instVarInNamespace' @650..699
+          Literal string "'Initialized in TestSpace1'" @672..699
+        Cascade @713..773
+          Variable 'Transcript' @713..723
+          ;
+            Message keyword 'show:' @713..769
+              CascadeReceiver @723..723
+              Literal string "'MyClassInTestSpace1 instance created.'" @730..769
+          ;
+            Message unary 'cr' @723..773
+              CascadeReceiver @723..723
+      MethodDefinition unary 'printVar' params=[] temps=[] @794..854
+        Message unary 'printNl' @817..843
+          Variable 'instVarInNamespace' @817..835
+  Definition subclass name='MySimpleClass' @1093..1300
+    Message keyword 'subclass:' @1093..1124
+      Variable 'Object' @1093..1099
+      Literal symbol "#MySimpleClass" @1110..1124
+    Cascade @1239..1297
+      Variable 'Transcript' @1239..1249
+      ;
+        Message keyword 'show:' @1239..1293
+          CascadeReceiver @1249..1249
+          Literal string "'MySimpleClass definition processed.'" @1256..1293
+      ;
+        Message unary 'cr' @1249..1297
+          CascadeReceiver @1249..1249
+  Definition subclass name='MyClassWithIvars' @1348..1880
+    Message keyword 'subclass:' @1348..1382
+      Variable 'Object' @1348..1354
+      Literal symbol "#MyClassWithIvars" @1365..1382
+    InstanceVariables [instVar1, instVar2] @1389..1410
+    MethodDefinition unary 'initialize' params=[] temps=[] @1523..1614
+      Variable 'MyClassWithIvars' @1523..1539
+      Assignment target='instVar1' @1564..1578
+        Literal integer "10" @1576..1578
+      Assignment target='instVar2' @1588..1607
+        Literal string "'hello'" @1600..1607
+    MethodDefinition unary 'printIvars' params=[] temps=[] @1620..1778
+      Variable 'MyClassWithIvars' @1620..1636
+      Cascade @1661..1711
+        Variable 'Transcript' @1661..1671
+        ;
+          Message keyword 'show:' @1661..1690
+            CascadeReceiver @1671..1671
+            Literal string "'instVar1: '" @1678..1690
+        ;
+          Message keyword 'print:' @1671..1707
+            CascadeReceiver @1671..1671
+            Variable 'instVar1' @1699..1707
+        ;
+          Message unary 'cr' @1671..1711
+            CascadeReceiver @1671..1671
+      Cascade @1721..1771
+        Variable 'Transcript' @1721..1731
+        ;
+          Message keyword 'show:' @1721..1750
+            CascadeReceiver @1731..1731
+            Literal string "'instVar2: '" @1738..1750
+        ;
+          Message keyword 'print:' @1731..1767
+            CascadeReceiver @1731..1731
+            Variable 'instVar2' @1759..1767
+        ;
+          Message unary 'cr' @1731..1771
+            CascadeReceiver @1731..1731
+    MethodDefinition class unary 'greeting' params=[] temps=[] @1784..1878
+      Variable 'MyClassWithIvars' @1784..1800
+      Return @1829..1871
+        Literal string "'Hello from MyClassWithIvars class side!'" @1830..1871
+  Definition subclass name='MyClassWithClassVars' @2346..2755
+    Message keyword 'subclass:' @2346..2384
+      Variable 'Object' @2346..2352
+      Literal symbol "#MyClassWithClassVars" @2363..2384
+    Definition classScope @2391..2590
+      Message unary 'class' @2391..2417
+        Variable 'MyClassWithClassVars' @2391..2411
+      Assignment target='ClassVar1' @2496..2512
+        Literal integer "100" @2509..2512
+      Assignment target='AnotherClassVar' @2556..2583
+        Literal string "'shared'" @2575..2583
+    MethodDefinition class unary 'getClassVar1Value' params=[] temps=[] @2596..2671
+      Variable 'MyClassWithClassVars' @2596..2616
+      Return @2654..2664
+        Variable 'ClassVar1' @2655..2664
+    MethodDefinition unary 'printShared' params=[] temps=[] @2677..2753
+      Variable 'MyClassWithClassVars' @2677..2697
+      Message unary 'printNl' @2723..2746
+        Variable 'AnotherClassVar' @2723..2738
+  Definition namespace name='ParentNamespace' @2916..3053
+    Message keyword 'current:' @2916..2951
+      Variable 'Namespace' @2916..2925
+      Literal symbol "#ParentNamespace" @2935..2951
+    Definition subclass name='BaseClass' @2958..3051
+      Message keyword 'subclass:' @2958..2985
+        Variable 'Object' @2958..2964
+        Literal symbol "#BaseClass" @2975..2985
+      MethodDefinition unary 'baseMethod' params=[] temps=[] @2996..3045
+        Variable 'BaseClass' @2996..3005
+        Return @3022..3043
+          Literal string "'Base method result'" @3023..3043
+  Definition subclass name='MyDerivedClass' @3099..3377
+    Message keyword 'subclass:' @3099..3151
+      Variable 'ParentNamespace::BaseClass' @3099..3125
+      Literal symbol "#MyDerivedClass" @3136..3151
+    MethodDefinition unary 'derivedMethod' params=[] temps=[] @3222..3375
+      Variable 'MyDerivedClass' @3222..3236
+      Cascade @3264..3334
+        Variable 'Transcript' @3264..3274
+        ;
+          Message keyword 'show:' @3264..3305
+            CascadeReceiver @3274..3274
+            Literal string "'Derived method calls: '" @3281..3305
+        ;
+          Message keyword 'print:' @3274..3330
+            CascadeReceiver @3274..3274
+            Message unary 'baseMethod' @3314..3330
+              Variable 'super' @3314..3319
+        ;
+          Message unary 'cr' @3274..3334
+            CascadeReceiver @3274..3274
+      Return @3344..3368
+        Literal string "'Derived method result'" @3345..3368
+  Definition subclass name='OuterClass' @3502..3975
+    Message keyword 'subclass:' @3502..3530
+      Variable 'Object' @3502..3508
+      Literal symbol "#OuterClass" @3519..3530
+    Definition classScope @3537..3905
+      Message unary 'class' @3537..3553
+        Variable 'OuterClass' @3537..3547
+      MethodDefinition class unary 'outerClassMethod' params=[] temps=[] @3601..3663
+        Variable 'OuterClass' @3601..3611
+        Return @3640..3661
+          Literal string "'Outer class method'" @3641..3661
+      Definition subclass name='InnerClassOnClassSide' @3755..3899
+        Message keyword 'subclass:' @3755..3794
+          Variable 'Object' @3755..3761
+          Literal symbol "#InnerClassOnClassSide" @3772..3794
+        MethodDefinition unary 'innerInstanceMethod' params=[] temps=[] @3809..3889
+          Variable 'InnerClassOnClassSide' @3809..3830
+          Return @3856..3887
+            Literal string "'Inner instance on class side'" @3857..3887
+    MethodDefinition unary 'outerInstanceMethod' params=[] temps=[] @3911..3973
+      Variable 'OuterClass' @3911..3921
+      Return @3947..3971
+        Literal string "'Outer instance method'" @3948..3971
+  Definition subclass name='MyClassWithAttributes' @4148..4554
+    Message keyword 'subclass:' @4148..4187
+      Variable 'Object' @4148..4154
+      Literal symbol "#MyClassWithAttributes" @4165..4187
+    Pragma 'classCategory:' @4194..4232
+      Literal string "'Test-Attributes'" @4214..4231
+    InstanceVariables [ivar] @4266..4274
+    Pragma 'methodCategory:' @4280..4313
+      Literal string "'accessing'" @4301..4312
+    MethodDefinition unary 'getIvar' params=[] temps=[] @4318..4429
+      Variable 'MyClassWithAttributes' @4318..4339
+      Pragma 'methodComment:' @4361..4409
+        Literal string "'Returns the value of ivar'" @4381..4408
+      Return @4418..4423
+        Variable 'ivar' @4419..4423
+    MethodDefinition keyword 'setIvar:' params=[newValue] temps=[] @4435..4552
+      Variable 'MyClassWithAttributes' @4435..4456
+      Pragma 'methodCategory:' @4488..4520
+        Literal string "'mutating'" @4509..4519
+      Assignment target='ivar' @4529..4545
+        Variable 'newValue' @4537..4545
+  Cascade @4730..4798
+    Message unary 'new' @4730..4743
+      Variable 'Namespace' @4730..4739
+    ;
+      Message keyword 'name:' @4730..4769
+        CascadeReceiver @4743..4743
+        Literal symbol "#MyFixtureNamespace" @4750..4769
+    ;
+      Message keyword 'import:' @4743..4788
+        CascadeReceiver @4743..4743
+        Variable 'Smalltalk' @4779..4788
+    ;
+      Message unary 'yourself' @4743..4798
+        CascadeReceiver @4743..4743
+  Variable 'MyFixtureNamespace' @4863..4881
+  Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @4882..5064
+    Variable 'MyTraditionalClass' @4882..4900
+    Literal symbol "#Object" @4911..4918
+    Literal string "'ivarA ivarB'" @4943..4956
+    Literal string "'ClassVarA ClassVarB'" @4978..4999
+    Literal string "''" @5019..5021
+    Literal string "'MyCategory-MyFixtureNamespace'" @5033..5064
+  Variable 'MyFixtureNamespace' @5067..5085
+  Message keyword 'compile:' @5086..5131
+    Variable 'MyTraditionalClass' @5086..5104
+    Literal string "'myMethod ^ivarA'" @5114..5131
+  Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @5258..5451
+    Variable 'Object' @5258..5264
+    Literal symbol "#MyParserSimpleClass" @5275..5295
+    Literal string "'instVarOne instVarTwo'" @5320..5343
+    Literal string "'ClassVarOne ClassVarTwo'" @5365..5390
+    Literal string "''" @5410..5412
+    Literal string "'MyCategory-ParserExamples'" @5424..5451
+  Message keyword 'compile:' @5454..5546
+    Message unary 'class' @5454..5479
+      Variable 'MyParserSimpleClass' @5454..5473
+    Literal string "'initialize ClassVarOne := 10. ClassVarTwo := ''hello''.'" @5489..5546
+  Message keyword 'subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:' @5660..5895
+    Variable 'Object' @5660..5666
+    Literal symbol "#MyParserDetailedClass" @5677..5699
+    Literal string "'| explicitIvar1 explicitIvar2 | anotherIvar'" @5724..5769
+    Literal string "'MyClassVar'" @5822..5834
+    Literal string "''" @5854..5856
+    Literal string "'MyCategory-ParserDetailed'" @5868..5895
+  Message keyword 'compile:' @5898..5975
+    Message unary 'class' @5898..5925
+      Variable 'MyParserDetailedClass' @5898..5919
+    Literal string "'initializeClassVars MyClassVar := nil.'" @5935..5975
+  Variable 'Smalltalk' @6099..6108
+  Message keyword 'definition:' @6109..6624
+    Variable 'Namespace' @6109..6118
+    Block params=[] temps=[] @6131..6624
+      Error "Unexpected Keyword" @6137..6142
+      Message unary 'Smalltalk' @6166..6183
+        Error "Unexpected Keyword" @6166..6173
+      Variable 'OuterParserSpace' @6190..6206
+      Message keyword 'definition:' @6207..6621
+        Variable 'Object' @6207..6213
+        Block params=[] temps=[] @6226..6621
+          Error "Unexpected Keyword" @6236..6241
+          Message unary 'Smalltalk' @6269..6290
+            Error "Unexpected Keyword" @6269..6280
+          Variable 'Object' @6291..6297
+          Error "Unexpected Keyword" @6307..6325
+          Error "Unexpected Keyword" @6347..6362
+          Error "Unexpected Keyword" @6394..6411
+          Error "Unexpected Keyword" @6424..6433
+          Message keyword 'compile:' @6476..6527
+            Variable 'InnerParserClass' @6476..6492
+            Literal string "'getInnerIvar ^innerIvar'" @6502..6527
+          Message keyword 'compile:' @6537..6614
+            Message unary 'class' @6537..6559
+              Variable 'InnerParserClass' @6537..6553
+            Literal string "'initializeInner InnerParserClassVar := 100.'" @6569..6614
+
+--- diagnostics ---
+Error "Unexpected Keyword \"name:\"" @6137..6142
+Error "Unexpected Keyword \"import:\"" @6166..6173
+Error "Unexpected Keyword \"name:\"" @6236..6241
+Error "Unexpected Keyword \"superclass:\"" @6269..6280
+Error "Unexpected Keyword \"instanceVariables:\"" @6307..6325
+Error "Unexpected Keyword \"classVariables:\"" @6347..6362
+Error "Unexpected Keyword \"poolDictionaries:\"" @6394..6411
+Error "Unexpected Keyword \"category:\"" @6424..6433

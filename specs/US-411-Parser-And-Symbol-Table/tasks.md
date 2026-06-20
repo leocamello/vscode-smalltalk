@@ -45,8 +45,21 @@ S3 GST containers (AC3) → S4 symbol table + recovery (AC4, AC5).
 - [x] T057 `server/test/parser.test.ts` — unit assertions per construct + recovery tests (malformed statement → `ErrorNode` + diagnostic, no throw) + AST snapshots over fixtures `06,07,08`; `run.ts` runs lexer+parser suites under `test:parser`.
 - [x] T058 `check-types`, `lint`, `test:parser` green; open slice-2 PR (links #23).
 
+## Phase 6 — Slice 3a: GST brace container (AC3) — branch `feature/US-411-gst-containers`
+- [x] T060 `ast.ts` — `Definition`, `MethodDefinition`, `Pragma`, `InstanceVariables` nodes; `DynamicArray.temporaries`.
+- [x] T061 Method definitions: `Class >> sel`, `Class class >> sel` (full) + `sel [ … ]` (short) with unary/binary/keyword patterns; `looksLikeMethodDef`/`looksLikeShortMethodDef`. *(AC3)*
+- [x] T062 Scoped definitions: `<expr> [ body ]` via trailing-`[`; `classifyDefiner` → subclass/namespace/extend/classScope; class/namespace name extraction. *(AC3)*
+- [x] T063 Class body: instance-var decls, nested defs, statements; `.` optional between items. *(AC3)*
+- [x] T064 Pragmas/attributes `<…>` (incl. `<primitive: …>`) in class/method bodies; `A::B` scoped names; `{ | t | … }` array-constructor temps. *(AC3)*
+- [x] T065 `server/test/container.test.ts` + shared `astDump.ts` — unit tests + no-throw sweep over `10–14` + AST snapshots `11,12,13`.
+- [x] T066 `check-types`, `lint`, `test:parser` green; open slice-3a PR (links #23).
+
+## Phase 7 — Slice 3b: GST chunk container + GST primaries (AC3, remainder)
+- [ ] S3b-1 Chunk method format `!Class methodsFor: '…'! … ! !` (mode switch over `!` chunks).
+- [ ] S3b-2 GST primaries: `#{…}` binding constants, `##(…)` compile-time constants (fixture 14).
+- [ ] S3b-3 Esoteric tail: implicit-receiver `definition: [ name: … ]` blocks, dotted-namespace `A.B` paths (fixture 11 tail).
+
 ## Later slices (tracked here, planned per-slice when started)
-- [ ] S3 GST containers (AC3): `Container` interface, brace + chunk plug-ins, **method patterns + primitives** (moved here from S2, see plan.md).
 - [ ] S4 Symbol table + recovery (AC4, AC5): `symbolTable.ts`, synchronization, kernel smoke test.
 
 ## Story-level Done (after S4)

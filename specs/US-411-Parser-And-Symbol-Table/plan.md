@@ -135,3 +135,54 @@ an AST.
 - `npm run test:parser` covers lexer **and** parser suites (unit + AST snapshots for `06,07,08`).
 - `check-types` + `lint` clean. Slice exit: fixtures `06,07,08` produce no `Error` node /
   diagnostic; recovery tests prove no-throw on malformed input.
+
+---
+
+# Slice 3 — GST containers (AC3)
+
+**Status:** slice 3a (brace) in progress on `feature/US-411-gst-containers`. Slice 2 merged (#32).
+
+## Scope split (kept reviewable)
+AC3 names two container formats; landing both at once is unreviewably large, so:
+- **Slice 3a (this PR): the GST brace format** — `Object subclass: #Foo [ … ]` class bodies,
+  `Foo >> sel [ … ]` / `Foo class >> sel [ … ]` and short-form `sel [ … ]` method definitions,
+  `obj extend [ … ]`, `Namespace current: #X [ … ]`, `Foo class [ … ]` class-side scopes, instance
+  -variable declarations, `<…>` attributes/pragmas (incl. `<primitive: …>`), method patterns
+  (unary/binary/keyword), and `Namespace::Class` scoped names. Snapshots over fixtures `11,12,13`.
+- **Slice 3b (next): the GST chunk method format** (`!Class methodsFor: '…'! … ! !`) and the GST
+  primaries `#{…}` binding / `##(…)` compile-time constants (fixture 14), plus the esoteric
+  "nested receiver" definition blocks (`Namespace definition: [ name: … ]`, implicit-receiver
+  keyword messages) and dotted-namespace paths (`A.B`) seen in fixture 11's tail.
+
+## Approach — files & integration
+The container layer is **layered over the slice-2 core** (the expression parser is untouched):
+- **`ast.ts`** — new nodes `Definition` (with `definitionKind`: subclass | namespace | extend |
+  classScope | scoped), `MethodDefinition` (target?, classSide, selector, messageType, params,
+  pragmas, temps, statements), `Pragma`, `InstanceVariables`; `DynamicArray` gains `temporaries`.
+- **`parser.ts`** — container recognition sits in `parseStatement` + a new `parseClassBody`:
+  - **Method def** `Class [class] >> pattern [ body ]` detected by `looksLikeMethodDef` lookahead
+    (so binary/keyword patterns like `>> + arg` don't break the expression parser).
+  - **Scoped def** `<expr> [ body ]`: parse the expression; a **trailing `[`** (left after a
+    complete keyword/unary message, vs a block that is a keyword arg) introduces a container body.
+    `classifyDefiner` derives the kind/name from the definer's shape.
+  - **Class-body items**: instance-var `| … |`, `<…>` pragmas, full/short method defs, nested
+    defs, and statements — `.` optional between items.
+  - **Short-form method** `pattern [ body ]` inside a body via `looksLikeShortMethodDef` (a leading
+    `Keyword`, a `BinarySelector + Identifier`, or `Identifier` directly before `[`).
+  - **Scoped names** `A::B` handled in `parsePrimary`.
+
+## Key decisions
+- Method defs are **not** `.`-separated from following items (GST grammar); the sequence loop
+  skips the `.`-requirement for `Definition`/`MethodDefinition` nodes.
+- Pragmas `<…>` are recognized only in body-leading / class-body position (a bare `<`), so `a < b`
+  stays a binary message; pragma selector is built from its `Keyword` parts, args via `parsePrimary`
+  (so the closing `>` is never consumed).
+- The container logic is isolated behind clear seams (`parseMethodDefinition`, `parseScopedDefinition`,
+  `parseClassBody`); the **chunk format plugs in alongside** in slice 3b without touching the core.
+
+## Verification
+- `server/test/container.test.ts` — unit tests for class/method/extend/namespace/class-scope defs,
+  all method patterns, pragmas, and a no-throw sweep over fixtures `10–14`; AST snapshots over
+  `11,12,13`. Shared `astDump.ts` serializer.
+- Slice exit: fixtures `12,13` snapshot with **zero diagnostics**; fixture `11`'s brace core is
+  clean — its only diagnostics are in the slice-3b tail (implicit-receiver `definition:` blocks).
