@@ -29,6 +29,9 @@
         "Programming Languages",
         "Snippets"
     ],
+    "activationEvents": [
+        "workspaceContains:**/*.{st,gst}"
+    ],
     "contributes": {
         "languages": [
             {
