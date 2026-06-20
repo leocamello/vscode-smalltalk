@@ -17,7 +17,10 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 | ⬜ Planned | **0.9.0** | Hardening, performance, beta polish | No P1 bugs for 2+ weeks |
 | ⬜ Planned | **1.0.0** | Product polish; remove `preview`; publish to Open VSX | Marketing-grade README + demos |
 
-_Last updated: 2026-06-20 — 0.4.0 shipped (navigation: outline, workspace symbols, go-to-definition); M3 parser/symbol-table done. Next focus: 0.5.0 / US-413 (completion)._
+**0.4.x (point release):** navigation polish — **US-417** (semantic `foldingRange` + `documentHighlight`),
+a near-free follow-up to 0.4.0 that reuses the US-411 AST. Independent of 0.5.0.
+
+_Last updated: 2026-06-20 — 0.4.0 shipped (navigation: outline, workspace symbols, go-to-definition); M3 parser/symbol-table done. Next focus: 0.5.0 / US-413 (completion); 0.4.x polish (US-417) queued._
 
 **Dialect scope:** GNU Smalltalk now; the parser is layered (core ANSI + pluggable GST
 container formats) so other dialects (e.g. Pharo/Tonel) can be added later without a

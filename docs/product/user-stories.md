@@ -960,3 +960,36 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * If it slips, it ships in v1.1 and must not block v1.0.
+
+---
+
+## US-417: Navigation Polish — Semantic Folding + Document Highlight
+
+* **ID:** US-417
+* **Status:** Planned (target **0.4.x** — small follow-up to US-412)
+* **Epic:** EPIC-004
+* **Priority:** Low
+* **Estimate:** S
+* **Date Proposed:** 2026-06-20
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **semantic code folding and highlighting of a symbol's other occurrences**, so that **navigating and reading a file feels as polished as the outline and go-to-definition already do.**
+
+**Acceptance Criteria (AC):**
+* AC1: `textDocument/foldingRange` returns ranges for class bodies, method bodies, blocks, and multi-line comments, walked from the US-411 AST (in addition to VS Code's default indentation/marker folding).
+* AC2: `textDocument/documentHighlight` highlights the occurrences of the symbol under the cursor within the current file — **scope-aware** (the same variable/parameter, or the same selector for message sends), not a naive same-text match.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 (ranged AST) and US-412 (provider plumbing) — both shipped.
+* [X] Scoped as a bonus/polish item; explicitly droppable.
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] foldingRange + documentHighlight providers implemented over the parse cache.
+* [ ] **Language Server:** unit tests (folding ranges per construct; scoped highlight resolution) + a real-server/e2e check.
+* [ ] Works with no `gst`.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Captured from the US-412 spec's "near-free bonuses" note. `foldingRange` is the truly near-free half (pure AST walk, reuses `parseCache`); `documentHighlight` needs the scope-aware resolution, hence its own AC. Ships as a 0.4.x point release, before/independently of 0.5.0 (US-413 completion).
