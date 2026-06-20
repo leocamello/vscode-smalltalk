@@ -1,10 +1,16 @@
 // Unit tests for the LSP provider mappings (US-412). Runs in Node via tsx —
 // uses only vscode-languageserver-types (no server runtime, no VS Code).
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { SymbolKind as LspSymbolKind, type DocumentSymbol } from 'vscode-languageserver-types';
 import { parse } from '../src/parser/parser.ts';
-import { buildSymbolTable } from '../src/parser/symbols.ts';
+import { buildSymbolTable, SymbolKind } from '../src/parser/symbols.ts';
 import { toDocumentSymbols } from '../src/providers/documentSymbol.ts';
+import { WorkspaceIndex, defaultExclude, excludeFromConfig } from '../src/providers/workspaceIndex.ts';
+import { toWorkspaceSymbols } from '../src/providers/workspaceSymbol.ts';
+
+const FIXTURE_DIR = path.join(process.cwd(), 'docs/research/gst-syntax/test-cases');
 
 let passed = 0;
 function test(name: string, fn: () => void): void {
@@ -65,6 +71,48 @@ test('namespace maps to a Namespace symbol containing its classes', () => {
 
 test('selectionRange is always within range', () => {
   outline('Object subclass: Foo [ | a | bar [ ^1 ] ]').forEach(assertContained);
+});
+
+// --- Workspace index + workspace/symbol (AC2) -------------------------------
+test('index.setFile + query finds classes and selectors', () => {
+  const idx = new WorkspaceIndex();
+  idx.setFile('file:///a.st', 'Object subclass: Foo [ bar [ ^1 ] at: k put: v [ ^k ] ]');
+  assert.deepEqual(idx.query('Foo').map((e) => e.name), ['Foo']);
+  const atput = idx.query('at:put:');
+  assert.equal(atput[0]?.kind, SymbolKind.Method);
+  assert.equal(atput[0]?.containerName, 'Foo'); // method's enclosing class
+  assert.equal(idx.query('').length, 3); // Foo + bar + at:put:
+});
+
+test('indexFolder scans real .st files and records locations', () => {
+  const idx = new WorkspaceIndex();
+  idx.indexFolder(FIXTURE_DIR);
+  assert.ok(idx.size >= 10, `expected the 15 fixtures indexed, got ${idx.size}`);
+  const simple = idx.query('MySimpleClass'); // defined in fixture 11
+  assert.ok(simple.length >= 1, 'expected MySimpleClass from fixture 11');
+  assert.match(simple[0]?.uri ?? '', /^file:\/\/.*11_/);
+  assert.ok((simple[0]?.range.start.line ?? -1) >= 0);
+});
+
+test('toWorkspaceSymbols maps kind, location, and container', () => {
+  const idx = new WorkspaceIndex();
+  idx.setFile('file:///a.st', 'Object subclass: Foo [ bar [ ^1 ] ]');
+  const syms = toWorkspaceSymbols(idx.query(''));
+  const foo = syms.find((s) => s.name === 'Foo');
+  assert.equal(foo?.kind, LspSymbolKind.Class);
+  const bar = syms.find((s) => s.name === 'bar');
+  assert.equal(bar?.kind, LspSymbolKind.Method);
+  assert.equal(bar?.containerName, 'Foo');
+  assert.equal(bar?.location.uri, 'file:///a.st');
+});
+
+test('exclude predicates skip build/VCS dirs and files.exclude entries', () => {
+  assert.equal(defaultExclude('/x/node_modules', 'node_modules', true), true);
+  assert.equal(defaultExclude('/x/.git', '.git', true), true);
+  assert.equal(defaultExclude('/x/src', 'src', true), false);
+  const fromCfg = excludeFromConfig({ '**/vendored': true, '**/keepme': false });
+  assert.equal(fromCfg('/x/vendored', 'vendored', true), true);
+  assert.equal(fromCfg('/x/keepme', 'keepme', true), false);
 });
 
 console.log(`providers: ${passed} tests passed.`);

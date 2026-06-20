@@ -19,10 +19,10 @@ Delivered in three slices (each its own PR): **A** documentSymbol → **B** work
 - [x] T015 `check-types`/`lint`/`test:parser`/`test:server` green + `npm run package` smoke; open Slice A PR (links the story).
 
 ## Phase 3 — Slice B: workspace/symbol (AC2)
-- [ ] T020 `server/src/providers/workspaceIndex.ts` — scan `**/*.{st,gst}` in workspace folders, parse + flatten; honor `files.exclude`; incremental on `didChange`/`didCreate`/`didDelete`.
-- [ ] T021 `server/src/providers/workspaceSymbol.ts` — query filter → `WorkspaceSymbol[]`; `onWorkspaceSymbol`; advertise capability.
-- [ ] T022 Unit + LSP server tests over a multi-file fixture dir; `files.exclude` respected.
-- [ ] T023 Slice B PR.
+- [x] T020 `server/src/providers/workspaceIndex.ts` — scan `**/*.{st,gst}` (sync fs walk, `MAX_FILES` guard), parse + flatten classes/namespaces/methods to located entries; `defaultExclude` + `excludeFromConfig(files.exclude)`; per-document refresh via `setFile`.
+- [x] T021 `server/src/providers/workspaceSymbol.ts` — substring query → `WorkspaceSymbol[]` (kind/location/containerName); `onWorkspaceSymbol` + `workspaceSymbolProvider` advertised; index built on `initialized` from `workspaceFolders` (+ `files.exclude` via configuration); kept fresh on `didChangeContent`, reverted from disk on `didClose`.
+- [x] T022 Unit tests (index query, real-folder scan over `test-cases/`, mapping, exclude predicates) + LSP server test driving `workspace/symbol` against the indexed fixture folder (answers `workspace/configuration`).
+- [x] T023 `check-types`/`lint`/`test:parser`/`test:server` green + package smoke; open Slice B PR.
 
 ## Phase 4 — Slice C: definition + freshness (AC3, AC4)
 - [ ] T030 `server/src/providers/definition.ts` — position → identifier/selector → class defs / all implementors → `Location[]` (same-file first); `onDefinition`; advertise capability.
