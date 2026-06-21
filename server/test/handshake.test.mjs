@@ -98,6 +98,7 @@ assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2
 assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
+assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -164,11 +165,36 @@ assert.ok(defResult.length >= 1, 'definition must resolve the `greet` send');
 assert.equal(defResult[0].uri, defUri, 'definition resolves within the same file');
 assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
 
+// --- textDocument/foldingRange (US-417 slice A) ---
+const foldUri = 'file:///folding-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: {
+      uri: foldUri,
+      languageId: 'smalltalk',
+      version: 1,
+      text: 'Object subclass: Folder [\n    items [\n        ^1\n    ]\n]',
+    },
+  },
+});
+send({ jsonrpc: '2.0', id: 4, method: 'textDocument/foldingRange', params: { textDocument: { uri: foldUri } } });
+const foldResult = (await receiveId(4)).result ?? [];
+assert.ok(
+  foldResult.some((r) => r.startLine === 0 && r.endLine === 4),
+  'class body should fold lines 0..4',
+);
+assert.ok(
+  foldResult.some((r) => r.startLine === 1 && r.endLine === 3),
+  'method body should fold lines 1..3',
+);
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);

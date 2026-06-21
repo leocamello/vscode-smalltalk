@@ -10,6 +10,8 @@ import { toDocumentSymbols } from '../src/providers/documentSymbol.ts';
 import { WorkspaceIndex, defaultExclude, excludeFromConfig } from '../src/providers/workspaceIndex.ts';
 import { toWorkspaceSymbols } from '../src/providers/workspaceSymbol.ts';
 import { findDefinitions, resolveDefinitionQuery } from '../src/providers/definition.ts';
+import { tokenize } from '../src/parser/lexer.ts';
+import { toFoldingRanges } from '../src/providers/foldingRange.ts';
 
 const FIXTURE_DIR = path.join(process.cwd(), 'docs/research/gst-syntax/test-cases');
 
@@ -146,6 +148,36 @@ test('findDefinitions returns class definitions and all selector implementors', 
   assert.deepEqual(selLocs.map((l) => l.uri).sort(), ['file:///a.st', 'file:///b.st']);
   // Same-file first: querying from b.st puts b.st's implementor first.
   assert.equal(selLocs[0]?.uri, 'file:///b.st');
+});
+
+// --- Folding ranges (AC1) ---------------------------------------------------
+const folds = (src: string) => toFoldingRanges(parse(src).ast, tokenize(src).tokens);
+const hasFold = (
+  ranges: ReturnType<typeof folds>,
+  startLine: number,
+  endLine: number,
+  kind?: string,
+) => ranges.some((r) => r.startLine === startLine && r.endLine === endLine && (kind === undefined || r.kind === kind));
+
+test('folds class bodies and method bodies with correct line ranges', () => {
+  const src = ['Object subclass: Foo [', '    greet [', '        ^1', '    ]', ']'].join('\n');
+  const ranges = folds(src);
+  assert.ok(hasFold(ranges, 0, 4), 'class Foo folds lines 0..4');
+  assert.ok(hasFold(ranges, 1, 3), 'method greet folds lines 1..3');
+});
+
+test('folds a multi-line block and skips single-line constructs', () => {
+  const block = ['x do: [ :each |', '    each printNl', ']'].join('\n');
+  assert.ok(hasFold(folds(block), 0, 2), 'block folds 0..2');
+  // A whole one-line method produces no fold (nothing to collapse).
+  assert.equal(folds('Object subclass: Foo [ bar [ ^1 ] ]').length, 0);
+});
+
+test('folds multi-line comments as comment ranges', () => {
+  const src = ['"', 'multi', 'line', '"', '1 + 1'].join('\n');
+  assert.ok(hasFold(folds(src), 0, 3, 'comment'), 'comment folds 0..3 with comment kind');
+  // A single-line comment does not fold.
+  assert.equal(folds('"one line" 1 + 1').length, 0);
 });
 
 console.log(`providers: ${passed} tests passed.`);
