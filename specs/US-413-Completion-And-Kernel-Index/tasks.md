@@ -62,7 +62,7 @@ Mark each task `[x]` as it lands. Tasks map to acceptance criteria and PR slices
 ## Phase 5 — Verify & Release
 - [x] T900 Output eval extended — `evals/datasets/completion/` (cases.json + run.ts), wired into
   `npm run eval` via `eval:completion`; **8/8** cases pass (CI runs `npm run eval` on all 3 OSes).
-- [~] T901 `verification.md` manual-QA matrix **staged** (12-row matrix + automated-evidence table);
-  manual pass in the Extension Dev Host (real-corpus + clean-install VSIX) **held for owner**.
-- [x] T902 CI green on Linux/macOS/Windows for slices A–D (#51–#54).
-- [ ] T903 Issue #1 closed with a demo; doc-rot audit; bump version + CHANGELOG; **owner** cuts v0.5.0.
+- [x] T901 `verification.md` manual-QA matrix executed (dev host + clean VSIX) and signed off — all
+  12 rows pass (2026-06-21).
+- [x] T902 CI green on Linux/macOS/Windows for slices A–D (#51–#54) + eval (#55) + release prep (#56).
+- [x] T903 Issue #1 closed with a demo; doc-rot audit (#56); version 0.5.0 + CHANGELOG; v0.5.0 released.
