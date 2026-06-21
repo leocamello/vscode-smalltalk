@@ -49,11 +49,15 @@ Mark each task `[x]` as it lands. Tasks map to acceptance criteria and PR slices
   green locally; PR (C) opened, CI watched, merge held.
 
 ## Phase 4 — Slice D: settings + status UX (AC5/AC7)
-- [ ] T400 `smalltalk.completion.kernelLibrary` (`auto|bundled|off`) + `smalltalk.completion.kernelPath`
-  in `package.json` (descriptions name the bundled dialect/version).
-- [ ] T401 Status-bar item showing resolved kernel identity (click → setting); one-time bundle-fallback
-  notice.
-- [ ] T402 e2e for the setting/status paths; layers green; PR (D) opened, CI watched, merge held.
+- [x] T400 `smalltalk.completion.kernelLibrary` (`auto|bundled|off`, default `auto`) +
+  `smalltalk.completion.kernelPath` in `package.json` (markdownDescription names the bundled dialect/
+  version: GNU Smalltalk 3.2.5; `kernelPath` cross-links `#smalltalk.gnuSmalltalkPath#`).
+- [x] T401 Status-bar item (`client/src/extension.ts`) showing resolved kernel identity (click → opens
+  the setting); one-time bundle-fallback notice on `auto`→`bundled`. Server pushes
+  `smalltalk/kernelStatus` from `configureKernel` (identity + requested setting).
+- [~] T402 e2e for the setting path (`AC5 default auto`; `off` suppresses / `bundled` restores kernel
+  completions — full setting→reconfigure→completion round-trip). `check-types`/`lint`/`test:parser`/
+  `test:server`/`test:e2e` (12) /`package` green locally; PR (D) opened, CI watched, merge held.
 
 ## Phase 5 — Verify & Release
 - [ ] T900 Output eval extended (`evals/` completion dataset) + `npm run eval` green.
