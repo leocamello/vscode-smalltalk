@@ -100,6 +100,7 @@ assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvid
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
+assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -208,11 +209,59 @@ send({
 const hlResult = (await receiveId(5)).result ?? [];
 assert.equal(hlResult.length, 2, 'both `foo` sends should be highlighted');
 
+// --- textDocument/completion (US-413 slice C) ---
+// Kernel completions (bundled, or installed when gst is present) are available
+// without any workspace file; assert a stable kernel selector + class appear.
+const cmpUri = 'file:///completion-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: { uri: cmpUri, languageId: 'smalltalk', version: 1, text: 'x print' },
+  },
+});
+// Cursor right after `print` (selector context after the receiver `x`).
+send({
+  jsonrpc: '2.0',
+  id: 6,
+  method: 'textDocument/completion',
+  params: { textDocument: { uri: cmpUri }, position: { line: 0, character: 7 } },
+});
+const cmpRaw = (await receiveId(6)).result ?? [];
+const cmpItems = Array.isArray(cmpRaw) ? cmpRaw : (cmpRaw.items ?? []);
+assert.ok(cmpItems.length > 0, 'completion should return kernel selectors after a receiver');
+assert.ok(
+  cmpItems.some((i) => i.label === 'printString'),
+  'expected the kernel selector printString among completions',
+);
+const printItem = cmpItems.find((i) => i.label === 'printString');
+assert.match(printItem.detail ?? '', /kernel/, 'kernel completion should carry kernel provenance in detail');
+
+// Head context: a class name from the kernel.
+const cmpHeadUri = 'file:///completion-head-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: cmpHeadUri, languageId: 'smalltalk', version: 1, text: 'Obj' } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 7,
+  method: 'textDocument/completion',
+  params: { textDocument: { uri: cmpHeadUri }, position: { line: 0, character: 3 } },
+});
+const cmpHeadRaw = (await receiveId(7)).result ?? [];
+const cmpHeadItems = Array.isArray(cmpHeadRaw) ? cmpHeadRaw : (cmpHeadRaw.items ?? []);
+assert.ok(
+  cmpHeadItems.some((i) => i.label === 'Object'),
+  'expected the kernel class Object in head-context completion',
+);
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
