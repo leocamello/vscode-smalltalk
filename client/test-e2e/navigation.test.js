@@ -86,6 +86,16 @@ suite('US-412 navigation (e2e)', () => {
     }
   });
 
+  test('US-417 AC1 foldingRange folds the class and method bodies', async () => {
+    const ranges = await waitFor(
+      () => vscode.commands.executeCommand('vscode.executeFoldingRangeProvider', sampleUri),
+      (r) => Array.isArray(r) && r.length > 0,
+    );
+    // sample.st: `Object subclass: Sample [` on line 1 ... `]` near the end.
+    assert.ok((ranges || []).some((r) => r.start === 1), 'expected a fold starting at the class body (line 1)');
+    assert.ok((ranges || []).length >= 2, 'expected folds for the class and at least one method');
+  });
+
   test('AC3 definition resolves the greet message send', async () => {
     const text = (await vscode.workspace.openTextDocument(sampleUri)).getText();
     const lines = text.split('\n');

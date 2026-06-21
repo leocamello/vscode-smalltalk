@@ -7,41 +7,16 @@
 // (vscode-languageserver-types only).
 
 import { type Location } from 'vscode-languageserver-types';
-import { NodeKind, type Node } from '../parser/ast';
+import { NodeKind } from '../parser/ast';
 import { parse } from '../parser/parser';
 import { SymbolKind } from '../parser/symbols';
+import { visit } from '../parser/walk';
 import type { IndexEntry, WorkspaceIndex } from './workspaceIndex';
 
 export interface DefinitionQuery {
   /** `class` → a class/namespace reference; `selector` → a message send. */
   readonly target: 'class' | 'selector';
   readonly name: string;
-}
-
-function isNode(value: unknown): value is Node {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as { kind?: unknown }).kind === 'string' &&
-    typeof (value as { start?: unknown }).start === 'number'
-  );
-}
-
-/** Visit every AST node (generic — walks any Node-valued property/array). */
-function visit(node: Node, fn: (n: Node) => void): void {
-  fn(node);
-  for (const key of Object.keys(node)) {
-    const value = (node as unknown as Record<string, unknown>)[key];
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (isNode(item)) {
-          visit(item, fn);
-        }
-      }
-    } else if (isNode(value)) {
-      visit(value, fn);
-    }
-  }
 }
 
 /** What does the cursor (byte `offset`) point at — a selector send or a name reference? */

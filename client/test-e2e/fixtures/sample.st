@@ -2,7 +2,9 @@
 Object subclass: Sample [
     | value |
 
-    greet [ ^'hi' ]
+    greet [
+        ^'hi'
+    ]
 
     value [ ^value ]
 
