@@ -825,34 +825,40 @@ Scenario: User follows Quick Start guide
 * **Status:** Planned
 * **Epic:** EPIC-004
 * **Priority:** High *(directly answers issue #1)*
-* **Estimate:** L
+* **Estimate:** L *(grown to XL by [ADR-0002](../decisions/0002-kernel-symbol-sourcing.md): adds live installed-kernel indexing + provenance/status UX)*
 * **Date Proposed:** 2026-06-13
 * **Owner:** Leonardo Nascimento
 
 **User Story:**
 > As a **Smalltalk developer**, I want **auto-completion for selectors, class names, and local/instance variables, including standard kernel-library selectors**, so that **I can write code faster with fewer lookups.**
 
+**Architecture:** kernel symbols follow [ADR-0002](../decisions/0002-kernel-symbol-sourcing.md) — an *installed-first, bundled-fallback* precedence chain over a **dialect-neutral index model** fed by **per-dialect source adapters** (GST file adapter now; image-based adapters later, per Constitution Principle IV).
+
 **Acceptance Criteria (AC):**
-* AC1: A build-time generator parses `../smalltalk-3.2.5/kernel/*.st` with our own parser into `server/data/kernel-index.json` (classes, superclass chains, selectors + arity).
-* AC2: Completion offers keyword selectors after a receiver (workspace > kernel ranking, prefix + camel-hump matching).
+* AC1: A build-time generator parses a GNU Smalltalk kernel source directory (the bundled `../smalltalk-3.2.5/kernel/*.st`) with our own parser into `server/data/kernel-index.json` — dialect-neutral model (`dialect`, `library`, `version`, `source` header; classes, superclass chains, selectors + arity). Built on a **reusable `.st`-directory indexer** (the same one AC6 uses), **facts only** (no comment prose).
+* AC2: Completion offers keyword selectors after a receiver (workspace > installed-kernel > bundled-kernel ranking, prefix + camel-hump matching).
 * AC3: Completion offers class names in expression-head position and temp/instance variables from the symbol-table scopes.
 * AC4: Multi-part keyword selectors insert as snippets (e.g. `at:put:` → `at:${1} put:${2}`).
-* AC5: A setting `smalltalk.completion.kernelLibrary` (`gst-3.2.5` | `off`) controls the kernel index.
+* AC5: A setting `smalltalk.completion.kernelLibrary` (`auto` | `bundled` | `off`, default `auto`) selects the kernel sourcing strategy; `smalltalk.completion.kernelPath` overrides the GST kernel-directory discovery.
+* AC6: When a GST install is discoverable (via `kernelPath`, the `smalltalk.gnuSmalltalkPath` prefix, or common locations), the kernel tier indexes its **actual** kernel sources live via the same directory indexer; otherwise it falls back to the bundled index.
+* AC7: Completion items carry **provenance** (workspace / installed / bundled-reference); a status-bar item shows the resolved kernel identity (e.g. "bundled (gst 3.2.5)" / "installed" / "off"), with a one-time notice on first fallback to the bundle.
 
 **Definition of Ready (DoR) Checklist:**
 * [X] Depends on US-411 + US-412 indexes.
 * [X] Licensing reviewed (kernel selector names/arities are facts; method comment prose is LGPL 2.1 — names/signatures only in v0.5.0).
+* [X] Sourcing architecture decided ([ADR-0002](../decisions/0002-kernel-symbol-sourcing.md)).
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Kernel-index generator + completion provider implemented.
-* [ ] **Language Server:** unit tests at cursor positions; index generator snapshot test.
+* [ ] Kernel-index model + bundled generator + live installed-kernel indexing + completion provider implemented (slices A–D).
+* [ ] **Language Server:** unit tests at cursor positions; index generator snapshot test; licensing (no-prose) test; resolution/discovery tests.
 * [ ] **End-to-End:** integration test asserting kernel + workspace completions.
 * [ ] GitHub issue #1 closed with a demo.
 * [ ] PO accepts the story.
 
 **Notes / Questions / Assumptions:**
 * Decide on shipping kernel method-comment text (with attribution) before hover (US-415).
+* Image-based dialect adapter (Pharo/Squeak, via reflective export) and a `smalltalk.dialect` axis are deferred follow-ups (ADR-0002).
 
 ---
 
