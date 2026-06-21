@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.4.1 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), and **US-417** (semantic folding + scope-aware document highlight, v0.4.1). **Next:** US-413 (completion + kernel index, 0.5.0 — closes #1). **Planned:** US-413–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
+> **Status summary (2026-06-21).** v0.2.0–v0.4.1 are shipped; **0.5.0 is in release prep**. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + kernel index, 0.5.0 — code merged; closes #1; manual-QA gate + tag pending). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
 
 ---
 
@@ -822,7 +822,7 @@ Scenario: User follows Quick Start guide
 ## US-413: Completion + GNU Smalltalk Kernel Index
 
 * **ID:** US-413
-* **Status:** Planned
+* **Status:** Done (code merged for 0.5.0, slices A–D #51–#54 + eval/verification #55; manual-QA gate + `v0.5.0` tag pending)
 * **Epic:** EPIC-004
 * **Priority:** High *(directly answers issue #1)*
 * **Estimate:** L *(grown to XL by [ADR-0002](../decisions/0002-kernel-symbol-sourcing.md): adds live installed-kernel indexing + provenance/status UX)*
@@ -850,10 +850,12 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Kernel-index model + bundled generator + live installed-kernel indexing + completion provider implemented (slices A–D).
-* [ ] **Language Server:** unit tests at cursor positions; index generator snapshot test; licensing (no-prose) test; resolution/discovery tests.
-* [ ] **End-to-End:** integration test asserting kernel + workspace completions.
-* [ ] GitHub issue #1 closed with a demo.
+* [X] Kernel-index model + bundled generator + live installed-kernel indexing + completion provider implemented (slices A–D, #51–#54).
+* [X] **Language Server:** unit tests at cursor positions; index generator snapshot test; licensing (no-prose) test; resolution/discovery tests.
+* [X] **End-to-End:** integration test asserting kernel + workspace completions (`client/test-e2e/completion.test.js`).
+* [X] **Output eval:** `evals/datasets/completion/` (8/8) wired into `npm run eval` (CI, 3 OSes).
+* [ ] GitHub issue #1 closed with a demo. *(pending release)*
+* [ ] Manual-QA matrix (`verification.md` §3) executed + signed off. *(release gate)*
 * [ ] PO accepts the story.
 
 **Notes / Questions / Assumptions:**

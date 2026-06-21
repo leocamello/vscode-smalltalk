@@ -8,7 +8,7 @@
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "preview": true,
     "icon": "icon.png",
     "main": "./dist/extension.js",
