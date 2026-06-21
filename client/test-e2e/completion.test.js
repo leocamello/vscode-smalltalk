@@ -70,6 +70,37 @@ suite('US-413 completion (e2e)', () => {
   });
 });
 
+suite('US-413 kernel library setting (e2e)', () => {
+  const cfg = () => vscode.workspace.getConfiguration('smalltalk.completion');
+
+  test('AC5 default kernelLibrary is auto', () => {
+    assert.strictEqual(cfg().get('kernelLibrary'), 'auto');
+  });
+
+  test('AC5 off suppresses kernel completions; bundled restores them', async () => {
+    const doc = await openSmalltalk('x print');
+    const position = new vscode.Position(0, 'x print'.length);
+    const original = cfg().inspect('kernelLibrary').workspaceValue;
+    try {
+      await cfg().update('kernelLibrary', 'off', vscode.ConfigurationTarget.Workspace);
+      const off = await waitFor(
+        () => vscode.commands.executeCommand('vscode.executeCompletionItemProvider', doc.uri, position),
+        (r) => !items(r).some((i) => label(i) === 'printString'),
+      );
+      assert.ok(!items(off).some((i) => label(i) === 'printString'), 'off should suppress kernel selectors');
+
+      await cfg().update('kernelLibrary', 'bundled', vscode.ConfigurationTarget.Workspace);
+      const bundled = await waitFor(
+        () => vscode.commands.executeCommand('vscode.executeCompletionItemProvider', doc.uri, position),
+        (r) => items(r).some((i) => label(i) === 'printString'),
+      );
+      assert.ok(items(bundled).some((i) => label(i) === 'printString'), 'bundled should provide kernel selectors');
+    } finally {
+      await cfg().update('kernelLibrary', original, vscode.ConfigurationTarget.Workspace);
+    }
+  });
+});
+
 function label(item) {
   return typeof item.label === 'string' ? item.label : item.label && item.label.label;
 }

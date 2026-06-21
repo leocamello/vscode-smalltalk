@@ -95,6 +95,26 @@
                     "default": "",
                     "description": "Absolute path to the GNU Smalltalk executable (gst). If empty, the extension will attempt to find 'gst' in your system PATH."
                 },
+                "smalltalk.completion.kernelLibrary": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "bundled",
+                        "off"
+                    ],
+                    "enumDescriptions": [
+                        "Index the kernel of an installed GNU Smalltalk if one is found (version-correct); otherwise use the bundled reference.",
+                        "Always use the bundled reference library (GNU Smalltalk 3.2.5).",
+                        "No kernel-library completions; only symbols from your workspace."
+                    ],
+                    "default": "auto",
+                    "markdownDescription": "Source for standard kernel-library completions (classes/selectors). `auto` prefers your **installed** GNU Smalltalk kernel and falls back to the **bundled** reference (**GNU Smalltalk 3.2.5**). The active source is shown in the status bar. Workspace symbols are always available regardless of this setting."
+                },
+                "smalltalk.completion.kernelPath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `#smalltalk.gnuSmalltalkPath#` and common install locations."
+                },
                 "smalltalk.trace.server": {
                     "type": "string",
                     "enum": [

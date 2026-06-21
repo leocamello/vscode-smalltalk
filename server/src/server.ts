@@ -40,6 +40,9 @@ const documents = new TextDocuments(TextDocument);
 const index = new WorkspaceIndex();
 const kernelService = new KernelIndexService();
 
+/** Custom notification: the resolved kernel-completion source (for the status bar). */
+const KERNEL_STATUS_NOTIFICATION = 'smalltalk/kernelStatus';
+
 const INDEX_DEBOUNCE_MS = 250;
 const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let workspaceFolders: string[] = [];
@@ -202,12 +205,17 @@ async function configureKernel(): Promise<void> {
   } catch {
     cfg = undefined;
   }
+  const requested = cfg?.completion?.kernelLibrary ?? 'auto';
   kernelService.configure({
-    kernelLibrary: cfg?.completion?.kernelLibrary ?? 'auto',
+    kernelLibrary: requested,
     kernelPath: cfg?.completion?.kernelPath || undefined,
     gnuSmalltalkPath: cfg?.gnuSmalltalkPath || undefined,
   });
-  connection.console.log(`Kernel completion: ${kernelService.identity.label}.`);
+  const identity = kernelService.identity;
+  connection.console.log(`Kernel completion: ${identity.label}.`);
+  // Tell the client so it can show the active source in the status bar and, on a
+  // fallback to the bundle, a one-time notice (AC7).
+  connection.sendNotification(KERNEL_STATUS_NOTIFICATION, { ...identity, requested });
 }
 
 function scheduleIndex(uri: string, text: string): void {
