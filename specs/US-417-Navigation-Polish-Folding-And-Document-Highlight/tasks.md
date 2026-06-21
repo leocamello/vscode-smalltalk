@@ -18,11 +18,11 @@ Mark each task `[x]` as it lands. Two slices: **A** foldingRange → **B** docum
 - [x] T015 `check-types`/`lint`/`test:parser`/`test:server`/`test:e2e` + package smoke green; open Slice A PR.
 
 ## Phase 3 — Slice B: documentHighlight (AC2)
-- [ ] T020 Parser: add the selector token range to `MessageNode` (additive); refresh AST snapshots.
-- [ ] T021 `providers/documentHighlight.ts` — selector match + scope-aware variable (nearest binding scope; file-wide if unbound).
-- [ ] T022 Wire `onDocumentHighlight`; advertise `documentHighlightProvider`.
-- [ ] T023 Unit tests (selector occurrences; scoped variable; no cross-scope bleed) + real-server LSP + e2e.
-- [ ] T024 `check-types`/`lint`/tests green; Slice B PR.
+- [x] T020 No AST change needed: selector token ranges are **derived in the provider** from the receiver/arg gaps + token stream (`tokenIn`), so nested sends aren't included and the parser/snapshots are untouched. `definition.ts` exposes `resolveQueryInAst` (no re-parse).
+- [x] T021 `providers/documentHighlight.ts` — selector match (all sends, each selector part) + scope-aware variable (`pathToOffset` + `bindingScope`: nearest block/method binding, else file-wide); writes for declarations/assignment targets. Shared `childNodes` added to `walk.ts`.
+- [x] T022 Wire `onDocumentHighlight`; advertise `documentHighlightProvider`.
+- [x] T023 Unit tests (unary + keyword selector occurrences; scoped variable; no cross-scope bleed; decl + assignment writes) + real-server LSP + Electron e2e (`executeDocumentHighlights`).
+- [x] T024 `check-types`/`lint`/`test:parser`/`test:server`/`test:e2e` (7/7) + package smoke green; open Slice B PR.
 
 ## Phase 4 — Verify & Release (0.4.1)
 - [ ] T900 Automated green (unit + LSP server + e2e); `npm run eval` unaffected.

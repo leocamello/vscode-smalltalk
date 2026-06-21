@@ -96,6 +96,23 @@ suite('US-412 navigation (e2e)', () => {
     assert.ok((ranges || []).length >= 2, 'expected folds for the class and at least one method');
   });
 
+  test('US-417 AC2 documentHighlight marks every send of the selector', async () => {
+    const text = (await vscode.workspace.openTextDocument(sampleUri)).getText();
+    const lines = text.split('\n');
+    const line = lines.findIndex((l) => l.includes('Sample new greet'));
+    const character = lines[line].indexOf('greet') + 2;
+    const highlights = await waitFor(
+      () =>
+        vscode.commands.executeCommand(
+          'vscode.executeDocumentHighlights',
+          sampleUri,
+          new vscode.Position(line, character),
+        ),
+      (r) => Array.isArray(r) && r.length >= 2,
+    );
+    assert.ok((highlights || []).length >= 2, 'expected both `greet` sends highlighted');
+  });
+
   test('AC3 definition resolves the greet message send', async () => {
     const text = (await vscode.workspace.openTextDocument(sampleUri)).getText();
     const lines = text.split('\n');

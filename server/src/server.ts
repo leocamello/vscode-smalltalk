@@ -8,6 +8,8 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
   type DefinitionParams,
+  type DocumentHighlight,
+  type DocumentHighlightParams,
   type DocumentSymbol,
   type DocumentSymbolParams,
   type FoldingRange,
@@ -22,6 +24,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getAst, getSymbols, getTokens, invalidate } from './documents/parseCache';
 import { toDocumentSymbols } from './providers/documentSymbol';
 import { toFoldingRanges } from './providers/foldingRange';
+import { documentHighlightsAt } from './providers/documentHighlight';
 import { WorkspaceIndex, defaultExclude, excludeFromConfig, type ExcludePredicate } from './providers/workspaceIndex';
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
@@ -51,6 +54,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       workspaceSymbolProvider: true,
       definitionProvider: true,
       foldingRangeProvider: true,
+      documentHighlightProvider: true,
     },
   };
 });
@@ -93,6 +97,11 @@ connection.onDefinition((params: DefinitionParams): Location[] => {
 connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
   const doc = documents.get(params.textDocument.uri);
   return doc ? toFoldingRanges(getAst(doc), getTokens(doc)) : [];
+});
+
+connection.onDocumentHighlight((params: DocumentHighlightParams): DocumentHighlight[] => {
+  const doc = documents.get(params.textDocument.uri);
+  return doc ? documentHighlightsAt(getAst(doc), getTokens(doc), doc.offsetAt(params.position)) : [];
 });
 
 // Keep the workspace index fresh, debounced so rapid typing does not reparse on
