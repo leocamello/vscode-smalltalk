@@ -23,11 +23,15 @@ Mark each task `[x]` as it lands. Tasks map to acceptance criteria and PR slices
   CI watched, merge held. *(awaiting owner go-ahead to push/open PR)*
 
 ## Phase 2 — Slice B: kernel index service (AC5/AC6)
-- [ ] T200 `server/src/kernel/kernelIndexService.ts` — load bundle; discover install
-  (`kernelPath` → `gnuSmalltalkPath` prefix → common locations); resolve `auto|bundled|off`;
-  provenance-tagged lookups; re-resolve on config change.
-- [ ] T201 Unit + discovery tests (temp fixture kernel dir; no-`gst` fallback).
-- [ ] T202 Layers green; PR (B) opened, CI watched, merge held.
+- [x] T200 `server/src/kernel/kernelIndexService.ts` — load bundle (via `bundledIndex.ts`, JSON
+  imported so esbuild inlines it); `discovery.ts` discovers install (`kernelPath` →
+  `gnuSmalltalkPath` prefix → common locations); resolve `auto|bundled|off`; provenance-tagged
+  `selectors()`/`classes()`; re-resolve on config change (`configure`). `resolveJsonModule` enabled.
+- [x] T201 Unit + discovery tests (`kernelService.test.ts`, wired into `run.ts`) — temp fixture
+  kernel dirs; gst-prefix derivation; no-install bundled fallback; reconfigure. Hermetic (common
+  locations injectable).
+- [~] T202 `check-types`/`lint`/`test:parser` (10 new)/`test:server`/`compile` green locally;
+  PR (B) opened, CI watched, merge held. *(VSIX bundling of the JSON verified in slice C / T301.)*
 
 ## Phase 3 — Slice C: completion provider (AC2–AC4, AC7 items)
 - [ ] T300 `server/src/providers/completion.ts` — cursor-context detection over `parseCache`
