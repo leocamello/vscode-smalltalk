@@ -74,8 +74,9 @@ Phase 1 (declarative foundation + onboarding docs) shipped in **v0.2.0**; the Ty
 client/server scaffold and the *Run Current File* command shipped in **v0.3.0**. Phase 2 is
 underway: the error-tolerant parser + symbol table (**M3 / US-411**) and the first navigation
 features — outline, workspace symbol search, and go-to-definition (**US-412**) — shipped in
-**v0.4.0**. Current focus is **US-413** — completion + a GNU Smalltalk kernel index (0.5.0);
-diagnostics, hover, and formatting follow.
+**v0.4.0**, with semantic folding + document highlight (**US-417**) in **v0.4.1**. Current focus is
+**US-413** — completion + a GNU Smalltalk kernel index (0.5.0); diagnostics, hover, and formatting
+follow.
 
 See [`docs/ROADMAP.md`](../ROADMAP.md) for live milestone status, [`epics.md`](epics.md) and
 [`user-stories.md`](user-stories.md) for the backlog, and [`docs/decisions/`](../decisions/)

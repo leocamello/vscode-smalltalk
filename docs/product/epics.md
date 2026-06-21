@@ -105,7 +105,7 @@
 ## EPIC-004: Language Intelligence — TypeScript LSP
 
 * **ID:** EPIC-004
-* **Status:** In Progress (US-410 scaffold, US-411 parser/symbols, US-412 navigation all done; v0.4.0 shipped. Next: US-413 completion)
+* **Status:** In Progress (US-410 scaffold, US-411 parser/symbols, US-412 navigation, US-417 folding+highlight all done; v0.4.0 + v0.4.1 shipped. Next: US-413 completion)
 * **Priority:** Medium
 * **Phase:** Phase 2
 * **Date Proposed:** 2025-05-02
