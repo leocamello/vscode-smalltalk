@@ -3,7 +3,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { SymbolKind as LspSymbolKind, type DocumentSymbol } from 'vscode-languageserver-types';
+import {
+  CompletionItemKind,
+  InsertTextFormat,
+  SymbolKind as LspSymbolKind,
+  type CompletionItem,
+  type DocumentSymbol,
+} from 'vscode-languageserver-types';
 import { parse } from '../src/parser/parser.ts';
 import { buildSymbolTable, SymbolKind } from '../src/parser/symbols.ts';
 import { toDocumentSymbols } from '../src/providers/documentSymbol.ts';
@@ -13,6 +19,8 @@ import { findDefinitions, resolveDefinitionQuery } from '../src/providers/defini
 import { tokenize } from '../src/parser/lexer.ts';
 import { toFoldingRanges } from '../src/providers/foldingRange.ts';
 import { documentHighlightsAt } from '../src/providers/documentHighlight.ts';
+import { completionsAt } from '../src/providers/completion.ts';
+import { Provenance } from '../src/kernel/model.ts';
 
 const FIXTURE_DIR = path.join(process.cwd(), 'docs/research/gst-syntax/test-cases');
 
@@ -212,6 +220,80 @@ test('highlight on a variable includes its declaration and assignment writes', (
   const hs = highlightsAt(src, '^x'); // a use of x
   // declaration x, assignment target x, and ^x — but not y.
   assert.equal(hs.length, 3);
+});
+
+// --- completion (US-413 slice C) -------------------------------------------
+const complete = (
+  src: string,
+  offset: number,
+  selectors: { selector: string; provenance: Provenance }[],
+  classes: { name: string; provenance: Provenance }[],
+): CompletionItem[] =>
+  completionsAt(offset, src, tokenize(src).tokens, parse(src).ast, buildSymbolTable(parse(src).ast), selectors, classes);
+
+test('completion: selector context after a receiver offers selectors + keyword snippet', () => {
+  const src = 'x at';
+  const items = complete(
+    src,
+    src.length,
+    [
+      { selector: 'at:put:', provenance: Provenance.BundledKernel },
+      { selector: 'at:', provenance: Provenance.BundledKernel },
+      { selector: 'add:', provenance: Provenance.Workspace }, // doesn't match "at"
+    ],
+    [],
+  );
+  const labels = items.map((i) => i.label);
+  assert.ok(labels.includes('at:put:') && labels.includes('at:'), 'should offer at:put: and at:');
+  assert.ok(!labels.includes('add:'), 'add: does not match prefix "at"');
+  const atput = items.find((i) => i.label === 'at:put:');
+  assert.equal(atput?.insertTextFormat, InsertTextFormat.Snippet);
+  assert.equal(atput?.insertText, 'at:${1} put:${2}', 'multi-part keyword inserts as a snippet');
+});
+
+test('completion: workspace selectors rank above kernel selectors', () => {
+  const src = 'x pr';
+  const items = complete(
+    src,
+    src.length,
+    [
+      { selector: 'printString', provenance: Provenance.BundledKernel },
+      { selector: 'printOn:', provenance: Provenance.Workspace },
+    ],
+    [],
+  );
+  const ws = items.find((i) => i.label === 'printOn:');
+  const kn = items.find((i) => i.label === 'printString');
+  assert.ok(ws && kn);
+  assert.ok((ws.sortText ?? '') < (kn.sortText ?? ''), 'workspace selector sorts before kernel selector');
+});
+
+test('completion: head context offers in-scope variables (instance vars)', () => {
+  const src = 'Object subclass: Foo [ | count | bar [ | total | ^c ] ]';
+  const offset = src.indexOf('^c') + 2; // just after the `c`
+  const items = complete(src, offset, [], [{ name: 'Collection', provenance: Provenance.Workspace }]);
+  const count = items.find((i) => i.label === 'count');
+  assert.ok(count, 'should offer the in-scope instance variable count');
+  assert.equal(count?.detail, 'instanceVariable');
+  assert.ok(!items.some((i) => i.label === 'total'), 'total does not match prefix "c"');
+});
+
+test('completion: head context offers class names; camel-hump matches', () => {
+  const src = 'OC';
+  const items = complete(src, src.length, [], [{ name: 'OrderedCollection', provenance: Provenance.Workspace }]);
+  const oc = items.find((i) => i.label === 'OrderedCollection');
+  assert.ok(oc, 'camel-hump prefix OC should match OrderedCollection');
+  assert.equal(oc?.kind, CompletionItemKind.Class);
+});
+
+test('completion: variables rank above classes in head context', () => {
+  const src = 'Object subclass: Foo [ bar [ | value | ^v ] ]';
+  const offset = src.indexOf('^v') + 2;
+  const items = complete(src, offset, [], [{ name: 'Value', provenance: Provenance.Workspace }]);
+  const v = items.find((i) => i.label === 'value');
+  const cls = items.find((i) => i.label === 'Value');
+  assert.ok(v && cls);
+  assert.ok((v.sortText ?? '') < (cls.sortText ?? ''), 'in-scope variable sorts before a class');
 });
 
 console.log(`providers: ${passed} tests passed.`);

@@ -34,14 +34,19 @@ Mark each task `[x]` as it lands. Tasks map to acceptance criteria and PR slices
   PR (B) opened, CI watched, merge held. *(VSIX bundling of the JSON verified in slice C / T301.)*
 
 ## Phase 3 — Slice C: completion provider (AC2–AC4, AC7 items)
-- [ ] T300 `server/src/providers/completion.ts` — cursor-context detection over `parseCache`
-  (receiver → selectors; head → classes + scope vars); merge workspace + kernel; rank
-  workspace > installed > bundled (prefix + camel-hump); keyword-selector snippets; provenance in items.
-- [ ] T301 Advertise `completionProvider` + wire `onCompletion` in `server.ts`; ensure
-  `kernel-index.json` is bundled into the VSIX.
-- [ ] T302 Provider unit tests at cursor positions; extend `test:server` for completion; e2e fixture
-  asserting kernel + workspace completions.
-- [ ] T303 Layers green; PR (C) opened, CI watched, merge held.
+- [x] T300 `server/src/providers/completion.ts` — token-based cursor-context detection (receiver/`;` →
+  selectors; head → in-scope vars + classes); merge workspace + kernel; rank
+  workspace > installed > bundled (prefix + camel-hump); keyword-selector snippets; provenance in
+  `detail`/`sortText`. In-scope vars via AST path + symbol-table class lookup.
+- [x] T301 Advertise `completionProvider` (`triggerCharacters [' ', ':']`) + wire `onCompletion`,
+  `configureKernel` (pull `smalltalk.completion.*`) in `server.ts`. JSON imported via
+  `bundledIndex.ts` → **esbuild inlines it into `dist/server.js`** (verified: bundle grew, VSIX ships
+  `server.js`; `npm run package` smoke ✓).
+- [x] T302 Provider unit tests (5, in `providers.test.ts`); `handshake.test.mjs` drives real
+  `textDocument/completion` (selector + head); `client/test-e2e/completion.test.js` (selector / snippet
+  / head-class). e2e 10/10.
+- [~] T303 `check-types`/`lint`/`test:parser` (23 providers)/`test:server`/`test:e2e` (10) /`package`
+  green locally; PR (C) opened, CI watched, merge held.
 
 ## Phase 4 — Slice D: settings + status UX (AC5/AC7)
 - [ ] T400 `smalltalk.completion.kernelLibrary` (`auto|bundled|off`) + `smalltalk.completion.kernelPath`

@@ -7,6 +7,8 @@ import {
   DidChangeConfigurationNotification,
   TextDocuments,
   TextDocumentSyncKind,
+  type CompletionItem,
+  type CompletionParams,
   type DefinitionParams,
   type DocumentHighlight,
   type DocumentHighlightParams,
@@ -28,10 +30,15 @@ import { documentHighlightsAt } from './providers/documentHighlight';
 import { WorkspaceIndex, defaultExclude, excludeFromConfig, type ExcludePredicate } from './providers/workspaceIndex';
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
+import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
+import { KernelIndexService, type KernelLibrarySetting } from './kernel/kernelIndexService';
+import { Provenance } from './kernel/model';
+import { SymbolKind } from './parser/symbols';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const index = new WorkspaceIndex();
+const kernelService = new KernelIndexService();
 
 const INDEX_DEBOUNCE_MS = 250;
 const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -47,6 +54,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
   workspaceFolders = (params.workspaceFolders ?? [])
     .map((folder) => uriToPath(folder.uri))
     .filter((p): p is string => p !== undefined);
+  // Have a usable kernel immediately (refined from config in onInitialized).
+  kernelService.configure({ kernelLibrary: 'auto' });
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -55,6 +64,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       foldingRangeProvider: true,
       documentHighlightProvider: true,
+      // Space/`:` auto-trigger selector + keyword-part completion; identifier
+      // typing triggers via the client's default quick-suggestions.
+      completionProvider: { triggerCharacters: [' ', ':'] },
     },
   };
 });
@@ -68,11 +80,13 @@ connection.onInitialized(async () => {
   } catch {
     // Client without dynamic registration — the initial index still applies files.exclude.
   }
+  await configureKernel();
   await rebuildIndex();
 });
 
-// Re-scan when settings change so edits to `files.exclude` take effect.
+// Re-scan when settings change so edits to `files.exclude` and the kernel settings take effect.
 connection.onDidChangeConfiguration(() => {
+  void configureKernel();
   void rebuildIndex();
 });
 
@@ -102,6 +116,35 @@ connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
 connection.onDocumentHighlight((params: DocumentHighlightParams): DocumentHighlight[] => {
   const doc = documents.get(params.textDocument.uri);
   return doc ? documentHighlightsAt(getAst(doc), getTokens(doc), doc.offsetAt(params.position)) : [];
+});
+
+connection.onCompletion((params: CompletionParams): CompletionItem[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return [];
+  }
+  const entries = index.all();
+  const selectors: SelectorCandidate[] = [
+    ...entries
+      .filter((e) => e.kind === SymbolKind.Method)
+      .map((e) => ({ selector: e.name, provenance: Provenance.Workspace })),
+    ...kernelService.selectors().map((s) => ({ selector: s.selector, provenance: s.provenance })),
+  ];
+  const classes: ClassCandidate[] = [
+    ...entries
+      .filter((e) => e.kind === SymbolKind.Class || e.kind === SymbolKind.Namespace)
+      .map((e) => ({ name: e.name, provenance: Provenance.Workspace })),
+    ...kernelService.classes().map((c) => ({ name: c.name, provenance: c.provenance })),
+  ];
+  return completionsAt(
+    doc.offsetAt(params.position),
+    doc.getText(),
+    getTokens(doc),
+    getAst(doc),
+    getSymbols(doc),
+    selectors,
+    classes,
+  );
 });
 
 // Keep the workspace index fresh, debounced so rapid typing does not reparse on
@@ -147,6 +190,24 @@ async function rebuildIndex(): Promise<void> {
     indexDoc(doc.uri, doc.getText());
   }
   connection.console.log(`Indexed ${index.size} Smalltalk file(s).`);
+}
+
+/** Pull `smalltalk.completion.*` and re-resolve the kernel tier. Never throws. */
+async function configureKernel(): Promise<void> {
+  let cfg:
+    | { gnuSmalltalkPath?: string; completion?: { kernelLibrary?: KernelLibrarySetting; kernelPath?: string } }
+    | undefined;
+  try {
+    cfg = (await connection.workspace.getConfiguration('smalltalk')) as typeof cfg;
+  } catch {
+    cfg = undefined;
+  }
+  kernelService.configure({
+    kernelLibrary: cfg?.completion?.kernelLibrary ?? 'auto',
+    kernelPath: cfg?.completion?.kernelPath || undefined,
+    gnuSmalltalkPath: cfg?.gnuSmalltalkPath || undefined,
+  });
+  connection.console.log(`Kernel completion: ${kernelService.identity.label}.`);
 }
 
 function scheduleIndex(uri: string, text: string): void {
