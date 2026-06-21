@@ -6,6 +6,22 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-21
+
+### Added
+
+-   **Auto-completion** for GNU Smalltalk, powered by the bundled language engine — no `gst` required:
+    -   **Selectors after a receiver** — unary and keyword selectors from your workspace and the standard kernel library, ranked workspace-first, with prefix and camel-hump matching. Multi-part keyword selectors insert as snippets (e.g. `at:put:` → `at:${1} put:${2}`).
+    -   **Class names & in-scope variables** — class names in expression-head position, plus the temporaries, parameters, and instance/class variables visible at the cursor.
+-   **GNU Smalltalk kernel index** — standard-library classes and selectors are available for completion out of the box. By default (`auto`) the extension indexes your **installed** GNU Smalltalk kernel when it can find one (version-correct), otherwise it falls back to a **bundled** reference (GNU Smalltalk 3.2.5). The active source is shown in a **status-bar item**, and completion items indicate their origin (workspace / installed / bundled) so a suggestion is never mistaken for one guaranteed to be installed.
+
+### Settings
+
+-   **`smalltalk.completion.kernelLibrary`** (`auto` | `bundled` | `off`, default `auto`) — how kernel-library completions are sourced.
+-   **`smalltalk.completion.kernelPath`** — optional path to a GNU Smalltalk kernel source directory (the folder of `.st` files) used by `auto`.
+
+This answers the long-standing autocompletion request (issue #1). Everything works without GNU Smalltalk installed; install `gst` (or set `kernelPath`) for version-correct kernel completions.
+
 ## [0.4.1] - 2026-06-21
 
 ### Added

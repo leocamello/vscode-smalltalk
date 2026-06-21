@@ -84,7 +84,7 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Go to Definition:** `F12` / `Ctrl/Cmd+Click` — from a class reference to its definition, or from a message send to every implementor.
 *   **Code Folding:** collapse class/method/block bodies and multi-line comments.
 *   **Highlight Occurrences:** put the cursor on a selector or variable to highlight its other uses in the file (scope-aware).
-*   _(Coming Soon)_ Auto Completion
+*   **Auto Completion:** selectors after a receiver, class names, and in-scope variables — including **standard kernel-library** classes/selectors. Multi-part keyword selectors insert as snippets (`at:put:` → `at:⟨1⟩ put:⟨2⟩`). Kernel completions come from your **installed** GNU Smalltalk when found, otherwise a **bundled** reference (GNU Smalltalk 3.2.5); the active source is shown in the status bar. Configurable via [`smalltalk.completion.kernelLibrary`](#configuration).
 *   _(Coming Soon)_ Diagnostics (Error Checking)
 *   _(Coming Soon)_ Hover Information
 *   _(Coming Soon)_ Formatting
@@ -100,6 +100,16 @@ The following settings are available:
     *   **Description:** Specifies the absolute path to the GNU Smalltalk executable (`gst`). This setting is used by features that need to invoke GNU Smalltalk (like running files or future LSP integration) if the executable cannot be found in the system's `PATH` environment variable.
     *   **Type:** `string`
     *   **Default:** `""` (The extension will first attempt to find `gst` in the system `PATH`).
+
+*   **`smalltalk.completion.kernelLibrary`**
+    *   **Description:** Source for standard kernel-library completions (classes/selectors). `auto` prefers your **installed** GNU Smalltalk kernel and falls back to the **bundled** reference (GNU Smalltalk 3.2.5); `bundled` always uses the bundled reference; `off` disables kernel completions (workspace symbols remain). The active source is shown in the status bar.
+    *   **Type:** `string` — `auto` | `bundled` | `off`
+    *   **Default:** `auto`
+
+*   **`smalltalk.completion.kernelPath`**
+    *   **Description:** Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `smalltalk.gnuSmalltalkPath` and common install locations.
+    *   **Type:** `string`
+    *   **Default:** `""`
 
 <!-- Commands (US-301) -->
 ## Commands
