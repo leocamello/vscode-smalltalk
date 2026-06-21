@@ -22,7 +22,11 @@
 - [x] **TDD**: tests authored with the change at all three layers; no parser/AST change (snapshots untouched).
 
 ## Section 4: Manual Verification — Extension Host spot-check (0.4.1 gate)
-Launch with **F5**, open a kernel file. Lightweight, since the behavior is automated-tested end-to-end.
+Launch with **F5**, then open **[`spot-check.st`](./spot-check.st)** (in this folder) — a single
+self-contained file with the exact S1/S2/S3 examples and inline instructions. It parses with **0
+diagnostics**, so any odd behaviour is the feature under test, not a parse error.
+Tip: to see *only* this extension's output in the console, launch with installed extensions disabled:
+`code --extensionDevelopmentPath="$PWD" --disable-extensions <folder>`.
 
 | ID | Check | Expected | Result |
 |----|-------|----------|--------|
