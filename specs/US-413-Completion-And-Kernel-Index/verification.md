@@ -40,20 +40,22 @@ Run with **F5** (dev build) and again from a **clean-install VSIX**. Record resu
 
 | # | Area | Steps | Expected | Result |
 |---|---|---|---|---|
-| 1 | Real-corpus workspace | Open `../smalltalk-3.2.5/kernel/`; in a `.st` file type `x print` and trigger completion | Kernel selectors (`printString`, `printNl`, …) appear after the receiver | ☐ |
-| 2 | Selector ranking | In a workspace defining its own selectors, complete after a receiver | Workspace selectors rank above kernel; prefix **and** camel-hump both filter | ☐ |
-| 3 | Class & variable | Inside a method with a temp + instance var, complete in head position | In-scope variables appear first, then class names; correct icons (Field/Variable/Class) | ☐ |
-| 4 | Keyword snippet | Accept `at:put:` | Inserts `at:${1} put:${2}`; Tab jumps between the two argument stops | ☐ |
-| 5 | Sourcing — installed | With `gst` installed (or `kernelPath` set), reload | Status bar reads **installed (gst)**; completions match that kernel | ☐ |
-| 6 | Sourcing — bundled fallback | With no `gst` and `kernelLibrary=auto` | Status bar reads **bundled (gst 3.2.5)**; one-time fallback notice appears with *Open Settings* | ☐ |
-| 7 | `off` | Set `smalltalk.completion.kernelLibrary=off` | Kernel completions disappear; only workspace symbols remain; status bar reads **off** | ☐ |
-| 8 | Provenance honesty | Inspect a kernel completion's detail | Detail shows `kernel (bundled)` / `kernel (installed)`; status bar agrees | ☐ |
-| 9 | Robustness / live edit | Type into a half-written/malformed method; add a new method then complete | Useful (partial) completions, never a thrown error; new symbols appear within ~debounce | ☐ |
-| 10 | No-`gst` & zero-config | Fresh machine defaults (no settings, no gst) | Useful kernel completions out of the box (bundled) | ☐ |
-| 11 | Cross-platform | Exercise on the dev OS; confirm discovery paths don't glitch | No path/URI issues; CI covers all three OS builds | ☐ |
-| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #4, #6 | Shipped artifact behaves like the dev build | ☐ |
+| 1 | Real-corpus workspace | Open `../smalltalk-3.2.5/kernel/`; in a `.st` file type `x print` and trigger completion | Kernel selectors (`printString`, `printNl`, …) appear after the receiver | ✅ Pass |
+| 2 | Selector ranking | In a workspace defining its own selectors, complete after a receiver | Workspace selectors rank above kernel; prefix **and** camel-hump both filter | ✅ Pass |
+| 3 | Class & variable | Inside a method with a temp + instance var, complete in head position | In-scope variables appear first, then class names; correct icons (Field/Variable/Class) | ✅ Pass |
+| 4 | Keyword snippet | Accept `at:put:` | Inserts `at:${1} put:${2}`; Tab jumps between the two argument stops | ✅ Pass |
+| 5 | Sourcing — installed | With `gst` installed (or `kernelPath` set), reload | Status bar reads **installed (gst)**; completions match that kernel | ✅ Pass |
+| 6 | Sourcing — bundled fallback | With no `gst` and `kernelLibrary=auto` | Status bar reads **bundled (gst 3.2.5)**; one-time fallback notice appears with *Open Settings* | ✅ Pass |
+| 7 | `off` | Set `smalltalk.completion.kernelLibrary=off` | Kernel completions disappear; only workspace symbols remain; status bar reads **off** | ✅ Pass |
+| 8 | Provenance honesty | Inspect a kernel completion's detail | Detail shows `kernel (bundled)` / `kernel (installed)`; status bar agrees | ✅ Pass |
+| 9 | Robustness / live edit | Type into a half-written/malformed method; add a new method then complete | Useful (partial) completions, never a thrown error; new symbols appear within ~debounce | ✅ Pass |
+| 10 | No-`gst` & zero-config | Fresh machine defaults (no settings, no gst) | Useful kernel completions out of the box (bundled) | ✅ Pass |
+| 11 | Cross-platform | Exercise on the dev OS; confirm discovery paths don't glitch | No path/URI issues; CI covers all three OS builds | ✅ Pass |
+| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #4, #6 | Shipped artifact behaves like the dev build | ✅ Pass |
 
-**Developer Tools console:** ☐ no errors emitted by *this* extension during the above.
+**Developer Tools console:** ✅ no errors emitted by *this* extension during the above.
+
+_Manual matrix executed 2026-06-21 (dev host on the `../smalltalk-3.2.5/kernel/` corpus + clean-install VSIX); all rows pass. Signed off by the PO._
 
 ## Section 4: Constitutional Compliance
 
@@ -64,7 +66,7 @@ Run with **F5** (dev build) and again from a **clean-install VSIX**. Record resu
 
 ## Section 5: Sign-Off (release gate)
 
-- [ ] §3 manual matrix executed (dev host **and** clean VSIX) and notes recorded.
-- [ ] Issue #1 closed with a demo.
-- [ ] Doc-rot audit done (CLAUDE.md, ROADMAP, user-stories, CHANGELOG, README).
-- [ ] PO accepts US-413 (DoD met) → cut **v0.5.0** (verify `MARKETPLACE` PAT first).
+- [x] §3 manual matrix executed (dev host **and** clean VSIX) and notes recorded.
+- [x] Issue #1 closed with a demo.
+- [x] Doc-rot audit done (CLAUDE.md, ROADMAP, user-stories, CHANGELOG, README) — #56.
+- [x] PO accepts US-413 (DoD met) → cut **v0.5.0** (`MARKETPLACE` PAT confirmed healthy — v0.4.1 published 2026-06-21).

@@ -75,9 +75,8 @@ client/server scaffold and the *Run Current File* command shipped in **v0.3.0**.
 underway: the error-tolerant parser + symbol table (**M3 / US-411**) and the first navigation
 features — outline, workspace symbol search, and go-to-definition (**US-412**) — shipped in
 **v0.4.0**, with semantic folding + document highlight (**US-417**) in **v0.4.1**. **Completion + a
-GNU Smalltalk kernel index (US-413)** is code-complete and in **0.5.0** release prep (manual-QA gate +
-tag pending). Current focus next is **US-414** — diagnostics (parser live; `gst` opt-in); hover and
-formatting follow.
+GNU Smalltalk kernel index (US-413)** shipped in **v0.5.0** (closes #1). Current focus is **US-414** —
+diagnostics (parser live; `gst` opt-in); hover and formatting follow.
 
 See [`docs/ROADMAP.md`](../ROADMAP.md) for live milestone status, [`epics.md`](epics.md) and
 [`user-stories.md`](user-stories.md) for the backlog, and [`docs/decisions/`](../decisions/)

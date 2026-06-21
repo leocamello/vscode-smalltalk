@@ -8,13 +8,12 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 Marketplace as `leocamello.vscode-smalltalk`.
 
 ## Current status (2026-06-21)
-- **Latest (0.5.0, release prep):** **completion + a GNU Smalltalk kernel index** (US-413, closes #1)
-  — selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,
+- **Shipped:** v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
+  selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,
   bundled-fallback** ([ADR-0002](docs/decisions/0002-kernel-symbol-sourcing.md)); `kernelLibrary`
-  (`auto|bundled|off`) + status-bar identity. All four slices merged (#51–#54) + eval/verification
-  (#55); **manual-QA gate (`specs/US-413-*/verification.md` §3) + `v0.5.0` tag are the remaining,
-  owner-held steps.**
-- **Shipped:** v0.4.1 — **navigation polish** (semantic folding + scope-aware document highlight,
+  (`auto|bundled|off`) + status-bar identity. Slices A–D (#51–#54) + eval (#55) + release (#56);
+  manual-QA matrix signed off (`specs/US-413-*/verification.md`).
+- v0.4.1 — **navigation polish** (semantic folding + scope-aware document highlight,
   US-417). v0.4.0 — **code navigation** (outline/breadcrumbs, workspace symbol search,
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +

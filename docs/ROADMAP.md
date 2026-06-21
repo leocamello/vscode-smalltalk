@@ -10,7 +10,7 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 | ✅ Shipped | **0.3.0** | TypeScript + LSP scaffold (`client/` + `server/`, esbuild, bundled no-op server) + "Run Current File" (US-410, US-301) | Client↔server handshake; first command shipped |
 | ✅ Done | **M3** *(internal)* | Error-tolerant Smalltalk parser + symbol table (US-411, #23) | Kernel smoke test passes — 122 files, 0 crashes/diagnostics |
 | ✅ Shipped | **0.4.0** | Outline/workspace symbols + go-to-definition (US-412) | Navigation works without `gst` |
-| 🚧 Release prep | **0.5.0** | Completion + GNU Smalltalk kernel index (US-413) | Closes issue #1 — code merged; manual-QA gate + `v0.5.0` tag pending |
+| ✅ Shipped | **0.5.0** | Completion + GNU Smalltalk kernel index (US-413) | Closes issue #1 |
 | ⏭️ **Next** | **0.6.0** | Diagnostics — parser live; `gst` opt-in (US-414) | Squiggles on syntax errors |
 | ⬜ Planned | **0.7.0** | Hover (US-415) | Docs on hover |
 | ⬜ Planned | **0.8.0** | Formatting (US-416) — *droppable to 1.1 if it slips* | Idempotent, opt-in |
@@ -20,7 +20,7 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 **✅ 0.4.1 (point release):** navigation polish — **US-417** (semantic `foldingRange` +
 `documentHighlight`), a near-free follow-up to 0.4.0 reusing the US-411 AST.
 
-_Last updated: 2026-06-21 — US-413 (completion + kernel index) code merged (slices A–D, #51–#54) + eval/verification (#55); **0.5.0 in release prep — manual-QA gate (`specs/US-413-*/verification.md`) + `v0.5.0` tag pending**. Next focus after release: 0.6.0 / US-414 (diagnostics)._
+_Last updated: 2026-06-21 — **0.5.0 shipped**: completion + GNU Smalltalk kernel index (US-413, closes #1; slices A–D #51–#54, eval #55, release #56; manual-QA signed off). Next focus: 0.6.0 / US-414 (diagnostics)._
 
 **Dialect scope:** GNU Smalltalk now; the parser is layered (core ANSI + pluggable GST
 container formats) so other dialects (e.g. Pharo/Tonel) can be added later without a
