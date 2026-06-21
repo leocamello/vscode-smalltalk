@@ -6,6 +6,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-21
+
+### Added
+
+-   **Code folding** — collapse class/namespace bodies, method bodies, blocks, and multi-line comments precisely (semantic `foldingRange`, on top of the default indentation folding).
+-   **Highlight occurrences** — placing the cursor on a symbol highlights its other occurrences in the file: a message selector highlights every send of it; a variable highlights its same-name uses within its scope (a local in one method does not highlight a same-named local in another).
+
+Both work without GNU Smalltalk (`gst`) and need no configuration.
+
 ## [0.4.0] - 2026-06-20
 
 ### Added

@@ -2,7 +2,7 @@
 
 **ID**: US-417
 **Feature**: `foldingRange` + `documentHighlight` LSP providers
-**Status**: Draft
+**Status**: Implemented (shipped in v0.4.1)
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-20
 
