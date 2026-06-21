@@ -966,7 +966,7 @@ Scenario: User follows Quick Start guide
 ## US-417: Navigation Polish — Semantic Folding + Document Highlight
 
 * **ID:** US-417
-* **Status:** Planned (target **0.4.x** — small follow-up to US-412)
+* **Status:** Done (v0.4.1). Delivered as 2 slices — semantic folding (#45) + scope-aware document highlight (#46); the retired-Marketplace-badge README fix shipped alongside (#44).
 * **Epic:** EPIC-004
 * **Priority:** Low
 * **Estimate:** S
@@ -986,10 +986,10 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized (S).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] foldingRange + documentHighlight providers implemented over the parse cache.
-* [ ] **Language Server:** unit tests (folding ranges per construct; scoped highlight resolution) + a real-server/e2e check.
-* [ ] Works with no `gst`.
-* [ ] PO accepts the story.
+* [X] foldingRange + documentHighlight providers implemented over the parse cache.
+* [X] **Language Server:** unit tests (folding ranges per construct; scoped highlight resolution) + real-server LSP + Electron e2e checks.
+* [X] Works with no `gst` (reuses the navigation engine; zero process dependency).
+* [X] PO accepts the story (shipped in v0.4.1; manual spot-check passed).
 
 **Notes / Questions / Assumptions:**
 * Captured from the US-412 spec's "near-free bonuses" note. `foldingRange` is the truly near-free half (pure AST walk, reuses `parseCache`); `documentHighlight` needs the scope-aware resolution, hence its own AC. Ships as a 0.4.x point release, before/independently of 0.5.0 (US-413 completion).

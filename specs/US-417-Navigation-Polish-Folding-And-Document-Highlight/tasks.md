@@ -25,7 +25,7 @@ Mark each task `[x]` as it lands. Two slices: **A** foldingRange → **B** docum
 - [x] T024 `check-types`/`lint`/`test:parser`/`test:server`/`test:e2e` (7/7) + package smoke green; open Slice B PR.
 
 ## Phase 4 — Verify & Release (0.4.1)
-- [ ] T900 Automated green (unit + LSP server + e2e); `npm run eval` unaffected.
-- [ ] T901 Manual spot-check in the Extension Host (fold class/method/block/comment; highlight a selector and a scoped variable).
-- [ ] T902 CI green on Linux/macOS/Windows.
-- [ ] T903 Bump version (0.4.1) + CHANGELOG; cut `v0.4.1` (CI publishes).
+- [x] T900 Automated green (unit + LSP server + e2e 7/7); `npm run eval` unaffected.
+- [ ] T901 Manual spot-check in the Extension Host (fold class/method/block/comment; highlight a selector and a scoped variable). *(owner)*
+- [x] T902 CI green on Linux/macOS/Windows (slices #45, #46).
+- [~] T903 Bump version (0.4.1) + CHANGELOG done in the release PR; **cut `v0.4.1`** (CI publishes). *(tag = owner's step)*

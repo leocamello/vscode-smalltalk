@@ -82,6 +82,8 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Outline & Breadcrumbs:** the document structure (classes → methods, with instance/class variables) for both brace- and chunk-format files.
 *   **Workspace Symbol Search:** `Ctrl/Cmd+T` to find classes and method selectors across the workspace.
 *   **Go to Definition:** `F12` / `Ctrl/Cmd+Click` — from a class reference to its definition, or from a message send to every implementor.
+*   **Code Folding:** collapse class/method/block bodies and multi-line comments.
+*   **Highlight Occurrences:** put the cursor on a selector or variable to highlight its other uses in the file (scope-aware).
 *   _(Coming Soon)_ Auto Completion
 *   _(Coming Soon)_ Diagnostics (Error Checking)
 *   _(Coming Soon)_ Hover Information
