@@ -1,0 +1,48 @@
+{
+  "description": "US-413 completion output eval — golden cases over the bundled gst-3.2.5 kernel index. Metric: expected item present within top-k (after sortText ordering) + ranking sanity (workspace > kernel, variable > class) + keyword-snippet insertion + facts-only (no binary selectors offered as words). The `▮` marks the cursor; `workspaceSelectors`/`workspaceClasses` are injected as workspace-provenance candidates alongside the real bundled kernel.",
+  "cases": [
+    {
+      "name": "AC2 selector context after a receiver offers a kernel selector",
+      "text": "x print▮",
+      "expectTopK": { "k": 25, "labels": ["printString"] }
+    },
+    {
+      "name": "AC2 unary selector by camel-hump (dN -> doesNotUnderstand:)",
+      "text": "x dNU▮",
+      "expectTopK": { "k": 10, "labels": ["doesNotUnderstand:"] }
+    },
+    {
+      "name": "AC4 multi-part keyword selector inserts as a snippet",
+      "text": "x at▮",
+      "expectTopK": { "k": 40, "labels": ["at:put:"] },
+      "expectSnippet": { "label": "at:put:", "insertText": "at:${1} put:${2}" }
+    },
+    {
+      "name": "AC2 ranking: workspace selector ranks above the kernel selector",
+      "text": "x pr▮",
+      "workspaceSelectors": ["printOn:"],
+      "expectOrderBefore": [["printOn:", "printString"]]
+    },
+    {
+      "name": "AC3 head context offers a kernel class name (camel-hump OC)",
+      "text": "OC▮",
+      "expectTopK": { "k": 60, "labels": ["OrderedCollection"] }
+    },
+    {
+      "name": "AC3 head context offers in-scope instance variable",
+      "text": "Object subclass: Foo [ | count | bar [ ^c▮ ] ]",
+      "expectTopK": { "k": 30, "labels": ["count"] }
+    },
+    {
+      "name": "AC3 ranking: in-scope variable ranks above a class of the same prefix",
+      "text": "Object subclass: Foo [ bar [ | value | ^v▮ ] ]",
+      "workspaceClasses": ["Value"],
+      "expectOrderBefore": [["value", "Value"]]
+    },
+    {
+      "name": "AC5/off-by-construction: binary selectors are not offered for a typed word",
+      "text": "x print▮",
+      "expectAbsent": ["+", "->", "<="]
+    }
+  ]
+}
