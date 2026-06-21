@@ -1013,7 +1013,7 @@ Scenario: User follows Quick Start guide
 ## US-418: Container-Format Seam (Dialect Door)
 
 * **ID:** US-418
-* **Status:** Backlog (deferred — **trigger: the first additional dialect**; YAGNI until then)
+* **Status:** Backlog — #58 (deferred — **trigger: the first additional dialect**; YAGNI until then)
 * **Epic:** EPIC-004
 * **Priority:** Low
 * **Estimate:** M
@@ -1044,7 +1044,7 @@ Scenario: User follows Quick Start guide
 ## US-419: Kernel Index — Method Categories
 
 * **ID:** US-419
-* **Status:** Backlog
+* **Status:** Backlog — #59
 * **Epic:** EPIC-004
 * **Priority:** Low
 * **Estimate:** S
@@ -1074,7 +1074,7 @@ Scenario: User follows Quick Start guide
 ## US-420: Completion — Pseudo-Variables
 
 * **ID:** US-420
-* **Status:** Ready (small near-term fix; candidate for v0.5.1)
+* **Status:** Ready — #60 (small near-term fix; candidate for v0.5.1)
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** S
@@ -1104,7 +1104,7 @@ Scenario: User follows Quick Start guide
 ## US-421: CI — Vendored Kernel Smoke-Test Fixtures
 
 * **ID:** US-421
-* **Status:** Ready (near-term)
+* **Status:** Ready — #61 (near-term)
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** S
