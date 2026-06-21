@@ -12,6 +12,7 @@ import { toWorkspaceSymbols } from '../src/providers/workspaceSymbol.ts';
 import { findDefinitions, resolveDefinitionQuery } from '../src/providers/definition.ts';
 import { tokenize } from '../src/parser/lexer.ts';
 import { toFoldingRanges } from '../src/providers/foldingRange.ts';
+import { documentHighlightsAt } from '../src/providers/documentHighlight.ts';
 
 const FIXTURE_DIR = path.join(process.cwd(), 'docs/research/gst-syntax/test-cases');
 
@@ -178,6 +179,39 @@ test('folds multi-line comments as comment ranges', () => {
   assert.ok(hasFold(folds(src), 0, 3, 'comment'), 'comment folds 0..3 with comment kind');
   // A single-line comment does not fold.
   assert.equal(folds('"one line" 1 + 1').length, 0);
+});
+
+// --- Document highlight (AC2) -----------------------------------------------
+const highlightsAt = (src: string, sub: string, occurrence = 0) => {
+  let idx = -1;
+  for (let i = 0; i <= occurrence; i++) {
+    idx = src.indexOf(sub, idx + 1);
+  }
+  return documentHighlightsAt(parse(src).ast, tokenize(src).tokens, idx + 1);
+};
+
+test('highlight on a unary selector marks every send of it', () => {
+  const hs = highlightsAt('obj printNl. zed printNl', 'printNl');
+  assert.equal(hs.length, 2);
+});
+
+test('highlight on a keyword selector marks each part of every matching send', () => {
+  const hs = highlightsAt('a at: 1 put: 2. b at: 3 put: 4', 'at:');
+  assert.equal(hs.length, 4); // 2 sends × (at: + put:)
+});
+
+test('highlight on a variable is scoped to its method — no cross-scope bleed', () => {
+  // method m and method n both declare `x`; highlighting m's x must not touch n's.
+  const src = 'Object subclass: C [ m [ | x | ^x ] n [ | x | ^x ] ]';
+  const hs = highlightsAt(src, '^x'); // the use in method m
+  assert.equal(hs.length, 2); // the declaration + the `^x` use, in m only
+});
+
+test('highlight on a variable includes its declaration and assignment writes', () => {
+  const src = 'Object subclass: C [ m [ | x y | x := 1. ^x + y ] ]';
+  const hs = highlightsAt(src, '^x'); // a use of x
+  // declaration x, assignment target x, and ^x — but not y.
+  assert.equal(hs.length, 3);
 });
 
 console.log(`providers: ${passed} tests passed.`);

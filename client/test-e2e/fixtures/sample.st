@@ -11,5 +11,6 @@ Object subclass: Sample [
     Sample class >> make [ ^self new ]
 ]
 
-"A reference + a message send, for go-to-definition."
+"A reference + two message sends, for go-to-definition and document highlight."
+Sample new greet.
 Sample new greet

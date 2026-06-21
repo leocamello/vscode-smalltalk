@@ -99,6 +99,7 @@ assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
+assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -190,11 +191,28 @@ assert.ok(
   'method body should fold lines 1..3',
 );
 
+// --- textDocument/documentHighlight (US-417 slice B) ---
+const hlUri = 'file:///highlight-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: hlUri, languageId: 'smalltalk', version: 1, text: 'a foo. b foo' } },
+});
+// Cursor on the first `foo` send (char 3); both sends should highlight.
+send({
+  jsonrpc: '2.0',
+  id: 5,
+  method: 'textDocument/documentHighlight',
+  params: { textDocument: { uri: hlUri }, position: { line: 0, character: 3 } },
+});
+const hlResult = (await receiveId(5)).result ?? [];
+assert.equal(hlResult.length, 2, 'both `foo` sends should be highlighted');
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);

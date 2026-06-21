@@ -7,7 +7,7 @@
 // (vscode-languageserver-types only).
 
 import { type Location } from 'vscode-languageserver-types';
-import { NodeKind } from '../parser/ast';
+import { NodeKind, type ProgramNode } from '../parser/ast';
 import { parse } from '../parser/parser';
 import { SymbolKind } from '../parser/symbols';
 import { visit } from '../parser/walk';
@@ -21,7 +21,11 @@ export interface DefinitionQuery {
 
 /** What does the cursor (byte `offset`) point at — a selector send or a name reference? */
 export function resolveDefinitionQuery(text: string, offset: number): DefinitionQuery | undefined {
-  const { ast } = parse(text);
+  return resolveQueryInAst(parse(text).ast, offset);
+}
+
+/** Same as {@link resolveDefinitionQuery} but over an already-parsed AST (no re-parse). */
+export function resolveQueryInAst(ast: ProgramNode, offset: number): DefinitionQuery | undefined {
   let best: { query: DefinitionQuery; start: number; end: number } | undefined;
   const consider = (query: DefinitionQuery, start: number, end: number): void => {
     // Prefer the most specific (deepest) node: latest start, then earliest end.
