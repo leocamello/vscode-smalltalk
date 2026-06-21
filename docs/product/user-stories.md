@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
+> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.9.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
 
 ---
 
@@ -1001,3 +1001,194 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * Captured from the US-412 spec's "near-free bonuses" note. `foldingRange` is the truly near-free half (pure AST walk, reuses `parseCache`); `documentHighlight` needs the scope-aware resolution, hence its own AC. Ships as a 0.4.x point release, before/independently of 0.5.0 (US-413 completion).
+
+---
+
+> **Backlog from the 0.5.0 plan reconciliation (2026-06-21).** US-418–421 capture implementation
+> divergences from the genesis `plan.md` that were never explicitly ratified; US-901/902 migrate
+> plan-only definitions (perf budgets, no-telemetry, Open VSX) into the backlog. See the reconciliation
+> ledger in the 0.5.0 close-out and [ADR-0002](../decisions/0002-kernel-symbol-sourcing.md) /
+> [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md).
+
+## US-418: Container-Format Seam (Dialect Door)
+
+* **ID:** US-418
+* **Status:** Backlog (deferred — **trigger: the first additional dialect**; YAGNI until then)
+* **Epic:** EPIC-004
+* **Priority:** Low
+* **Estimate:** M
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **maintainer**, I want the brace/chunk container parsing extracted behind a `ContainerFormat` seam, so that **a second dialect (Tonel/Pharo/Cuis) can be added via an adapter without rewriting `parser.ts`.**
+
+**Acceptance Criteria (AC):**
+* AC1: Container formats live behind a `ContainerFormat` interface (`server/src/parser/containers/`), with the GST brace and chunk formats as two implementations.
+* AC2: The parser core is dialect-neutral; adding a new container format needs no change to the core or to existing format modules.
+* AC3: Existing parser/symbol snapshots are unchanged (pure refactor).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Reconciles `plan.md` (planned `containers/{gstBrace,gstChunk,index}.ts`) with reality (folded into `parser.ts`); ADR-0001 updated with the deferral note.
+* [ ] A concrete second dialect is in scope (the trigger).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] `ContainerFormat` seam extracted; brace + chunk are adapters; snapshots green.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Honors Constitution IV (*Dialect Agnostic*). Don't build speculatively with one dialect — see [ADR-0001 §Update](../decisions/0001-typescript-bundled-lsp-server.md).
+
+---
+
+## US-419: Kernel Index — Method Categories
+
+* **ID:** US-419
+* **Status:** Backlog
+* **Epic:** EPIC-004
+* **Priority:** Low
+* **Estimate:** S
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **methods grouped by their GST category**, so that **outline/hover can present them the way the image does.**
+
+**Acceptance Criteria (AC):**
+* AC1: The kernel/workspace indexer captures each method's `category` (from the `<category: '…'>` pragma / `methodsFor:` argument) into the dialect-neutral model — **facts only** (category strings are facts; no comment prose).
+* AC2: Hover/outline can group or label methods by category.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-413 kernel index (model is extensible).
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Category captured in the index + a consumer (hover/outline) uses it.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* `plan.md` listed categories in the kernel index; 0.5.0 (ADR-0002) shipped classes/superclass/selectors+arity only. Add when hover (US-415) needs grouping.
+
+---
+
+## US-420: Completion — Pseudo-Variables
+
+* **ID:** US-420
+* **Status:** Ready (small near-term fix; candidate for v0.5.1)
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** S
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **`self super nil true false thisContext` offered in completion**, so that **typing `sup` → `super` works like other identifiers.**
+
+**Acceptance Criteria (AC):**
+* AC1: Head/primary context offers the six pseudo-variables (prefix + camel-hump), ranked alongside in-scope variables.
+* AC2: They are **not** offered in selector position (after a receiver).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Builds on the US-413 completion provider (`server/src/providers/completion.ts`).
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Pseudo-variables offered in head context; unit test at a cursor position.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* `plan.md` listed pseudo-variables for US-413 completion; gap in shipped 0.5.0. Small static list.
+
+---
+
+## US-421: CI — Vendored Kernel Smoke-Test Fixtures
+
+* **ID:** US-421
+* **Status:** Ready (near-term)
+* **Epic:** EPIC-004
+* **Priority:** Medium
+* **Estimate:** S
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **maintainer**, I want **~10 representative kernel `.st` files vendored as CI fixtures**, so that **the "parses cleanly" guarantee is enforced in CI** (today the kernel smoke test skips when the corpus is absent — CI never runs it).
+
+**Acceptance Criteria (AC):**
+* AC1: A small vendored fixture set (e.g. `server/test/fixtures/kernel/`) is parsed in CI with **0 crashes / 0 diagnostics**.
+* AC2: The full local-corpus smoke test (`server/test/kernel.test.ts`) remains and still skips gracefully when `../smalltalk-3.2.5/kernel` is absent.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Reconciles `plan.md` (vendor ~10 files) with reality (0 vendored; smoke is local-only).
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Fixtures vendored + a CI-run smoke test asserts clean parse.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Licensing: vendoring a handful of LGPL-2.1 kernel sources as test fixtures is fine with attribution (source files retain their headers).
+
+---
+
+## US-901: Hardening, Performance & Beta Polish
+
+* **ID:** US-901
+* **Status:** Planned (milestone **0.9.0**)
+* **Epic:** EPIC-004 (cross-cutting)
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **user**, I want the extension to **stay fast and reliable on large codebases**, so that **it is beta-quality.**
+
+**Acceptance Criteria (AC):**
+* AC1: Indexing a **1,000-file** workspace completes in **< 5 s**; completion responds in **< 100 ms** (Constitution Performance budgets).
+* AC2: Cancellation tokens honored; memory caps / file-size guards in place; untrusted-/virtual-workspace capabilities declared.
+* AC3: **No telemetry** (Constitution VII) — verified: no analytics/network calls beyond opt-in `gst`.
+* AC4: Bug-bash against `learning-smalltalk/` + the GST kernel; no P1 bugs for 2+ weeks.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Migrated from `plan.md` (perf budgets + no-telemetry stance) into the backlog + Constitution v1.2.0.
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Perf budgets met + measured; resilience capabilities declared; no-telemetry verified.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Perf budgets also live in the Constitution Performance section (v1.2.0).
+
+---
+
+## US-902: Product Polish & Open VSX (1.0.0)
+
+* **ID:** US-902
+* **Status:** Planned (milestone **1.0.0**)
+* **Epic:** EPIC-004 (cross-cutting)
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **user**, I want a **polished 1.0 with discoverable docs and availability beyond the VS Code Marketplace**, so that **the extension reads as a finished, trustworthy product.**
+
+**Acceptance Criteria (AC):**
+* AC1: README hero GIFs (highlighting / outline / completion / Run / diagnostics); CONTRIBUTING linked; `.github/ISSUE_TEMPLATE/` + labels (`area:parser`, `area:lsp`, `good-first-issue`).
+* AC2: `"preview": true` removed from `package.json`.
+* AC3: **Published to Open VSX** (`ovsx` + `OVSX_PAT` secret) alongside `vsce` in CI.
+* AC4: `docs/product/*` synced to shipped reality.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Migrated from `plan.md` (Open VSX, remove preview, README polish).
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] 1.0 polish complete; Open VSX publish working in CI.
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Open VSX needs an `OVSX_PAT` secret (owner-provisioned), analogous to `MARKETPLACE`.

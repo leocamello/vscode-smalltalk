@@ -44,3 +44,17 @@ added later without a rewrite (honours Constitution Principle IV, *Dialect Agnos
 * **Follow-up:** EPIC-004 retitled "Language Intelligence — TypeScript LSP"; US-401/402/403
   closed (GitHub #14/#15/#16); replaced by US-410–US-416 (GitHub #22–#28); Constitution
   amended to v1.1.0; `docs/product/high-level-plan.md` §4 revised.
+
+## Update (2026-06-21) — container-format seam deferred
+
+The "layered (core ANSI + pluggable GST chunk/brace container formats)" claim above describes the
+**capability**, not yet a built **seam**. As shipped (US-411…US-413), the brace and chunk container
+formats are handled **inline in `server/src/parser/parser.ts`** — there is no separate
+`server/src/parser/containers/{gstBrace,gstChunk,index}.ts` nor a `ContainerFormat` interface (as the
+genesis `plan.md` sketched). The parser *does* handle both GNU Smalltalk formats; what is deferred is
+the **pluggability** that lets a *second* dialect (Tonel/Pharo/Cuis) plug in without touching the core.
+
+This is a conscious **YAGNI deferral**: extracting the seam now, with a single dialect, would be
+speculative. It is tracked as **US-418 (Container-Format Seam / Dialect Door)**, to be built when the
+first additional dialect actually lands. Constitution Principle IV (*Dialect Agnostic*) remains the
+intent; this note keeps the architecture description honest until US-418 realises the seam.

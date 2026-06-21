@@ -42,6 +42,11 @@ High quality is non-negotiable:
 - **Grammar**: Snapshot tests (`npm run test:grammar`).
 - Tests must exist and pass — and **CI must be green on Linux, macOS, and Windows** — before feature merge.
 
+### VII. No Telemetry
+The extension collects **no telemetry** and phones home to no analytics service:
+- No usage tracking, no third-party crash reporting, no network calls except the user's own opt-in `gst` invocations and standard VS Code/Marketplace mechanisms.
+- Privacy is a product feature and a marketing point; any future opt-in diagnostics would require explicit, documented consent and a setting defaulting to off.
+
 ## Technical Constraints
 
 ### Language & Runtime
@@ -57,7 +62,8 @@ High quality is non-negotiable:
 ### Performance
 - **Startup**: Activation < 500ms.
 - **Typing Latency**: Syntax highlighting/diagnostics must not block the UI thread.
-- **Memory**: Be mindful of large images or file inputs.
+- **Workspace index**: indexing a 1,000-file workspace completes in < 5 s; completion responds in < 100 ms (targets enforced/bug-bashed in the 0.9.0 hardening pass — US-901).
+- **Memory**: Be mindful of large images or file inputs; honor cancellation tokens and file-size guards.
 
 ## Development Standards
 
@@ -79,5 +85,6 @@ High quality is non-negotiable:
 
 ### Amendment Log
 - **1.1.0 (2026-06-13):** Principle VI and Technical Constraints updated — the language server is implemented in TypeScript and bundled (not a Smalltalk backend); `gst` is an optional tool. Added the cross-platform CI gate. See [ADR-0001](../../docs/decisions/0001-typescript-bundled-lsp-server.md).
+- **1.2.0 (2026-06-21):** Added Principle VII (No Telemetry) and the workspace-index/completion performance budgets — migrated from the genesis `plan.md` into the binding hierarchy as part of the 0.5.0 plan reconciliation. See [ADR-0002](../../docs/decisions/0002-kernel-symbol-sourcing.md) and US-901.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-08 | **Last Amended**: 2026-06-13
+**Version**: 1.2.0 | **Ratified**: 2026-02-08 | **Last Amended**: 2026-06-21
