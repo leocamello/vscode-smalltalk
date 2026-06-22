@@ -1239,7 +1239,7 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * Reflective export gives 100%-accurate method tables/arities/categories vs. static parsing. The literal-frame send scan under-counts special-selector bytecodes (`+`, `at:put:`, `do:` when inlined) — accepted for v1; a bytecode-disassembly pass can refine `senders` later.
-* Open: fold the existing bundled `kernel-index.json` into this cartridge format, or keep both during transition.
+* Resolution & convergence decided in **[ADR-0003](../decisions/0003-cartridge-resolution.md)**: the cartridge is the canonical model; the static `indexKernelDirectory` becomes the **preferred, cached Tier-1** source (from the user's install, no runtime), and the committed cartridge is the **rich frozen floor (Tier-2)** for zero-install/offline + the eval baseline. The old `kernel-index.json` folds into the cartridge format.
 
 ---
 
@@ -1443,6 +1443,7 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * The litmus that the schema is genuinely dialect-agnostic (see ADR-0002 / US-430 mock snippets).
+* Per **[ADR-0003](../decisions/0003-cartridge-resolution.md)**, the Pharo cartridge is generated via the **opt-in reflective adapter + cache** (Tier-1) on the user's machine; a **rich frozen floor** is generated in CI from a pinned Pharo image for the zero-install case.
 
 ---
 
@@ -1501,6 +1502,7 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * This is the proof that features are written once on the Console (Constitution IV).
+* Implements the **[ADR-0003](../decisions/0003-cartridge-resolution.md)** Cartridge Resolution Chain (Tier 0 workspace ≻ Tier 1 generated-and-cached ≻ Tier 2 rich frozen floor), including cache keying/invalidation by `dialect + version + source-hash`.
 
 ---
 

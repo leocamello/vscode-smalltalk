@@ -3,7 +3,8 @@
 A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user stories) and
 `docs/decisions/` (ADRs). Architecture baseline:
 [ADR-0001 — TypeScript bundled LSP server](decisions/0001-typescript-bundled-lsp-server.md) +
-[ADR-0002 — kernel symbol sourcing](decisions/0002-kernel-symbol-sourcing.md).
+[ADR-0002 — kernel symbol sourcing](decisions/0002-kernel-symbol-sourcing.md) +
+[ADR-0003 — cartridge resolution](decisions/0003-cartridge-resolution.md).
 
 ## The vision: a dialect-agnostic static Smalltalk intelligence engine ("Console & Cartridges")
 
@@ -46,6 +47,13 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 **Already real (✅):** the parser/AST/symbol table, the workspace index, GST **Cartridge #01**
 (reflective + static adapters). The foundation is poured; the rest builds upward (more offline
 features) and outward (more dialects).
+
+**How cartridges resolve ([ADR-0003](decisions/0003-cartridge-resolution.md)):** a user-specific
+cartridge **generated-and-cached from the actual install** is *preferred* (no-runtime source parse
+where the dialect ships source; opt-in reflective export for image-only dialects), over a **rich
+frozen reference floor** that guarantees the zero-install/offline experience and the eval baseline.
+So we ship **one rich floor per primary dialect — not a blob per version** — and the user's own
+version/packages always win when present.
 
 ### Three streams converge into the vision
 

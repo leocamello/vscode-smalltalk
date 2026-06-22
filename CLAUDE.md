@@ -49,7 +49,9 @@ Marketplace as `leocamello.vscode-smalltalk`.
   by `scripts/export-gst-cartridge.st` (reflective, **build-time `gst` only** — runtime stays
   zero-dependency) into `server/data/cartridges/gst-3.2.5-cartridge.json`. On convergence this supersedes
   the US-413 `kernel/` model as the canonical fact source while the static `indexKernelDirectory` stays as
-  the runtime *installed* adapter (see US-430 DoD).
+  the runtime *installed* adapter (see US-430 DoD). Resolution strategy:
+  **[ADR-0003](docs/decisions/0003-cartridge-resolution.md)** — a generated-and-cached user cartridge is
+  *preferred*; a **rich frozen reference floor** ships per primary dialect for zero-install/offline.
 - **Blueprints/fixtures:** `docs/research/gst-syntax/01-*`, `02-*`; `…/test-cases/*.st`; kernel corpus
   `../smalltalk-3.2.5/kernel/` (122 files, parses with **0 diagnostics**) — also the source for the
   bundled index (250 classes / 4723 selectors).

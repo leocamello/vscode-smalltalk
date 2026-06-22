@@ -179,7 +179,7 @@
 * The unknown-selector heuristic ships only if SPIKE-01 shows **≈0 false positives**.
 
 **Architectural Note:**
-* Build-time `gst` (the reflective exporter) does **not** breach ADR-0001: it generates a *committed* JSON artifact; the shipped extension loads the frozen cartridge and needs no `gst` at runtime. GST kernel comments are LGPL-2.1, so Cartridge #01 is **facts-only** (`carriesProse: false`).
+* Build-time `gst` (the reflective exporter) does **not** breach ADR-0001: it generates a *committed* JSON artifact; the shipped extension loads the frozen cartridge and needs no `gst` at runtime. GST kernel comments are LGPL-2.1, so Cartridge #01 is **facts-only** (`carriesProse: false`). **Cartridge resolution** ([ADR-0003](../decisions/0003-cartridge-resolution.md)): a user-specific cartridge **generated-and-cached** from the install is *preferred*; the committed cartridge is the **rich frozen floor** for the zero-install case — so there is no blob-per-version explosion, and the user's own version/packages win when present.
 
 ---
 
@@ -196,7 +196,7 @@
 > Turn the single-dialect engine into a genuinely **multi-dialect** one by adding a *second* dialect (Pharo) — the moment the EPIC-005 architecture pays off. Every offline feature (completion, hover, diagnostics, references, semantic tokens, System Browser) must light up for the new dialect **without a feature rewrite**, proving that adding a dialect is *additive data* (a new Cartridge + adapter), not a fork of the core. This is the differentiator no image-bound competitor can follow: **multi-dialect, zero-runtime by default**.
 
 **Scope & Description:**
-* **Second cartridge — Pharo:** build it via an **image reflective export** adapter (run the Pharo VM headless against its image, dump `allSubclasses`/selectors/arity/traits/package-tags to the `DialectCartridge` schema), or ship that export as a `bundled` cartridge. Pharo is MIT, so prose (class/method comments) may be carried (`carriesProse: true`).
+* **Second cartridge — Pharo:** build it via an **image reflective export** adapter (run the Pharo VM headless against its image, dump `allSubclasses`/selectors/arity/traits/package-tags to the `DialectCartridge` schema), or ship that export as a `bundled` cartridge. Pharo is MIT, so prose (class/method comments) may be carried (`carriesProse: true`). Per [ADR-0003](../decisions/0003-cartridge-resolution.md), the reflective export runs **opt-in on the user's machine, generated-and-cached** (Tier-1), with a **rich frozen floor** generated in CI from a pinned image for the zero-install case.
 * **Container-format seam (US-418):** finally build the deferred `ContainerFormat` pluggability so Tonel (Pharo/Cuis) parses alongside GST brace/chunk without touching the parser core. **This epic is the trigger for US-418.**
 * **Dialect axis:** a `smalltalk.dialect` setting with **auto-detection** (file extension, Tonel markers, workspace cues) selecting which cartridge(s) load; `kernelLibrary` stays the orthogonal *sourcing* axis (ADR-0002 §5).
 * Provenance/status surface the active dialect(s) honestly.
