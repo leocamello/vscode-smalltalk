@@ -14,6 +14,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from '../parser/parser';
 import { buildSymbolTable, SymbolKind, type SymbolNode } from '../parser/symbols';
+import type {
+  CartridgeHeader,
+  ClassFact,
+  DialectCartridge,
+  SelectorSignature,
+} from '../types/knowledge-base';
 import type { KernelClass, KernelIndexData, KernelIndexHeader, KernelSelector } from './model';
 
 const ST_FILE = /\.st$/i;
@@ -81,8 +87,15 @@ function toSelectors(m: Map<string, number>): KernelSelector[] {
   return [...m.keys()].sort().map((selector) => ({ selector, arity: m.get(selector) ?? 0 }));
 }
 
-/** Index every `.st` file in `dir` into a deterministic KernelIndexData. */
-export function indexKernelDirectory(dir: string, header: KernelIndexHeader): KernelIndexData {
+/** Keyword parts of a selector: `at:put:` → [`at:`,`put:`]; unary/binary → [sel]. */
+function keywordsOf(selector: string): string[] {
+  return selector.match(/[^:]+:/g) ?? [selector];
+}
+
+/** Parse every `.st` in `dir` and collect class facts; returns the raw accumulator
+ *  plus the sorted list of REAL class names (synthetic placeholders dropped). The
+ *  shared front end for both serializers below. Never throws. */
+function collectKernelDirectory(dir: string): { classes: Map<string, ClassAcc>; names: string[] } {
   const classes = new Map<string, ClassAcc>();
 
   let files: string[] = [];
@@ -108,6 +121,12 @@ export function indexKernelDirectory(dir: string, header: KernelIndexHeader): Ke
 
   // Drop synthetic placeholders (`<anonymous>`, `<methods>`) — not real classes.
   const names = [...classes.keys()].filter((n) => n && !n.startsWith('<')).sort();
+  return { classes, names };
+}
+
+/** Index every `.st` file in `dir` into a deterministic KernelIndexData. */
+export function indexKernelDirectory(dir: string, header: KernelIndexHeader): KernelIndexData {
+  const { classes, names } = collectKernelDirectory(dir);
 
   const out: Record<string, KernelClass> = {};
   let selectorCount = 0;
@@ -132,6 +151,48 @@ export function indexKernelDirectory(dir: string, header: KernelIndexHeader): Ke
     selectorCount,
     classes: out,
   };
+}
+
+function toSignatures(m: Map<string, number>): SelectorSignature[] {
+  return [...m.keys()]
+    .sort()
+    .map((selector) => ({ selector, arity: m.get(selector) ?? 0, keywords: keywordsOf(selector) }));
+}
+
+/** Index every `.st` file in `dir` into a DialectCartridge (ADR-0003 Tier-1
+ *  installed adapter). Still NO runtime `gst` — the same static parse as
+ *  `indexKernelDirectory`, lifted to the canonical cartridge shape so the
+ *  resolution chain compares installed and floor like-for-like. Emits the
+ *  `classes` tier only; `crossReference` is left to the reflective exporter.
+ *
+ *  Flat-id dialect: a class's `id` IS its simple name (GST source carries no
+ *  namespace qualifier here). Instance/class variables are not recovered by the
+ *  static collector, so those fact lists are empty — selectors + superclass are
+ *  the tier this adapter guarantees. */
+export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHeader): DialectCartridge {
+  const { classes, names } = collectKernelDirectory(dir);
+
+  const out: Record<string, ClassFact> = {};
+  for (const name of names) {
+    const acc = classes.get(name);
+    if (!acc) {
+      continue;
+    }
+    out[name] = {
+      id: name,
+      name,
+      kind: 'class',
+      superclass: acc.superclass ?? null,
+      instanceVariables: [],
+      classVariables: [],
+      classInstanceVariables: [],
+      instanceMethods: toSignatures(acc.instance),
+      classMethods: toSignatures(acc.klass),
+      taxonomy: {},
+    };
+  }
+
+  return { header, classes: out };
 }
 
 /** Canonical, deterministic serialization (stable key order + trailing newline). */

@@ -9,10 +9,11 @@
 // The resolved identity drives the status bar (slice D). Pure logic + Node `fs`;
 // no `vscode`. Re-`configure()` on `didChangeConfiguration`.
 
+import type { CartridgeHeader } from '../types/knowledge-base';
 import { bundledCartridge, cartridgeToKernelIndex } from './cartridgeLoader';
 import { DEFAULT_COMMON_LOCATIONS, discoverKernelDir } from './discovery';
-import { indexKernelDirectory } from './indexer';
-import { Provenance, type KernelIndexData, type KernelIndexHeader } from './model';
+import { indexKernelDirectoryToCartridge } from './indexer';
+import { Provenance, type KernelIndexData } from './model';
 
 export type KernelLibrarySetting = 'auto' | 'bundled' | 'off';
 
@@ -45,13 +46,24 @@ export interface KernelClassEntry {
   readonly provenance: Provenance;
 }
 
-/** Header for a live-indexed installed kernel (version is unknown without gst). */
-const INSTALLED_HEADER: KernelIndexHeader = {
-  dialect: 'gst',
-  library: 'gst',
-  version: 'installed',
-  source: 'installed',
-};
+/** Cartridge header for a live-indexed installed kernel (ADR-0003 Tier-1). The
+ *  static source parse can't know the exact version without running `gst`, so it
+ *  is left as a placeholder; `builtAt` is stamped per live index. Facts-only. */
+function installedCartridgeHeader(): CartridgeHeader {
+  return {
+    schema: 1,
+    dialect: 'gnu-smalltalk',
+    dialectLabel: 'GNU Smalltalk',
+    library: 'kernel',
+    version: 'installed',
+    source: 'gst-source',
+    sourceLicense: 'LGPL-2.1-only',
+    carriesProse: false,
+    tiers: ['classes'],
+    builtAt: new Date().toISOString(),
+    contentHash: 'unstamped', // US-603 keys the generate-and-cache chain on this.
+  };
+}
 
 const OFF: KernelIdentity = { source: 'off', label: 'off' };
 
@@ -89,11 +101,13 @@ export class KernelIndexService {
         return;
       }
     }
-    // `bundled`, or `auto` with no usable installation.
+    // `bundled`, or `auto` with no usable installation: the Tier-2 frozen
+    // reference floor (ADR-0003). Labelled "frozen reference" to distinguish it
+    // from a version-correct installed source in the status bar.
     this.active = this.bundled;
     this.identity_ = {
       source: 'bundled',
-      label: `bundled (${this.bundled.dialect} ${this.bundled.version})`,
+      label: `frozen reference (${this.bundled.dialect} ${this.bundled.version})`,
       library: this.bundled.library,
       version: this.bundled.version,
     };
@@ -112,12 +126,15 @@ export class KernelIndexService {
     }
     let index: KernelIndexData;
     try {
-      index = indexKernelDirectory(dir, INSTALLED_HEADER);
+      // Tier-1 installed adapter: parse the source dir into cartridge shape, then
+      // project to the completion model — like-for-like with the floor (ADR-0003).
+      const cartridge = indexKernelDirectoryToCartridge(dir, installedCartridgeHeader());
+      if (Object.keys(cartridge.classes).length === 0) {
+        return undefined; // empty/non-kernel dir → fall back to the floor
+      }
+      index = cartridgeToKernelIndex(cartridge, 'installed');
     } catch {
       return undefined; // never throw from configuration
-    }
-    if (index.classCount === 0) {
-      return undefined; // empty/non-kernel dir → fall back to bundled
     }
     this.installedCache = { dir, index };
     return index;

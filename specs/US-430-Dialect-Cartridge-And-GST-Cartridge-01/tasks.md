@@ -19,10 +19,10 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T014 Tests (`server/test/cartridgeLoader.test.ts`): schema round-trip (no functions/cycles) (AC2); no-prose licensing gate (AC4); projection over a fixture + real cartridge; loader inheritance/trait resolution.
 
 ### Slice C — installed adapter + resolution
-- [ ] T020 `indexKernelDirectory` emits `DialectCartridge` shape (classes tier; crossReference optional); still no runtime `gst`.
-- [ ] T021 `KernelIndexService.configure()`: Tier-1 installed (preferred) else Tier-2 floor (ADR-0003).
-- [ ] T022 Provenance/status labels: floor (frozen reference) vs installed.
-- [ ] T023 Tests: resolution/discovery over a temp fixture kernel dir.
+- [x] T020 `indexKernelDirectoryToCartridge` emits `DialectCartridge` shape (classes tier; crossReference omitted); shares the `collectKernelDirectory` front end with `indexKernelDirectory`; still no runtime `gst`.
+- [x] T021 `KernelIndexService.tryInstalled()` builds the installed cartridge then projects (`source: 'installed'`) — Tier-1 installed preferred, else the Tier-2 floor (ADR-0003).
+- [x] T022 Status label: floor → `frozen reference (gst 3.2.5)` vs `installed (gst)`; completion provenance detail `kernel (bundled)`→`kernel (reference)`. `source` enum unchanged (keeps the client one-time fallback notice).
+- [x] T023 Tests (kernelService.test.ts): installed adapter emits cartridge shape + facts-only; auto-installed status label + resolution over a temp fixture dir.
 
 ### Slice D — retire + finalize
 - [ ] T030 Delete `server/data/kernel-index.json` + `scripts/gen-kernel-index.ts`; update `bundledIndex.ts`/npm scripts.
