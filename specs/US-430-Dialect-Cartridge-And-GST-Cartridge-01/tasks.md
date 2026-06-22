@@ -33,4 +33,4 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T900 `evals/datasets/completion/` green across the swap (8/8, now sourced from the 249-class cartridge) — behaviour-preserving gate.
 - [ ] T901 `verification.md` gate passed (completion unchanged; installed vs floor; with/without gst).
 - [ ] T902 CI green on Linux/macOS/Windows.
-- [ ] T903 Record the "rich floor vs kernel-subset" decision before Slice C ships.
+- [x] T903 Decision recorded (before Slice C): **ship the rich floor as-is** (full 249-class base image), per ADR-0003 (sized rich) — completion eval stayed green across the swap, so no kernel-subset filtering. Revisit only if completion noise is reported.
