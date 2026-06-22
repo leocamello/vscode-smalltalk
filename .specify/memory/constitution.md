@@ -62,7 +62,7 @@ The extension collects **no telemetry** and phones home to no analytics service:
 ### Performance
 - **Startup**: Activation < 500ms.
 - **Typing Latency**: Syntax highlighting/diagnostics must not block the UI thread.
-- **Workspace index**: indexing a 1,000-file workspace completes in < 5 s; completion responds in < 100 ms (targets enforced/bug-bashed in the 0.9.0 hardening pass — US-901).
+- **Workspace index**: indexing a 1,000-file workspace completes in < 5 s; completion responds in < 100 ms (targets enforced/bug-bashed in the 0.10.0 hardening pass — US-901).
 - **Memory**: Be mindful of large images or file inputs; honor cancellation tokens and file-size guards.
 
 ## Development Standards

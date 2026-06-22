@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.9.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view.
+> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), and SPIKE-01 (unknown-selector heuristic). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
 
 ---
 
@@ -1013,7 +1013,7 @@ Scenario: User follows Quick Start guide
 ## US-418: Container-Format Seam (Dialect Door)
 
 * **ID:** US-418
-* **Status:** Backlog — #58 (deferred — **trigger: the first additional dialect**; YAGNI until then)
+* **Status:** Backlog — #58 (trigger fires at **milestone 1.5 / EPIC-006** — the second dialect (Pharo); built then, not before)
 * **Epic:** EPIC-004
 * **Priority:** Low
 * **Estimate:** M
@@ -1134,7 +1134,7 @@ Scenario: User follows Quick Start guide
 ## US-901: Hardening, Performance & Beta Polish
 
 * **ID:** US-901
-* **Status:** Planned (milestone **0.9.0**)
+* **Status:** Planned (hardening pass before 1.0 — milestone **0.10.0** in the evolved ladder)
 * **Epic:** EPIC-004 (cross-cutting)
 * **Priority:** Medium
 * **Estimate:** L
@@ -1192,3 +1192,551 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * Open VSX needs an `OVSX_PAT` secret (owner-provisioned), analogous to `MARKETPLACE`.
+
+---
+
+> **EPIC-005 — Offline Knowledge Graph ("Console & Cartridges") (2026-06-21).** Reframes the
+> server as a dialect-agnostic static intelligence engine: a dialect-neutral **Console** that loads
+> frozen, per-dialect **Cartridges** of resolved facts. GNU Smalltalk 3.2.5 is **Cartridge #01**.
+> Foundation: US-430 (schema + reflective exporter). Consumers: US-422 (semantic tokens), US-423
+> (references/senders/implementors), SPIKE-01 (unknown-selector heuristic). Schema lives in
+> `server/src/types/knowledge-base.ts`; see [`epics.md`](epics.md) EPIC-005 and
+> [ADR-0002](../decisions/0002-kernel-symbol-sourcing.md).
+
+## US-430: Dialect Cartridge Schema + GST Cartridge #01 (Reflective Exporter)
+
+* **ID:** US-430
+* **Status:** In Progress — #64 — schema + GST reflective exporter **validated against local gst 3.2.5**: `scripts/export-gst-cartridge.st` generates `server/data/cartridges/gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, 0 prose; all required-field / superclass-ref / keyword-arity / xref-integrity checks pass). Remaining: loader/tests + the gen-kernel-index reconciliation (DoD below)
+* **Epic:** EPIC-005
+* **Priority:** High *(hard dependency for US-422/423/SPIKE-01)*
+* **Estimate:** L
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **maintainer**, I want **a pure-JSON Dialect Cartridge schema and a GST exporter that compiles GNU Smalltalk 3.2.5 into Cartridge #01**, so that **the Console can serve image-grade kernel knowledge offline, and new dialects become a new cartridge rather than a rewrite.**
+
+**Acceptance Criteria (AC):**
+* AC1: `server/src/types/knowledge-base.ts` defines the `DialectCartridge` interfaces — pure JSON (no AST/instances/cycles), resolved facts only, explicit class-side/instance-side split, structural resolution (superclass/traits) separate from an open `taxonomy` bag.
+* AC2: A loader assertion (or generation test) proves a cartridge round-trips through `JSON.parse` with no functions/cycles and validates against the schema.
+* AC3: `scripts/export-gst-cartridge.st` runs headlessly (`gst -f …`), walks `Smalltalk`, and emits `server/data/cartridges/gst-3.2.5-cartridge.json` matching the schema (classes + `crossReference` tier).
+* AC4: The exporter is **facts-only** (`carriesProse: false`) — no LGPL method/class comment prose in the output; a test asserts no prose fields are present.
+* AC5: Deterministic output (sorted object keys) so the committed cartridge has stable diffs; `contentHash` stamped by the TS build step.
+* AC6: The exporter is heavily commented as a **template** for future Pharo/Squeak (image-export) exporters; build-time `gst` only — runtime stays zero-dependency (ADR-0001).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Schema design reviewed and approved (this session).
+* [X] Reflection approach chosen (image-export over static parse — ADR-0002 'image-export' adapter).
+* [X] Licensing reviewed (facts-only; LGPL prose excluded).
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Schema committed; exporter validated against local gst 3.2.5; cartridge generated.
+* [ ] **Language Server:** schema round-trip + no-prose tests; cartridge load smoke test.
+* [ ] Cartridge committed under `server/data/cartridges/` (+ generation documented in CLAUDE.md).
+* [ ] Reconciliation note: relationship to the existing `scripts/gen-kernel-index.ts` / `server/data/kernel-index.json` resolved (supersede vs coexist).
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Reflective export gives 100%-accurate method tables/arities/categories vs. static parsing. The literal-frame send scan under-counts special-selector bytecodes (`+`, `at:put:`, `do:` when inlined) — accepted for v1; a bytecode-disassembly pass can refine `senders` later.
+* Resolution & convergence decided in **[ADR-0003](../decisions/0003-cartridge-resolution.md)**: the cartridge is the canonical model; the static `indexKernelDirectory` becomes the **preferred, cached Tier-1** source (from the user's install, no runtime), and the committed cartridge is the **rich frozen floor (Tier-2)** for zero-install/offline + the eval baseline. The old `kernel-index.json` folds into the cartridge format.
+
+---
+
+## US-422: Semantic Tokens (Cartridge-Aware)
+
+* **ID:** US-422
+* **Status:** Ready — #65
+* **Epic:** EPIC-005 *(consumes the EPIC-004 parser)*
+* **Priority:** Medium
+* **Estimate:** S–M
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **role-accurate semantic highlighting** — instance var vs class var vs temp vs block/method arg vs *known class/global* vs unknown global vs keyword-selector part vs pseudo-variable — so that **I read code by meaning, not just token shape, even for kernel classes I never declared.**
+
+**Acceptance Criteria (AC):**
+* AC1: `textDocument/semanticTokens/full` (+ `range`) classifies the role set above from the US-411 AST + symbol-table scopes; reuses `parseCache`.
+* AC2: A capitalized identifier is colored `class` **iff** it resolves to a `ClassId` in `workspace ∪ cartridge`; otherwise `variable.other.global`. (First visible cartridge consumer — kernel classes light up with no `gst` present.)
+* AC3: Keyword-message parts and pseudo-variables (`self super nil true false thisContext`) carry distinct token types/modifiers.
+* AC4: Degrades cleanly with no cartridge loaded (capitalization fallback; never errors).
+* AC5: Works with no `gst`; output-eval dataset `evals/datasets/semantic-tokens/`.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 AST + US-430 cartridge load.
+* [X] Scoped to token classification only.
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Provider over `parseCache` implemented.
+* [ ] **Language Server:** unit tests per role; AC2 cartridge-vs-unknown class test.
+* [ ] **End-to-End:** token-range assertion.
+* [ ] Output eval green on 3 OSes; no-`gst` verified.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Honest framing: highlighting is table-stakes hygiene; the cartridge-driven class/global distinction (AC2) is the part that is ours and offline.
+
+---
+
+## US-423: References + Senders/Implementors (Two-Tier Engine)
+
+* **ID:** US-423
+* **Status:** Ready — #66
+* **Epic:** EPIC-005
+* **Priority:** High *(flagship usability lead)*
+* **Estimate:** M *(call hierarchy folded in — same index)*
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **"Senders of" and "Implementors of" across my workspace and the bundled kernel, instantly and offline**, so that **I get the System Browser's cross-reference muscle memory without a running image — and I am told honestly that results are a union, because dynamic dispatch cannot be statically resolved.**
+
+**Acceptance Criteria (AC):**
+* AC1: `textDocument/references` returns the de-duplicated union of workspace + cartridge send sites/definitions, with `Workspace ≻ Cartridge` precedence (handles the dev-box overlap where the kernel source is also open in the workspace).
+* AC2: Commands `Smalltalk: Senders of…` and `Smalltalk: Implementors of…` return a structured tree with a **header node stating the union/uncertainty contract** and **per-row provenance** (`workspace` / `cartridge:<dialect>@<version>`).
+* AC3: Go-to-definition on a message send returns **plural** `LocationLink[]`; never collapses to one.
+* AC4: `callHierarchy/incoming|outgoingCalls` reuse the same cross-reference index (incoming = senders, outgoing = sends within a method).
+* AC5: Query path does **no** parsing/I-O — O(1) lookups + O(k) merge; meets the completion-class budget (target < 10 ms typical).
+* AC6: `receiverHint` ranks *likely* responders above *possible* ones; the long tail is never filtered out.
+* AC7: Works with no `gst`.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 (`crossReference` tier) + US-412/413 indexes.
+* [X] Dynamic-dispatch UX posture defined (lexical union + disclaimer).
+* [X] Estimated/sized.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] references + senders/implementors + call-hierarchy providers implemented.
+* [ ] **Language Server:** unit tests (merge/dedup/precedence, union packaging, dev-box overlap).
+* [ ] **End-to-End:** peek references + command tree assertions.
+* [ ] Output eval `evals/datasets/references/`; no-`gst` verified.
+* [ ] PO accepts the story.
+
+**Notes / Questions / Assumptions:**
+* Graded honestly as a **Transient Lead** — copyable, and a static shadow of the image's whole-world query — but the highest-value navigation win and the most visible proof of the offline knowledge graph. **Sequencing (resolved):** lands at **0.9.0** (Cross-Reference Intelligence) in the evolved ladder; formatting (US-416) moves to 1.0.
+
+---
+
+## SPIKE-01: Unknown-Selector Heuristic — False-Positive Validation
+
+* **ID:** SPIKE-01
+* **Status:** Ready — #67 *(time-boxed research; gates any feature story)*
+* **Epic:** EPIC-005
+* **Priority:** Medium
+* **Estimate:** S *(time-box: 2–3 days)*
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**Goal:**
+> Prove or kill the "Heuristic of Extreme Caution" for marking a message send as an unknown selector. **Decision gate: adopt only if the false-positive rate is effectively zero** on a real corpus. A linter that squiggles valid dynamic code is a ten-minute uninstall.
+
+**Acceptance Criteria (AC):**
+* AC1: Implement `shouldEmitMissingSelectorWarning(selector, receiverNode, workspace, cartridge)` per the gate — emit **only** when: receiver resolves to a *closed-world* class (`self`/`super` in a fully-indexed class, or a literal known-class receiver), the selector is absent from the resolved table (own ∪ inherited ∪ traits), the enclosing method parses clean, and no escape hatch fires — **behind a flag, no published diagnostics.**
+* AC2: Escape hatches enforced (force silence): custom `doesNotUnderstand:` in the chain (excluding the root error DNU); any `perform:`-family send; proxy/forwarding signals (`*Proxy/*Mock/*Stub`, forwarding traits); incomplete/extension/un-indexed receiver tables; a small reflective allowlist; explicit opt-out pragma/setting.
+* AC3: Run against `learning-smalltalk/` + the GST 3.2.5 kernel; report **precision** (zero false positives is the bar) plus sample true catches, and the **closed-world coverage** (fraction of sends the heuristic can even speak to).
+* AC4: Written recommendation: **adopt → file a follow-up unknown-selector feature story** (default severity `Hint`, opt-out, allowlist) or **shelve** with failure evidence. Low closed-world coverage at zero-FP is also a kill signal.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 cartridge + US-411/412 indexes.
+* [X] Decision criteria explicit (≈0 false positives).
+* [X] Time-boxed.
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Gated heuristic implemented (no published diagnostics).
+* [ ] Corpus report: precision + closed-world coverage.
+* [ ] Go/no-go memo.
+* [ ] PO accepts the recommendation.
+
+**Notes / Questions / Assumptions:**
+* This spike exists so we never ship a false-positive linter. It is the static shadow of `doesNotUnderstand:` — the only zero-runtime feature that gestures at Smalltalk's live soul — and earns a story only on evidence.
+
+---
+
+## US-425: Signature Help
+
+* **ID:** US-425
+* **Status:** Ready — #68
+* **Epic:** EPIC-005
+* **Priority:** Low
+* **Estimate:** S
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **keyword-message signature help as I type**, so that **I see selector signatures and the active parameter without navigating away.**
+
+**Acceptance Criteria (AC):**
+* AC1: `textDocument/signatureHelp` for keyword sends from the workspace + cartridge index, with active-parameter tracking.
+* AC2: Works with no `gst`.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 (cartridge) + US-413 index.
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] signatureHelp provider; unit test at a keyword-send cursor; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Parity-plus filler graded honestly; small. Lands ~0.9 alongside US-423.
+
+---
+
+## US-426: Scope-aware Rename
+
+* **ID:** US-426
+* **Status:** Ready — #69
+* **Epic:** EPIC-005
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want **safe scope-aware rename of temps/args/instance vars (NOT selector rename)**, so that **I can refactor within a method/class without risk in a dynamically-typed language.**
+
+**Acceptance Criteria (AC):**
+* AC1: Rename temps/args/ivars within their resolved scope only; **selector rename explicitly out of scope** (the dangerous one).
+* AC2: Idempotent; no cross-symbol bleed; works with no `gst`.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-411 (symbols) + US-423 (references).
+* [X] Risk acknowledged (selector rename excluded).
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] rename provider (scope-only); property test (no cross-symbol bleed); PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Lands ~1.0; US-804 (extract-method, EPIC-008) builds on it.
+
+---
+
+> **EPIC-006 — Multi-Dialect Expansion (milestone 1.5).** The second dialect (Pharo) — when the
+> Console & Cartridges architecture pays off and the US-418 container seam is finally built. See
+> [`epics.md`](epics.md) EPIC-006.
+
+## US-601: Pharo Cartridge via Image Reflective Export
+
+* **ID:** US-601
+* **Status:** Backlog (vision — milestone 1.5) — #70
+* **Epic:** EPIC-006
+* **Priority:** High
+* **Estimate:** L
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Pharo developer**, I want **a Pharo cartridge built via headless image reflective export**, so that **all offline features light up for Pharo with no feature rewrite.**
+
+**Acceptance Criteria (AC):**
+* AC1: An image-export adapter dumps `allSubclasses`/selectors/arity/**traits**/package-tags to the `DialectCartridge` schema (`carriesProse` may be `true`; Pharo is MIT).
+* AC2: The exporter mirrors `scripts/export-gst-cartridge.st` as the template (JsonWriter reused verbatim).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 schema (already accommodates traits + package-tags via `taxonomy`).
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Pharo cartridge generated + committed; loads via the Console; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The litmus that the schema is genuinely dialect-agnostic (see ADR-0002 / US-430 mock snippets).
+* Per **[ADR-0003](../decisions/0003-cartridge-resolution.md)**, the Pharo cartridge is generated via the **opt-in reflective adapter + cache** (Tier-1) on the user's machine; a **rich frozen floor** is generated in CI from a pinned Pharo image for the zero-install case.
+
+---
+
+## US-602: `smalltalk.dialect` Axis + Auto-Detection
+
+* **ID:** US-602
+* **Status:** Backlog (vision — milestone 1.5) — #71
+* **Epic:** EPIC-006
+* **Priority:** High
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **user**, I want **a `smalltalk.dialect` axis with auto-detection** (extension / Tonel markers / workspace cues), so that **the right cartridge(s) load automatically.**
+
+**Acceptance Criteria (AC):**
+* AC1: Auto-detect + explicit override; **orthogonal** to `kernelLibrary` sourcing (ADR-0002 §5).
+* AC2: Active dialect shown in status/provenance.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-603 (multi-cartridge loader).
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Dialect detection + override + status; tests; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* `bundled` (sourcing) and `dialect` (which library) are the two orthogonal axes from ADR-0002.
+
+---
+
+## US-603: Multi-Cartridge Console Loader
+
+* **ID:** US-603
+* **Status:** Backlog (vision — milestone 1.5) — #72
+* **Epic:** EPIC-006
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **maintainer**, I want **the Console loader to load and rank across multiple active cartridges**, so that **workspace + N dialect cartridges resolve in one query.**
+
+**Acceptance Criteria (AC):**
+* AC1: Multi-cartridge load + ranking; provenance per dialect.
+* AC2: Adding a cartridge needs **no feature-provider change** (the architecture test).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430.
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Multi-cartridge loader + ranking; architecture test; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* This is the proof that features are written once on the Console (Constitution IV).
+* Implements the **[ADR-0003](../decisions/0003-cartridge-resolution.md)** Cartridge Resolution Chain (Tier 0 workspace ≻ Tier 1 generated-and-cached ≻ Tier 2 rich frozen floor), including cache keying/invalidation by `dialect + version + source-hash`.
+
+---
+
+> **EPIC-007 — The Live Bridge (milestone 1.6+, OPTIONAL runtime).** The soul (Do-it/Inspect-it/run
+> tests) — strictly optional, degrades to nothing without a runtime (ADR-0001). See
+> [`epics.md`](epics.md) EPIC-007.
+
+## US-701: Evaluate Selection (Do-it / Print-it / Display-it)
+
+* **ID:** US-701
+* **Status:** Backlog (vision — milestone 1.6+) — #73
+* **Epic:** EPIC-007
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer with a runtime present**, I want **Do-it / Print-it / Display-it on a selection**, so that **I get inline evaluation.**
+
+**Acceptance Criteria (AC):**
+* AC1: Evaluate selection via the optional dialect runtime; inline result.
+* AC2: **Degrades to nothing** when no runtime present (ADR-0001); process timeout/kill-on-edit, no zombies (US-301/US-414 discipline).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Optional-runtime contract explicit.
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Evaluate-selection commands; no-runtime no-op verified; no zombies; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Soul without betraying zero-runtime; not our moat (graded honestly), but high delight when a runtime exists.
+
+---
+
+## US-702: SUnit Test Explorer (Static Detect; Optional Run/Debug)
+
+* **ID:** US-702
+* **Status:** Backlog (vision — milestone 1.6+) — #74
+* **Epic:** EPIC-007
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a SUnit Test Explorer** — static detection of `TestCase` subclasses + `test*` methods (offline), with run/debug via the optional runtime — so that **tests are discoverable even with no runtime, and runnable when one is present.**
+
+**Acceptance Criteria (AC):**
+* AC1: Static detection surfaced in the VS Code Testing API + CodeLens, **offline**.
+* AC2: Run/debug only when a runtime is present; absent ⇒ detection-only, no errors.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 (detect) + US-701 (run).
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Test discovery (offline) + optional run/debug; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Static detection is the zero-runtime half; running is the optional half.
+
+---
+
+## US-703: Inspect-it (Structured Object Inspector)
+
+* **ID:** US-703
+* **Status:** Backlog (vision — milestone 1.6+) — #75
+* **Epic:** EPIC-007
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **Inspect-it: a structured object inspector** backed by the optional runtime, so that **I can drill into evaluated objects.**
+
+**Acceptance Criteria (AC):**
+* AC1: Inspect evaluated objects with drill-down.
+* AC2 **(DoR gate):** justify any **webview vs native tree** against Constitution I (*avoid webviews unless strictly necessary*).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-701.
+* [ ] Webview-vs-tree decision recorded (gate).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Inspector (tree preferred); PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The execution soul we concede we can only have with a runtime (red-team conclusion).
+
+---
+
+## US-704: Playground / REPL
+
+* **ID:** US-704
+* **Status:** Backlog (vision — milestone 1.6+) — #76
+* **Epic:** EPIC-007
+* **Priority:** Low
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a Playground/REPL scratch surface** backed by the optional runtime, so that **I can evaluate scratch expressions interactively.**
+
+**Acceptance Criteria (AC):**
+* AC1: Evaluate scratch expressions; history; **degrades to nothing** without a runtime.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-701.
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Playground surface; no-runtime no-op; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Lowest-priority live feature; ships after the higher-value live items.
+
+---
+
+> **EPIC-008 — Image-Grade Workbench (milestones 1.1–1.4).** The browsing soul over the offline
+> Console — System Browser, search, hierarchy, refactorings — **no running image**. See
+> [`epics.md`](epics.md) EPIC-008.
+
+## US-801: System Browser Tree View
+
+* **ID:** US-801
+* **Status:** Backlog (vision — milestones 1.1–1.4) — #77
+* **Epic:** EPIC-008
+* **Priority:** High
+* **Estimate:** L
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a System Browser tree** (namespaces/packages → classes → protocols → methods) over the offline Console, with senders/implementors/references panes, so that **I get the browsing soul with no running image.**
+
+**Acceptance Criteria (AC):**
+* AC1: Native VS Code tree over workspace + cartridge index; **offline**.
+* AC2: Works identically across every loaded cartridge/dialect (EPIC-006).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-423 (cross-reference) + US-603 (multi-cartridge).
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] System Browser tree + panes; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The signature "feels like Smalltalk" feature, delivered offline (the navigation soul).
+
+---
+
+## US-802: Full-Text Method Search
+
+* **ID:** US-802
+* **Status:** Backlog (vision — milestones 1.1–1.4) — #78
+* **Epic:** EPIC-008
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **full-text method search across workspace + cartridge**, so that **I can find code by source, not just symbol name.**
+
+**Acceptance Criteria (AC):**
+* AC1: Extends `workspace/symbol` with method-source search; **offline**.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430.
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Method-source search; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Cartridge prose/source availability is license-gated (facts-only for GST).
+
+---
+
+## US-803: Class-Hierarchy View
+
+* **ID:** US-803
+* **Status:** Backlog (vision — milestones 1.1–1.4) — #79
+* **Epic:** EPIC-008
+* **Priority:** Medium
+* **Estimate:** S
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **a class-hierarchy view** (super/subclasses including kernel chains from the cartridge), so that **I can navigate inheritance.**
+
+**Acceptance Criteria (AC):**
+* AC1: `typeHierarchy` provider over workspace + cartridge; **offline**.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-430 (superclass chains resolved over the index).
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Type-hierarchy provider; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* Superclass links are facts in the cartridge; chains resolved at index-build time.
+
+---
+
+## US-804: Extract-Method / Extract-Temp Refactorings
+
+* **ID:** US-804
+* **Status:** Backlog (vision — milestones 1.1–1.4) — #80
+* **Epic:** EPIC-008
+* **Priority:** Medium
+* **Estimate:** L
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **developer**, I want **AST-driven extract-method / extract-temp refactorings**, so that **I can restructure code safely.**
+
+**Acceptance Criteria (AC):**
+* AC1: Extract-method and extract-temp over the US-411 AST; idempotent; **builds on US-426** scope rename.
+* AC2: Selector rename across the system treated with **extreme caution** (dynamic dispatch).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on US-426 (scope rename) + US-411 (AST).
+* [X] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Extract-method + extract-temp; idempotence tests; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The famous Smalltalk refactoring-browser capabilities, brought to a file workflow on our AST.

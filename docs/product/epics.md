@@ -144,3 +144,141 @@
 
 ---
 
+## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
+
+* **ID:** EPIC-005
+* **Status:** In Progress (foundation — US-430 cartridge schema + GST Cartridge #01)
+* **Priority:** High
+* **Phase:** Phase 2 (extends EPIC-004)
+* **Date Proposed:** 2026-06-21
+* **Owner:** Leonardo Nascimento
+
+**Goal / Value Proposition:**
+> Reframe the language server as a dialect-agnostic *static Smalltalk intelligence engine*: a **Console** (the dialect-neutral query/index core) that loads compiled, frozen **Cartridges** (per-dialect knowledge bases of resolved facts). GNU Smalltalk 3.2.5 is **Cartridge #01**. This is the project's durable, hard-to-copy asset (ADR-0002) — image-grade cross-reference knowledge delivered **offline, with zero runtime dependency**, which image-bound competitors cannot match.
+
+**Scope & Description:**
+* A pure-JSON **Dialect Cartridge** schema (`server/src/types/knowledge-base.ts`): resolved facts only (no ASTs), explicit class-side/instance-side split, **structural resolution** (superclass chains, Pharo traits) separated from an **open `taxonomy` bag** so new dialects plug in without schema change.
+* A **two-tier lookup engine** reconciling the live **Workspace Index** with the frozen **Cartridge(s)**, with an honest dynamic-dispatch UX posture (lexical-union results, never false precision).
+* Per-dialect cartridge **compilers/exporters** emitting that schema: a GST **reflective exporter** now (`scripts/export-gst-cartridge.st`, build-time `gst` only); Pharo/Squeak image-export later.
+* Cartridge-native LSP features: semantic tokens (US-422), references + senders/implementors + call hierarchy (US-423), and a guarded unknown-selector heuristic (SPIKE-01 → future story).
+
+**Target Users:**
+* GNU Smalltalk developers now; Pharo/Squeak/Cuis/GemStone users as future cartridges land.
+
+**Related User Stories:**
+* [US-430: Dialect Cartridge Schema + GST Cartridge #01 (reflective exporter)]
+* [US-422: Semantic Tokens (Cartridge-aware)]
+* [US-423: References + Senders/Implementors (Two-Tier Engine)]
+* [US-425: Signature Help]
+* [US-426: Scope-aware Rename]
+* [SPIKE-01: Unknown-Selector Heuristic — false-positive validation]
+
+**Success Metrics (Optional):**
+* Senders/Implementors over kernel + workspace resolve **offline** in < 10 ms typical.
+* Adding a second dialect requires a **new cartridge only** — no Console/schema change.
+* The unknown-selector heuristic ships only if SPIKE-01 shows **≈0 false positives**.
+
+**Architectural Note:**
+* Build-time `gst` (the reflective exporter) does **not** breach ADR-0001: it generates a *committed* JSON artifact; the shipped extension loads the frozen cartridge and needs no `gst` at runtime. GST kernel comments are LGPL-2.1, so Cartridge #01 is **facts-only** (`carriesProse: false`). **Cartridge resolution** ([ADR-0003](../decisions/0003-cartridge-resolution.md)): a user-specific cartridge **generated-and-cached** from the install is *preferred*; the committed cartridge is the **rich frozen floor** for the zero-install case — so there is no blob-per-version explosion, and the user's own version/packages win when present.
+
+---
+
+## EPIC-006: Multi-Dialect Expansion
+
+* **ID:** EPIC-006
+* **Status:** Planned (milestone **1.5** — "The Second Dialect")
+* **Priority:** High *(this is where the Console & Cartridges vision becomes real)*
+* **Phase:** Phase 3
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**Goal / Value Proposition:**
+> Turn the single-dialect engine into a genuinely **multi-dialect** one by adding a *second* dialect (Pharo) — the moment the EPIC-005 architecture pays off. Every offline feature (completion, hover, diagnostics, references, semantic tokens, System Browser) must light up for the new dialect **without a feature rewrite**, proving that adding a dialect is *additive data* (a new Cartridge + adapter), not a fork of the core. This is the differentiator no image-bound competitor can follow: **multi-dialect, zero-runtime by default**.
+
+**Scope & Description:**
+* **Second cartridge — Pharo:** build it via an **image reflective export** adapter (run the Pharo VM headless against its image, dump `allSubclasses`/selectors/arity/traits/package-tags to the `DialectCartridge` schema), or ship that export as a `bundled` cartridge. Pharo is MIT, so prose (class/method comments) may be carried (`carriesProse: true`). Per [ADR-0003](../decisions/0003-cartridge-resolution.md), the reflective export runs **opt-in on the user's machine, generated-and-cached** (Tier-1), with a **rich frozen floor** generated in CI from a pinned image for the zero-install case.
+* **Container-format seam (US-418):** finally build the deferred `ContainerFormat` pluggability so Tonel (Pharo/Cuis) parses alongside GST brace/chunk without touching the parser core. **This epic is the trigger for US-418.**
+* **Dialect axis:** a `smalltalk.dialect` setting with **auto-detection** (file extension, Tonel markers, workspace cues) selecting which cartridge(s) load; `kernelLibrary` stays the orthogonal *sourcing* axis (ADR-0002 §5).
+* Provenance/status surface the active dialect(s) honestly.
+
+**Target Users:**
+* Pharo developers using a file-based workflow in VS Code (and, downstream, Squeak/Cuis/GemStone users as further cartridges land in 2.0).
+
+**Related User Stories:**
+* US-418 (#58): Container-Format Seam (Dialect Door) — *trigger fires here*
+* US-601 (#70): Pharo cartridge via image reflective export (adapter)
+* US-602 (#71): `smalltalk.dialect` axis + auto-detection
+* US-603 (#72): Multi-cartridge Console loader (load/rank across active dialects)
+
+**Success Metrics (Optional):**
+* Adding Pharo requires a **new cartridge + adapter only** — no change to the Console or feature providers (the architecture test).
+* All EPIC-004/005 features work on a Pharo workspace with no Pharo VM present (offline), VM optional for the live tier.
+
+---
+
+## EPIC-007: The Live Bridge (Optional Runtime Delegation)
+
+* **ID:** EPIC-007
+* **Status:** Planned (milestone **1.6+**)
+* **Priority:** Medium *(the "soul"; strictly optional — never required)*
+* **Phase:** Phase 3
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**Goal / Value Proposition:**
+> Capture Smalltalk's *live* magic — Do-it / Print-it / **Inspect-it**, running tests, a Playground/REPL — by **optionally** delegating to a running runtime/image **when one is present**, per dialect. This is ADR-0002's "optional delegation to a live image" made real. It is the one place we can match the visceral experience of image-based environments — but it must **degrade to nothing** when no runtime exists, so the zero-runtime guarantee (ADR-0001, Constitution) is never broken.
+
+**Scope & Description:**
+* **Evaluate Selection:** Do-it (run), Print-it / Display-it (inline result), all via the optional dialect runtime (`gst` for GST; Pharo VM for Pharo), reusing the US-301/US-414 process discipline (timeout, kill-on-edit, no zombies).
+* **Inspect-it:** a structured object inspector. **DoR gate:** justify any webview vs. a native tree view against Constitution I (*avoid webviews unless strictly necessary*).
+* **SUnit Test Explorer:** static detection of `TestCase` subclasses + `test*` methods (offline, via the Console) surfaced in the VS Code Testing API + CodeLens; **run/debug via the optional runtime**.
+* **Playground / REPL:** a scratch evaluation surface backed by the optional runtime.
+
+**Target Users:**
+* Developers who *do* have a runtime/image installed and want the live loop — without the offline users ever paying for it.
+
+**Related User Stories:**
+* US-701 (#73): Evaluate Selection (Do-it / Print-it / Display-it) — optional runtime
+* US-702 (#74): SUnit Test Explorer (static detect; optional run/debug)
+* US-703 (#75): Inspect-it (structured inspector)
+* US-704 (#76): Playground / REPL
+
+**Success Metrics (Optional):**
+* With no runtime present, the extension behaves **exactly** as the offline build (features silently absent, no errors).
+* No zombie processes under rapid edits; evaluation never blocks the UI.
+
+---
+
+## EPIC-008: Image-Grade Workbench (System Browser, Search & Refactoring)
+
+* **ID:** EPIC-008
+* **Status:** Planned (milestones **1.1–1.4**)
+* **Priority:** High *(the layer that makes it "feel like Smalltalk" — still offline)*
+* **Phase:** Phase 3
+* **Date Proposed:** 2026-06-22
+* **Owner:** Leonardo Nascimento
+
+**Goal / Value Proposition:**
+> Deliver the *browsing soul* of Smalltalk — the System Browser muscle memory — over the offline Knowledge Graph, with **no running image**. Where EPIC-007 captures the *execution* soul (and needs a runtime), this captures the *navigation/cross-reference* soul (and does not). This is the unique "omniscient cross-reference, instantly, offline" experience that image-bound tools can only offer against a live VM.
+
+**Scope & Description:**
+* **System Browser view:** a VS Code-native tree (packages/namespaces → classes → protocols → methods) over the workspace + cartridge index, with senders/implementors/references panes — the file-based equivalent of the classic multi-pane System Browser.
+* **Full-text method search** across workspace + cartridge (extends `workspace/symbol`).
+* **Class-hierarchy view** (super/subclasses, including kernel chains from the cartridge).
+* **Refactorings:** scope-aware rename first (US-426, lands 1.0), then extract method / extract temp and other AST-driven rewrites; selector rename across the system treated with extreme caution (dynamic dispatch).
+
+**Target Users:**
+* All users — this is the "real IDE" layer that closes the experiential gap with image-based Smalltalk environments while staying zero-runtime.
+
+**Related User Stories:**
+* US-801 (#77): System Browser tree view (over the Console)
+* US-802 (#78): Full-text method search
+* US-803 (#79): Class-hierarchy view
+* US-804 (#80): Extract-method / extract-temp refactorings (builds on US-426 scope rename)
+
+**Success Metrics (Optional):**
+* Senders/implementors/references browsing over kernel + workspace resolves offline in < 10 ms typical.
+* The browser works identically across every loaded cartridge/dialect (EPIC-006).
+
+---
+
