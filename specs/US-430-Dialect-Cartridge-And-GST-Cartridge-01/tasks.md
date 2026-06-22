@@ -12,11 +12,11 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 
 ## Phase 2 — Implementation
 ### Slice B — loader + projection
-- [ ] T010 `server/src/kernel/cartridgeLoader.ts`: typed inline import of the cartridge JSON.
-- [ ] T011 `loadCartridge`: resolved `methodTableOf(classId)` (own ∪ inherited ∪ trait-composed) + implementor/sender views; memoize by `contentHash`.
-- [ ] T012 `cartridgeToKernelIndex(cartridge): KernelIndexData` projection (~30 lines). (AC7)
-- [ ] T013 Repoint `KernelIndexService` bundled source at the projected cartridge; `completion.ts` unchanged.
-- [ ] T014 Tests: schema round-trip (no functions/cycles) (AC2); no-prose licensing gate (AC4); projection-equivalence vs old index over a fixture.
+- [x] T010 `server/src/kernel/cartridgeLoader.ts`: typed inline import of the cartridge JSON (`bundledCartridge`, esbuild-inlined).
+- [x] T011 `loadCartridge`: resolved `methodTableOf(classId, side)` (own ∪ inherited ∪ trait-composed, own>trait, subclass>super) + implementor/sender views (from `crossReference`, implementors derived when absent); memoized by `contentHash` (identity-guarded for the `pending` placeholder).
+- [x] T012 `cartridgeToKernelIndex(cartridge): KernelIndexData` projection (keys by simple name, maps superclass ClassId→name, `gnu-smalltalk`→`gst`). (AC7)
+- [x] T013 Repoint `KernelIndexService` bundled source at the projected cartridge; `completion.ts` unchanged. Old `kernel-index.json` tree-shaken out of the bundle.
+- [x] T014 Tests (`server/test/cartridgeLoader.test.ts`): schema round-trip (no functions/cycles) (AC2); no-prose licensing gate (AC4); projection over a fixture + real cartridge; loader inheritance/trait resolution.
 
 ### Slice C — installed adapter + resolution
 - [ ] T020 `indexKernelDirectory` emits `DialectCartridge` shape (classes tier; crossReference optional); still no runtime `gst`.
@@ -30,7 +30,7 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [ ] T032 Update CLAUDE.md generation notes + doc-rot pass.
 
 ## Phase 3 — Verify
-- [ ] T900 `evals/datasets/completion/` green across the swap (behaviour-preserving gate).
+- [x] T900 `evals/datasets/completion/` green across the swap (8/8, now sourced from the 249-class cartridge) — behaviour-preserving gate.
 - [ ] T901 `verification.md` gate passed (completion unchanged; installed vs floor; with/without gst).
 - [ ] T902 CI green on Linux/macOS/Windows.
 - [ ] T903 Record the "rich floor vs kernel-subset" decision before Slice C ships.

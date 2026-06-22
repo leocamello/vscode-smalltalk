@@ -9,7 +9,7 @@
 // The resolved identity drives the status bar (slice D). Pure logic + Node `fs`;
 // no `vscode`. Re-`configure()` on `didChangeConfiguration`.
 
-import { bundledIndex } from './bundledIndex';
+import { bundledCartridge, cartridgeToKernelIndex } from './cartridgeLoader';
 import { DEFAULT_COMMON_LOCATIONS, discoverKernelDir } from './discovery';
 import { indexKernelDirectory } from './indexer';
 import { Provenance, type KernelIndexData, type KernelIndexHeader } from './model';
@@ -62,7 +62,9 @@ export class KernelIndexService {
   private installedCache?: { readonly dir: string; readonly index: KernelIndexData };
 
   constructor(
-    private readonly bundled: KernelIndexData = bundledIndex,
+    /** The bundled reference floor: the committed GST Cartridge #01 projected to
+     *  the KernelIndexData the completion service consumes (US-430 convergence). */
+    private readonly bundled: KernelIndexData = cartridgeToKernelIndex(bundledCartridge),
     /** Well-known install locations probed in `auto` (overridable for tests). */
     private readonly commonLocations: readonly string[] = DEFAULT_COMMON_LOCATIONS,
   ) {}
