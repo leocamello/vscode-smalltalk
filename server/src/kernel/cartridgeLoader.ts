@@ -9,7 +9,7 @@
 //                              (read from the precomputed `crossReference` tier,
 //                              implementors derived from class tables if absent).
 // Pure data — no `vscode`, no Node `fs`; the committed JSON is inlined by esbuild
-// (mirrors bundledIndex.ts). Derived views are memoized by `header.contentHash`.
+// at build time. Derived views are memoized by `header.contentHash`.
 //
 // `cartridgeToKernelIndex` projects a cartridge down to the US-413 KernelIndexData
 // so the existing completion service consumes a cartridge unchanged (convergence,
@@ -29,7 +29,7 @@ import type {
 } from '../types/knowledge-base';
 import type { KernelClass, KernelIndexData, KernelSelector, KernelSource } from './model';
 
-/** The committed GST Cartridge #01, inlined by esbuild (mirrors bundledIndex.ts). */
+/** The committed GST Cartridge #01, inlined into the bundle by esbuild. */
 export const bundledCartridge: DialectCartridge = data as unknown as DialectCartridge;
 
 /** A resolved method-table entry: a locally-defined signature plus the class and

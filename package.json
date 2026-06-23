@@ -159,7 +159,7 @@
         "test:e2e": "npm run compile && vscode-test",
         "package": "vsce package --no-dependencies",
         "deploy": "vsce publish",
-        "gen:kernel-index": "tsx scripts/gen-kernel-index.ts",
+        "stamp:cartridge": "tsx scripts/stamp-cartridge.ts",
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
         "test:grammar": "node src/test/grammar-verification.js",
         "eval:completion": "tsx evals/datasets/completion/run.ts",

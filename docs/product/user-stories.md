@@ -1206,7 +1206,7 @@ Scenario: User follows Quick Start guide
 ## US-430: Dialect Cartridge Schema + GST Cartridge #01 (Reflective Exporter)
 
 * **ID:** US-430
-* **Status:** In Progress — #64 — schema + GST reflective exporter **validated against local gst 3.2.5**: `scripts/export-gst-cartridge.st` generates `server/data/cartridges/gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, 0 prose; all required-field / superclass-ref / keyword-arity / xref-integrity checks pass). Remaining: loader/tests + the gen-kernel-index reconciliation (DoD below)
+* **Status:** In Review — #64 — Slices A–D landed on `feature/US-430-console-loader`: schema + reflective exporter + committed `gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, `contentHash`-stamped); runtime `cartridgeLoader.ts` projects it to drive completion; installed adapter (`indexKernelDirectoryToCartridge`) emits cartridge shape; Tier-1 installed / Tier-2 floor resolution; old `kernel-index.json` + `gen-kernel-index.ts` **retired**. All test layers + completion eval green. Remaining: PO acceptance + manual `verification.md`.
 * **Epic:** EPIC-005
 * **Priority:** High *(hard dependency for US-422/423/SPIKE-01)*
 * **Estimate:** L
@@ -1231,10 +1231,10 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized (L).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Schema committed; exporter validated against local gst 3.2.5; cartridge generated.
-* [ ] **Language Server:** schema round-trip + no-prose tests; cartridge load smoke test.
-* [ ] Cartridge committed under `server/data/cartridges/` (+ generation documented in CLAUDE.md).
-* [ ] Reconciliation note: relationship to the existing `scripts/gen-kernel-index.ts` / `server/data/kernel-index.json` resolved (supersede vs coexist).
+* [X] Schema committed; exporter validated against local gst 3.2.5; cartridge generated.
+* [X] **Language Server:** schema round-trip + no-prose tests; cartridge load smoke test; projection-equivalence + loader inheritance/trait resolution.
+* [X] Cartridge committed under `server/data/cartridges/` (+ generation documented in CLAUDE.md).
+* [X] Reconciliation resolved: the cartridge **supersedes** `kernel-index.json`; `gen-kernel-index.ts` retired, replaced by `scripts/stamp-cartridge.ts` (contentHash). The static indexer now emits cartridge shape (Tier-1 installed adapter, ADR-0003).
 * [ ] PO accepts the story.
 
 **Notes / Questions / Assumptions:**

@@ -11,6 +11,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { cartridgeContentHash } from '../src/kernel/cartridgeHash.ts';
 import {
   bundledCartridge,
   cartridgeToKernelIndex,
@@ -62,6 +63,24 @@ test('AC2 every class fact has the required resolved-facts shape', () => {
       assert.ok(Array.isArray(m.keywords));
     }
   }
+});
+
+// --- AC5: deterministic contentHash stamping ------------------------------
+test('AC5 contentHash is stamped and matches the hash of the fact tables', () => {
+  const stamped = bundledCartridge.header.contentHash;
+  assert.match(stamped, /^sha256-[0-9a-f]{64}$/, 'contentHash must be a stamped sha256, not "pending"');
+  // The committed hash equals a fresh recompute (deterministic-output guard):
+  // if the cartridge is regenerated, `npm run stamp:cartridge` must be re-run.
+  assert.equal(stamped, cartridgeContentHash(bundledCartridge));
+});
+
+test('AC5 the hash excludes the header (idempotent under re-stamping)', () => {
+  // Mutating a volatile header field must NOT change the fact-table hash.
+  const touched: DialectCartridge = {
+    ...bundledCartridge,
+    header: { ...bundledCartridge.header, builtAt: '1999-01-01T00:00:00+00:00', contentHash: 'pending' },
+  };
+  assert.equal(cartridgeContentHash(touched), cartridgeContentHash(bundledCartridge));
 });
 
 // --- AC4: facts-only licensing gate ---------------------------------------

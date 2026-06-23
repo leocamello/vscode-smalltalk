@@ -4,8 +4,8 @@
 // strategy and exposes provenance-tagged lookups for the completion provider:
 //   - `off`     → no kernel completions,
 //   - `bundled` → the shipped gst-3.2.5 reference index,
-//   - `auto`    → the user's INSTALLED kernel (discovered + indexed live with the
-//                 same `indexKernelDirectory`), falling back to `bundled`.
+//   - `auto`    → the user's INSTALLED kernel (discovered + indexed live with
+//                 `indexKernelDirectoryToCartridge`), falling back to `bundled`.
 // The resolved identity drives the status bar (slice D). Pure logic + Node `fs`;
 // no `vscode`. Re-`configure()` on `didChangeConfiguration`.
 

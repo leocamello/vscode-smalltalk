@@ -6,7 +6,6 @@ import './container.test.ts';
 import './chunk.test.ts';
 import './symbols.test.ts';
 import './kernel.test.ts';
-import './kernelIndex.test.ts';
 import './cartridgeLoader.test.ts';
 import './kernelService.test.ts';
 import './providers.test.ts';

@@ -45,14 +45,15 @@ offline and new dialects become a new cartridge rather than a rewrite.
 - **AC1**: `knowledge-base.ts` defines `DialectCartridge` — pure JSON, facts only, class/instance split,
   superclass/trait resolution separate from `taxonomy`. **(done)**
 - **AC2**: A test proves a cartridge round-trips through `JSON.parse` with no functions/cycles and
-  validates structurally against the schema.
+  validates structurally against the schema. **(done — cartridgeLoader.test.ts)**
 - **AC3**: `export-gst-cartridge.st` runs headlessly, emits the cartridge (classes + `crossReference`). **(done)**
-- **AC4**: Facts-only (`carriesProse: false`); a test asserts no prose fields. **(generator done; test pending)**
-- **AC5**: Deterministic output (sorted keys); `contentHash` stamped by the TS build step.
+- **AC4**: Facts-only (`carriesProse: false`); a test asserts no prose fields. **(done)**
+- **AC5**: Deterministic output (sorted keys); `contentHash` stamped by the TS build step. **(done —
+  `stamp-cartridge.ts` + `cartridgeHash.ts`; determinism guard test)**
 - **AC6**: Exporter is the documented template for image-export adapters. **(done)**
 - **AC7 (convergence)**: a runtime loader exposes the cartridge; the completion service reads it through a
-  projection; `indexKernelDirectory` emits cartridge shape as the Tier-1 installed adapter; the bundled
-  cartridge is the Tier-2 floor; `kernel-index.json` + `gen-kernel-index.ts` are retired.
+  projection; `indexKernelDirectoryToCartridge` emits cartridge shape as the Tier-1 installed adapter; the
+  bundled cartridge is the Tier-2 floor; `kernel-index.json` + `gen-kernel-index.ts` are retired. **(done)**
 
 ## 5. Technical Design
 **The cartridge IS the per-user generator output.** The same schema + exporter serve build-time (frozen

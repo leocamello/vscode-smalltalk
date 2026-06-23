@@ -25,9 +25,9 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T023 Tests (kernelService.test.ts): installed adapter emits cartridge shape + facts-only; auto-installed status label + resolution over a temp fixture dir.
 
 ### Slice D — retire + finalize
-- [ ] T030 Delete `server/data/kernel-index.json` + `scripts/gen-kernel-index.ts`; update `bundledIndex.ts`/npm scripts.
-- [ ] T031 `contentHash` stamping in the gen/build step (AC5); deterministic-output guard.
-- [ ] T032 Update CLAUDE.md generation notes + doc-rot pass.
+- [x] T030 Deleted `server/data/kernel-index.json`, `scripts/gen-kernel-index.ts`, `server/src/kernel/bundledIndex.ts`, `server/test/kernelIndex.test.ts`; removed dead `indexKernelDirectory`/`serializeKernelIndex` from `indexer.ts`; `gen:kernel-index` npm script → `stamp:cartridge`.
+- [x] T031 `contentHash` stamping: `scripts/stamp-cartridge.ts` + `server/src/kernel/cartridgeHash.ts` (sha256 over fact tables, header-excluded → idempotent); committed cartridge stamped `sha256-2480f898…`. Determinism guard in `cartridgeLoader.test.ts` (AC5). (AC5)
+- [x] T032 Updated CLAUDE.md code-map/generation notes + status; doc-rot pass across user-stories.md.
 
 ## Phase 3 — Verify
 - [x] T900 `evals/datasets/completion/` green across the swap (8/8, now sourced from the 249-class cartridge) — behaviour-preserving gate.
