@@ -25,5 +25,13 @@
 - [ ] Error handling strategy defined?
 - [ ] Testing strategy (Unit vs Integration) defined?
 
+## Section 3.5: Acceptance Harness (TDD e2e plan)
+- [ ] Each AC is **routed** to a verification layer: user-observable → e2e (`client/test-e2e/`);
+  internal contract / data invariant → unit or `evals/` golden dataset; LSP protocol shape → handshake.
+- [ ] User-observable ACs will be pinned by acceptance tests **written before implementation** that fail
+  for the right reason (red), then driven green (`client/test-e2e/{{US_ID}}.acceptance.test.js`).
+- [ ] If the story has **no** user-observable surface, that is stated here and the scaffolded e2e stub
+  is removed.
+
 ## Section 4: Validation Result
 - [ ] PASS - Ready for implementation

@@ -167,7 +167,8 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 
 ## How each milestone ships (the repeatable ritual)
 
-Per story: **Clarify → Spec → Plan → Task → Implement → Verify** (`npm run new-story -- US-XXX "…" --branch`).
+Per story: **Clarify → Spec → Plan → Task → Acceptance Harness → Implement → Verify** (`npm run new-story -- US-XXX "…" --branch`).
+The **Acceptance Harness** phase pins each user-observable AC with a failing e2e test before code (TDD).
 Each slice keeps the **three test layers** green (`test:parser`, `test:server`, `test:e2e`) **plus an
 output-eval dataset** in `evals/datasets/<feature>/` (use `completion/` as the template). Then the
 **release ritual**: doc-rot audit + the **manual-QA matrix** (`specs/US-XXX-*/verification.md`, real

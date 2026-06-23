@@ -8,6 +8,7 @@
 ## Section 1: Acceptance Criteria
 - [ ] All ACs in `tasks.md` are checked?
 - [ ] Each AC has a passing test?
+- [ ] Each user-observable AC's acceptance test was **red before** implementation (TDD e2e)?
 
 ## Section 2: Code Quality
 - [ ] `npm run lint` passes?

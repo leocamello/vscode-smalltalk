@@ -13,7 +13,10 @@
 # Creates specs/US-XXX-Title-Case/ with the five-file package
 # (spec.md, plan.md, tasks.md, requirements-validation.md, verification.md)
 # from .specify/templates/, substituting {{US_ID}}, {{TITLE}}, {{DATE}}, {{BRANCH}}.
-# With --branch it also creates and checks out feature/US-XXX-slug.
+# Also scaffolds the TDD-e2e acceptance harness stub at
+# client/test-e2e/US-XXX.acceptance.test.js (pending tests; fill it in the
+# Acceptance Harness phase, or delete it if the story has no user-observable
+# surface). With --branch it also creates and checks out feature/US-XXX-slug.
 
 set -euo pipefail
 
@@ -27,7 +30,7 @@ for arg in "$@"; do
   case "$arg" in
     --branch) MAKE_BRANCH=true ;;
     --help|-h)
-      sed -n '3,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+      sed -n '3,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
       exit 0 ;;
     *) ARGS+=("$arg") ;;
   esac
@@ -90,6 +93,15 @@ render "$TPL/implementation-verification.md" "$DEST/verification.md"
 echo "Created spec package: specs/$DIR_NAME/"
 ls -1 "$DEST" | sed 's/^/  - /'
 
+# --- TDD-e2e acceptance harness stub (client/test-e2e/US-XXX.acceptance.test.js) ---
+E2E_STUB="$REPO_ROOT/client/test-e2e/${US_ID}.acceptance.test.js"
+if [ -e "$E2E_STUB" ]; then
+  echo "Note: $E2E_STUB already exists — left untouched." >&2
+else
+  render "$TPL/story/acceptance.test.js" "$E2E_STUB"
+  echo "Created acceptance harness stub: client/test-e2e/${US_ID}.acceptance.test.js (pending tests)"
+fi
+
 if $MAKE_BRANCH; then
   if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     git -C "$REPO_ROOT" checkout -b "$BRANCH"
@@ -101,4 +113,4 @@ else
   echo "Next: git checkout -b $BRANCH   (or re-run with --branch)"
 fi
 
-echo "Then: Clarify -> fill spec.md -> requirements-validation.md gate -> plan.md -> tasks.md -> implement -> verify."
+echo "Then: Clarify -> spec.md -> requirements-validation.md gate (route ACs, §3.5) -> plan.md -> tasks.md -> Acceptance Harness (write RED e2e/unit tests) -> implement to GREEN -> verify."
