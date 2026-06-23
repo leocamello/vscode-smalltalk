@@ -46,3 +46,20 @@ jobs:
       run: npm run deploy
       env:
         VSCE_PAT: ${{ secrets.MARKETPLACE }}
+
+  # End-to-end acceptance tests: launch real VS Code (Electron) with the
+  # extension and drive the LSP providers. Needs a display, so it runs only on
+  # Linux under xvfb. Kept as its own job so the Electron download doesn't slow
+  # the cross-OS unit matrix; gates push/PR as the behavioural circuit breaker.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+    - run: npm ci
+    - name: e2e (acceptance) tests
+      run: xvfb-run -a npm run test:e2e
