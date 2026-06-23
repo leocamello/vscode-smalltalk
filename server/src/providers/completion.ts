@@ -69,7 +69,7 @@ function provenanceLabel(p: Provenance): string {
     case Provenance.InstalledKernel:
       return 'kernel (installed)';
     case Provenance.BundledKernel:
-      return 'kernel (bundled)';
+      return 'kernel (reference)';
     default:
       return '';
   }

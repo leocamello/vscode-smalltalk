@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), and SPIKE-01 (unknown-selector heuristic). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
+> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
 
 ---
 
@@ -1206,7 +1206,7 @@ Scenario: User follows Quick Start guide
 ## US-430: Dialect Cartridge Schema + GST Cartridge #01 (Reflective Exporter)
 
 * **ID:** US-430
-* **Status:** In Progress — #64 — schema + GST reflective exporter **validated against local gst 3.2.5**: `scripts/export-gst-cartridge.st` generates `server/data/cartridges/gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, 0 prose; all required-field / superclass-ref / keyword-arity / xref-integrity checks pass). Remaining: loader/tests + the gen-kernel-index reconciliation (DoD below)
+* **Status:** In Review — #64 — Slices A–D landed on `feature/US-430-console-loader`: schema + reflective exporter + committed `gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, `contentHash`-stamped); runtime `cartridgeLoader.ts` projects it to drive completion; installed adapter (`indexKernelDirectoryToCartridge`) emits cartridge shape; Tier-1 installed / Tier-2 floor resolution; old `kernel-index.json` + `gen-kernel-index.ts` **retired**. All test layers + completion eval green. Remaining: PO acceptance + manual `verification.md`.
 * **Epic:** EPIC-005
 * **Priority:** High *(hard dependency for US-422/423/SPIKE-01)*
 * **Estimate:** L
@@ -1231,15 +1231,60 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized (L).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Schema committed; exporter validated against local gst 3.2.5; cartridge generated.
-* [ ] **Language Server:** schema round-trip + no-prose tests; cartridge load smoke test.
-* [ ] Cartridge committed under `server/data/cartridges/` (+ generation documented in CLAUDE.md).
-* [ ] Reconciliation note: relationship to the existing `scripts/gen-kernel-index.ts` / `server/data/kernel-index.json` resolved (supersede vs coexist).
+* [X] Schema committed; exporter validated against local gst 3.2.5; cartridge generated.
+* [X] **Language Server:** schema round-trip + no-prose tests; cartridge load smoke test; projection-equivalence + loader inheritance/trait resolution.
+* [X] Cartridge committed under `server/data/cartridges/` (+ generation documented in CLAUDE.md).
+* [X] Reconciliation resolved: the cartridge **supersedes** `kernel-index.json`; `gen-kernel-index.ts` retired, replaced by `scripts/stamp-cartridge.ts` (contentHash). The static indexer now emits cartridge shape (Tier-1 installed adapter, ADR-0003).
 * [ ] PO accepts the story.
 
 **Notes / Questions / Assumptions:**
 * Reflective export gives 100%-accurate method tables/arities/categories vs. static parsing. The literal-frame send scan under-counts special-selector bytecodes (`+`, `at:put:`, `do:` when inlined) — accepted for v1; a bytecode-disassembly pass can refine `senders` later.
 * Resolution & convergence decided in **[ADR-0003](../decisions/0003-cartridge-resolution.md)**: the cartridge is the canonical model; the static `indexKernelDirectory` becomes the **preferred, cached Tier-1** source (from the user's install, no runtime), and the committed cartridge is the **rich frozen floor (Tier-2)** for zero-install/offline + the eval baseline. The old `kernel-index.json` folds into the cartridge format.
+
+---
+
+## US-431: Kernel-Sourcing Transparency — installed version label + settings UX
+
+* **ID:** US-431
+* **Status:** Backlog — split out of US-430 (deferred by PO, 2026-06-23)
+* **Epic:** EPIC-005 *(may fold into US-603 generate-and-cache, which already spawns gst)*
+* **Priority:** Low
+* **Estimate:** S
+
+**User Story:**
+> As a **user with GNU Smalltalk installed**, I want the status bar to show my **actual kernel version**
+> (`installed (gst 3.2.5)`, not just `installed (gst)`) and the resolved kernel dir/binary to be **visible**,
+> so I can trust which source is feeding completion without it being silently wrong.
+
+**Context / decisions already made (this session):**
+* The status label is already **version-aware** (`identityLabel` in `kernelIndexService.ts`): it appends the
+  version when one is known, so it renders `installed (gst X.Y.Z)` the moment a version is available. Today
+  the static no-runtime adapter has no version, so it shows `installed (gst)`.
+* **No-runtime nuance**: the principle protects the *floor / first-run-no-gst* user, **not** the installed
+  path (which by definition has gst — the extension already spawns gst for Run Current File, US-301). So a
+  bounded `gst --version` probe on the installed path is acceptable.
+* **Same-installation safety (the key correctness rule)**: the version MUST come from the gst binary
+  **co-located in the same install prefix** as the parsed kernel dir — `<prefix>/share/smalltalk/kernel` →
+  `<prefix>/bin/gst` (add `gstBinaryForKernelDir`, the inverse of `deriveKernelDirFromGst`). **Never** read
+  an unrelated configured `gnuSmalltalkPath`, or `kernelPath`=3.2.5 + `gnuSmalltalkPath`=2.5.1 would mislabel.
+  If no co-located binary answers, keep `installed (gst)`.
+
+**Acceptance Criteria (AC):**
+* AC1: A bounded, cached `gst --version` probe (short timeout, no zombies — US-301/US-414 discipline) on the
+  binary co-located with the resolved kernel dir → `installed (gst <version>)`; absent/mismatched → `installed (gst)`.
+* AC2: Resolution cross-derives the two paths at runtime (kernelPath↔binary by shared prefix) **without
+  writing to settings** (auto stays auto; no scope churn).
+* AC3: A richer status-bar **tooltip** showing the resolution (source dir, binary, config provenance) and a
+  `Smalltalk: Show Kernel Status` command surfacing the same — read-only transparency.
+* AC4: Settings descriptions clarify that `kernelPath` applies only when `kernelLibrary = auto`.
+
+**Notes / Rejected for now:**
+* **Auto-writing discovered paths into settings — rejected**: breaks the `auto` contract (pins a path that
+  goes stale on upgrade), ambiguous User-vs-Workspace scope, git churn, anti-Zero-Config. Surface resolved
+  values read-only instead.
+* **Disabling `kernelPath` when bundled/off — not possible**: VS Code has no conditional enable/disable for
+  settings fields (no `when` for configuration properties). Mitigate via description wording; it's already a
+  functional no-op outside `auto`.
 
 ---
 

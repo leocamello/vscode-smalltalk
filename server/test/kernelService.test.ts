@@ -12,8 +12,10 @@ import {
   discoverKernelDir,
   looksLikeKernelDir,
 } from '../src/kernel/discovery.ts';
+import { indexKernelDirectoryToCartridge } from '../src/kernel/indexer.ts';
 import { KernelIndexService } from '../src/kernel/kernelIndexService.ts';
 import { Provenance } from '../src/kernel/model.ts';
+import type { CartridgeHeader } from '../src/types/knowledge-base.ts';
 
 let passed = 0;
 function test(name: string, fn: () => void): void {
@@ -82,11 +84,12 @@ test('off: no active kernel, identity off', () => {
   assert.deepEqual(svc.classes(), []);
 });
 
-test('bundled: serves the gst-3.2.5 reference index with bundled provenance', () => {
+test('bundled: serves the gst-3.2.5 reference floor with bundled provenance', () => {
   const svc = new KernelIndexService(undefined, []);
   svc.configure({ kernelLibrary: 'bundled' });
   assert.equal(svc.identity.source, 'bundled');
-  assert.match(svc.identity.label, /bundled \(gst 3\.2\.5\)/);
+  // ADR-0003 status label: the frozen reference floor, distinct from installed.
+  assert.equal(svc.identity.label, 'reference (gst 3.2.5)');
   const classNames = svc.classes().map((c) => c.name);
   assert.ok(classNames.includes('Object'), 'bundled index should contain Object');
   const sels = svc.selectors();
@@ -112,6 +115,48 @@ test('auto with no install: falls back to bundled', () => {
   svc.configure({ kernelLibrary: 'auto', kernelPath: path.join(os.tmpdir(), 'definitely-absent-kernel') });
   assert.equal(svc.identity.source, 'bundled');
   assert.ok(svc.classes().some((c) => c.name === 'Object'));
+});
+
+// --- Tier-1 installed adapter (cartridge shape; ADR-0003) ------------------
+const TEST_CARTRIDGE_HEADER: CartridgeHeader = {
+  schema: 1,
+  dialect: 'gnu-smalltalk',
+  dialectLabel: 'GNU Smalltalk',
+  library: 'kernel',
+  version: 'installed',
+  source: 'gst-source',
+  sourceLicense: 'LGPL-2.1-only',
+  carriesProse: false,
+  tiers: ['classes'],
+  builtAt: '2026-06-22T00:00:00+00:00',
+  contentHash: 'unstamped',
+};
+
+test('installed adapter (indexKernelDirectoryToCartridge) emits cartridge shape', () => {
+  const dir = makeFixtureKernel('Sprocket');
+  const cart = indexKernelDirectoryToCartridge(dir, TEST_CARTRIDGE_HEADER);
+  assert.equal(cart.header.schema, 1);
+  assert.equal(cart.header.carriesProse, false);
+  assert.equal(cart.crossReference, undefined); // classes tier only
+  const fact = cart.classes['Sprocket'];
+  assert.ok(fact, 'expected the fixture class as a ClassFact');
+  assert.equal(fact?.id, 'Sprocket'); // flat dialect: id === name
+  assert.equal(fact?.name, 'Sprocket');
+  assert.equal(fact?.kind, 'class');
+  assert.equal(fact?.superclass, 'Object');
+  const baz = fact?.instanceMethods.find((m) => m.selector === 'baz:');
+  assert.deepEqual(baz, { selector: 'baz:', arity: 1, keywords: ['baz:'] });
+  // Facts-only: no prose anywhere on the emitted facts.
+  assert.equal(fact?.documentation, undefined);
+});
+
+test('auto installed: status label reads "installed", resolved via the cartridge adapter', () => {
+  const dir = makeFixtureKernel('Cog');
+  const svc = new KernelIndexService(undefined, []);
+  svc.configure({ kernelLibrary: 'auto', kernelPath: dir });
+  assert.equal(svc.identity.source, 'installed');
+  assert.match(svc.identity.label, /installed \(gst\)/);
+  assert.ok(svc.classes().some((c) => c.name === 'Cog'));
 });
 
 test('reconfigure switches sources (auto→off→bundled)', () => {
