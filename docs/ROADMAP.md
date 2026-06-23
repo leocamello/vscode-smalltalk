@@ -45,8 +45,9 @@ A snapshot of the milestone plan. Detail lives in `docs/product/` (epics, user s
 ```
 
 **Already real (✅):** the parser/AST/symbol table, the workspace index, GST **Cartridge #01**
-(reflective + static adapters). The foundation is poured; the rest builds upward (more offline
-features) and outward (more dialects).
+(reflective + static adapters), and the **Console loader** that resolves it (Tier-1 installed /
+Tier-2 frozen floor) and drives completion (US-430, merged). The foundation is poured; the rest
+builds upward (more offline features) and outward (more dialects).
 
 **How cartridges resolve ([ADR-0003](decisions/0003-cartridge-resolution.md)):** a user-specific
 cartridge **generated-and-cached from the actual install** is *preferred* (no-runtime source parse
@@ -131,10 +132,13 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
 1. **0.6.0 / US-414 — Diagnostics** is the next shipping milestone. Slice A is small (the US-411 parser
    already emits `parse().diagnostics`): publish them on change, debounced, code `smalltalk(parse)`. Then
    the opt-in `gst`-on-save path (timeout/kill-on-edit, no zombies), then trivial code actions.
-2. **EPIC-005 foundation is underway** ahead of its 0.8/0.9 milestones: the Dialect Cartridge schema
-   (`server/src/types/knowledge-base.ts`) and GST **Cartridge #01** (`scripts/export-gst-cartridge.st` →
-   `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes / 4746 signatures, validated) are
-   built; remaining is the Console loader + the kernel-index **convergence** (US-430).
+2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
+   Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
+   (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
+   4746 signatures, `contentHash`-stamped) now **drive completion** via the runtime Console loader
+   (`cartridgeLoader.ts`); the installed adapter emits cartridge shape (Tier-1 installed / Tier-2 frozen
+   floor, ADR-0003) and the old `kernel-index.json` is **retired**. Next EPIC-005 consumers: **US-422**
+   (cartridge-aware semantic tokens) and **US-423** (references/senders via the `crossReference` tier).
 3. **Optional v0.5.1** — the two near-term reconciliation fixes: **US-420** (#60, completion
    pseudo-variables) + **US-421** (#61, CI kernel fixtures). Both `size:S`.
 
@@ -155,7 +159,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 | Epic | Theme | Stream | Status |
 |---|---|---|---|
 | EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | In progress (→1.0) |
-| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (foundation) |
+| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (foundation landed — US-430; next US-422/423) |
 | EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | B | Planned (1.5) |
 | EPIC-007 | The Live Bridge (optional runtime delegation) | C | Planned (1.6+) |
 | EPIC-008 | Image-Grade Workbench (System Browser, refactorings, search) | A+B | Planned (1.1–1.4) |
@@ -170,10 +174,10 @@ output-eval dataset** in `evals/datasets/<feature>/` (use `completion/` as the t
 corpus + clean VSIX) → bump version + CHANGELOG → **check the `MARKETPLACE` PAT** → cut the `vX.Y.Z`
 Release (CI publishes). Full detail in [`CLAUDE.md`](../CLAUDE.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
-_Last updated: 2026-06-22 — roadmap evolved to the **Console & Cartridges** vision: added the
-architecture diagram, convergence-stream view, the post-1.0 vision ladder (EPIC-006/007/008), and the
-competitor parity scorecard. EPIC-005 foundation (cartridge schema + GST Cartridge #01) built &
-validated. Near-term shipping focus unchanged: 0.6.0 / US-414 (diagnostics)._
+_Last updated: 2026-06-23 — **EPIC-005 foundation landed**: US-430 (Console loader + cartridge
+convergence) merged (#82) — completion now runs off GST Cartridge #01 (Tier-1 installed / Tier-2 frozen
+floor), `kernel-index.json` retired, `contentHash` stamped. Next EPIC-005 consumers: US-422 (semantic
+tokens) / US-423 (references/senders). Near-term shipping focus unchanged: 0.6.0 / US-414 (diagnostics)._
 
 **Dialect scope:** GNU Smalltalk through 1.0 (the complete offline GST IDE). The **second dialect
 (Pharo)** lands at **1.5** (EPIC-006), which is when the *pluggable* `ContainerFormat` seam (US-418)

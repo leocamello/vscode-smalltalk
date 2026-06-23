@@ -1206,7 +1206,7 @@ Scenario: User follows Quick Start guide
 ## US-430: Dialect Cartridge Schema + GST Cartridge #01 (Reflective Exporter)
 
 * **ID:** US-430
-* **Status:** In Review — #64 — Slices A–D landed on `feature/US-430-console-loader`: schema + reflective exporter + committed `gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, `contentHash`-stamped); runtime `cartridgeLoader.ts` projects it to drive completion; installed adapter (`indexKernelDirectoryToCartridge`) emits cartridge shape; Tier-1 installed / Tier-2 floor resolution; old `kernel-index.json` + `gen-kernel-index.ts` **retired**. All test layers + completion eval green. Remaining: PO acceptance + manual `verification.md`.
+* **Status:** Done — merged #82 (closes #64), 2026-06-23 — Slices A–D: schema + reflective exporter + committed `gst-3.2.5-cartridge.json` (**249 classes / 4746 signatures**, facts-only, `contentHash`-stamped); runtime `cartridgeLoader.ts` projects it to drive completion; installed adapter (`indexKernelDirectoryToCartridge`) emits cartridge shape; Tier-1 installed / Tier-2 floor resolution; old `kernel-index.json` + `gen-kernel-index.ts` **retired**. All test layers + completion eval green; CI green on 3 OSes; manual `verification.md` signed off by PO. Ships in 0.8/0.9. Follow-up: US-431 (installed version label + settings UX).
 * **Epic:** EPIC-005
 * **Priority:** High *(hard dependency for US-422/423/SPIKE-01)*
 * **Estimate:** L
