@@ -7,6 +7,9 @@ import {
   DidChangeConfigurationNotification,
   TextDocuments,
   TextDocumentSyncKind,
+  CodeActionKind,
+  type CodeAction,
+  type CodeActionParams,
   type CompletionItem,
   type CompletionParams,
   type Diagnostic,
@@ -26,6 +29,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getAst, getDiagnostics, getSymbols, getTokens, invalidate } from './documents/parseCache';
 import { toDiagnostics } from './providers/diagnostics';
+import { toCodeActions } from './providers/codeAction';
 import { GstDiagnosticsRunner } from './gst/gstRunner';
 import { resolveGst } from './gst/resolveGst';
 import { toDocumentSymbols } from './providers/documentSymbol';
@@ -91,6 +95,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       foldingRangeProvider: true,
       documentHighlightProvider: true,
+      // Trivial quick fixes (US-414 AC4): insert a missing `]`/`)`.
+      codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
       // Space/`:` auto-trigger selector + keyword-part completion; identifier
       // typing triggers via the client's default quick-suggestions.
       completionProvider: { triggerCharacters: [' ', ':'] },
@@ -149,6 +155,10 @@ connection.onDocumentHighlight((params: DocumentHighlightParams): DocumentHighli
   const doc = documents.get(params.textDocument.uri);
   return doc ? documentHighlightsAt(getAst(doc), getTokens(doc), doc.offsetAt(params.position)) : [];
 });
+
+connection.onCodeAction((params: CodeActionParams): CodeAction[] =>
+  toCodeActions(params.textDocument.uri, params.context.diagnostics),
+);
 
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const doc = documents.get(params.textDocument.uri);

@@ -72,4 +72,26 @@ suite('US-414 acceptance (e2e)', () => {
       .filter((d) => d.source === 'smalltalk' && d.code === 'parse');
     assert.equal(ours.length, 0, 'expected no parser diagnostics on clean source');
   });
+
+  // AC4 — a trivial quick fix is offered to insert a missing `]`.
+  test('AC4: a quick fix inserts the missing "]"', async () => {
+    const doc = await openSmalltalk('Object subclass: Foo [\n  bar [ ^1 \n');
+    // Wait for diagnostics so the code-action request has context to act on.
+    await waitFor(
+      () => Promise.resolve(vscode.languages.getDiagnostics(doc.uri)),
+      (d) => Array.isArray(d) && d.some((x) => x.source === 'smalltalk' && x.code === 'parse'),
+    );
+    const fullRange = new vscode.Range(0, 0, doc.lineCount, 0);
+    const actions = await waitFor(
+      () => vscode.commands.executeCommand('vscode.executeCodeActionProvider', doc.uri, fullRange),
+      (r) => Array.isArray(r) && r.some((a) => a.title.includes(']')),
+    );
+    const fix = (actions ?? []).find((a) => a.title.includes(']'));
+    assert.ok(fix, 'expected an "Insert missing \\"]\\"" quick fix');
+    assert.equal(fix.kind?.value, vscode.CodeActionKind.QuickFix.value);
+    assert.ok(fix.edit, 'quick fix must carry a workspace edit');
+    const applied = await vscode.workspace.applyEdit(fix.edit);
+    assert.ok(applied, 'the quick-fix edit should apply');
+    assert.ok(doc.getText().includes(']'), 'after the fix the document contains a "]"');
+  });
 });

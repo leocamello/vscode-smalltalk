@@ -111,6 +111,7 @@ assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
+assert.ok(caps.codeActionProvider, 'expected codeActionProvider (US-414)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 

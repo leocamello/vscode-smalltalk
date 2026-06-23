@@ -42,11 +42,13 @@ Validate command**, code actions **insert missing `]` and `)`**.
 - [x] T025 All four layers green (parser/server/e2e/eval) + check-types + lint; gst tests hermetic.
   Local smoke against real gst (resolve→spawn→parse + rapid-supersede no-zombie) verified.
 
-## Slice C — trivial code actions (AC4)
-- [ ] T030 RED: e2e asserts insert-missing-`]`/`)` quick fix; unit for the pure mapping.
-- [ ] T031 Advertise `codeActionProvider`; `server/src/providers/codeAction.ts` — quick fixes from the
-  matching parse diagnostic. (AC4)
-- [ ] T032 All three layers + eval green.
+## Slice C — trivial code actions (AC4) ✅
+- [x] T030 e2e asserts the insert-missing-`]` quick fix applies (`client/test-e2e/US-414.acceptance`);
+  unit `server/test/codeAction.test.ts` (5 checks) for `]`/`)` + clean + non-parser filtering.
+- [x] T031 `codeActionProvider: { codeActionKinds: [QuickFix] }`; `server/src/providers/codeAction.ts` —
+  `toCodeActions(uri, diagnostics)` inserts the missing `]`/`)` at the diagnostic range end, derived
+  from the parser message (`Expected "]"…` / `Expected ")"`). Wired `connection.onCodeAction`. (AC4)
+- [x] T032 All four layers + eval green; handshake asserts `codeActionProvider`.
 
 ## Phase 4 — Verify & Release (0.6.0)
 - [ ] T900 Acceptance tests GREEN; `npm run eval`, `npm run test:e2e`, `test:parser`, `test:server` pass.
