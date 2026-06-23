@@ -75,7 +75,10 @@ Marketplace as `leocamello.vscode-smalltalk`.
   CI publishes (`MARKETPLACE` PAT, ~yearly expiry — check before tagging).
 
 ## How we work (spec-driven)
-Per user story (`US-XXX`): **Clarify → Spec → Plan → Task → Implement → Verify**.
+Per user story (`US-XXX`): **Clarify → Spec → Plan → Task → Acceptance Harness → Implement → Verify**.
+The **Acceptance Harness** phase writes the e2e/unit tests for each user-observable AC *before* code (TDD:
+red → green); `new-story` scaffolds the stub at `client/test-e2e/US-XXX.acceptance.test.js` and the AC
+routing is gated in `requirements-validation.md` §3.5.
 - Scaffold the spec package: `npm run new-story -- US-XXX "Title" --branch`
   (creates `specs/US-XXX-Title/` + branch `feature/US-XXX-slug`).
 - Source of truth: `docs/product/user-stories.md` is the backlog; once a story starts, its
