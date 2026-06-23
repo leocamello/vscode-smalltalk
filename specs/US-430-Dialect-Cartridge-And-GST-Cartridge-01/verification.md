@@ -35,7 +35,7 @@
 - [x] `npm run eval` passes — grammar + **completion eval 8/8** (now sourced from the 249-class cartridge floor).
 - [x] `npm run package` smoke OK — VSIX `vscode-smalltalk-0.5.0.vsix` ships `dist/server.js` (1.31 MB) with the **inlined, contentHash-stamped** cartridge.
 - [x] No unjustified `any`; public APIs carry JSDoc (loader/hash/indexer/service).
-- [ ] CI green on **Linux / macOS / Windows** for the final merge commit (confirm post-push; first run includes the Dependabot deps bump).
+- [x] CI green on **Linux / macOS / Windows** (PR #82, run 28054294202 — all three `build` jobs pass; includes the Dependabot deps bump).
 
 ## Section 3: Manual Verification Matrix (Extension Dev Host)
 
@@ -72,6 +72,6 @@ _Manual matrix executed 2026-06-23 (dev host on the manual-qa-workspace + clean-
 ## Section 5: Sign-Off (merge gate)
 
 - [x] §3 manual matrix executed (dev host **and** clean VSIX) and notes recorded.
-- [ ] CI green on Linux / macOS / Windows for the final commit (confirm on the PR after push).
+- [x] CI green on Linux / macOS / Windows for the final commit (PR #82).
 - [x] Doc-rot audit done (CLAUDE.md, user-stories, spec/tasks) — landed in Slice D.
 - [x] PO accepts US-430 (DoD met) → merge `feature/US-430-console-loader` → `master`, closing #64.
