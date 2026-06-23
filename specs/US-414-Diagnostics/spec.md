@@ -2,7 +2,7 @@
 
 **ID**: US-414
 **Feature**: Diagnostics (parser live; `gst` opt-in)
-**Status**: Draft
+**Status**: Implemented (Slices A–C) — in release for v0.6.0
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-23
 **Epic**: EPIC-004 (Language Intelligence — TypeScript LSP) · **Milestone**: 0.6.0

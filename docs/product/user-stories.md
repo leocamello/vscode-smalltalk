@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
+> **Status summary (2026-06-24).** v0.2.0–v0.5.0 are shipped; **v0.6.0 (US-414 diagnostics) is in release**. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1), and **US-414** (diagnostics — parser live + opt-in `gst` + bracket quick fixes, **v0.6.0**, in release). **Next:** US-415 (hover, 0.7.0). **Planned:** US-415–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
 
 ---
 
@@ -867,7 +867,7 @@ Scenario: User follows Quick Start guide
 ## US-414: Diagnostics (Parser Live; gst Opt-In)
 
 * **ID:** US-414
-* **Status:** Planned
+* **Status:** Done (v0.6.0 — in release). Delivered as 3 slices: parser tier (live squiggles), opt-in `gst` tier (save + *Validate with gst*, no zombies), insert-missing-`]`/`)` quick fixes. Decisions: parser debounce 250 ms; parser severity as-emitted; gst trigger save + command; quick fixes for `]`/`)`. gst stderr is line-only (`<file>:<LINE>: <message>`, no column/severity — AC2's `error:` assumption corrected in the spec).
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -889,14 +889,14 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Live parser diagnostics + opt-in gst path implemented.
-* [ ] **Language Server:** unit tests for diagnostic ranges; stderr-parsing tests.
-* [ ] **End-to-End:** integration test asserting squiggles on malformed input.
-* [ ] No zombie gst processes under rapid edits.
-* [ ] PO accepts the story.
+* [X] Live parser diagnostics + opt-in gst path implemented (+ AC4 bracket quick fixes).
+* [X] **Language Server:** unit tests for diagnostic ranges; stderr-parsing tests (`server/test/{diagnostics,gstDiagnostics,codeAction}.test.ts`).
+* [X] **End-to-End:** integration test asserting squiggles on malformed input (+ the quick fix) — `client/test-e2e/US-414.acceptance.test.js`; handshake asserts `publishDiagnostics`/capabilities.
+* [X] No zombie gst processes under rapid edits (injected-spawner test + local real-gst smoke).
+* [ ] PO accepts the story (manual-QA matrix in `specs/US-414-*/verification.md` + clean VSIX).
 
 **Notes / Questions / Assumptions:**
-* Verify gst stderr format against the bundled GNU Smalltalk 3.2.5 sources.
+* Verified gst stderr format against GNU Smalltalk 3.2.5 on the dev box: `<file>:<LINE>: <message>` — line-only, **no column, no `error:` prefix, no severity** (the AC2 `file.st:LINE: error: ...` was an assumption; corrected in `specs/US-414-*/spec.md` §6). gst is dynamic, so undeclared vars print `nil` rather than erroring — the gst tier is essentially a second *parse* opinion.
 
 ---
 
