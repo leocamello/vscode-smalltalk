@@ -9,6 +9,7 @@ import {
   TextDocumentSyncKind,
   type CompletionItem,
   type CompletionParams,
+  type Diagnostic,
   type DefinitionParams,
   type DocumentHighlight,
   type DocumentHighlightParams,
@@ -25,6 +26,8 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getAst, getDiagnostics, getSymbols, getTokens, invalidate } from './documents/parseCache';
 import { toDiagnostics } from './providers/diagnostics';
+import { GstDiagnosticsRunner } from './gst/gstRunner';
+import { resolveGst } from './gst/resolveGst';
 import { toDocumentSymbols } from './providers/documentSymbol';
 import { toFoldingRanges } from './providers/foldingRange';
 import { documentHighlightsAt } from './providers/documentHighlight';
@@ -51,6 +54,15 @@ const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
 // (uri, version), so this is cheap; the debounce only smooths rapid typing.
 const DIAGNOSTIC_DEBOUNCE_MS = 250;
 const diagnosticTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+// Opt-in `gst` diagnostics tier (US-414, AC2/AC3). Default off; runs on save and
+// via the `smalltalk.validateWithGst` command. Published alongside (union with)
+// the parser tier per uri. The runner enforces the no-zombie discipline.
+const VALIDATE_WITH_GST_NOTIFICATION = 'smalltalk/validateWithGst';
+const gstRunner = new GstDiagnosticsRunner();
+const gstDiagnosticsByUri = new Map<string, Diagnostic[]>();
+let useGst = false;
+let gnuSmalltalkPath: string | undefined;
 let workspaceFolders: string[] = [];
 // The exclude predicate in force; refreshed from `files.exclude` on init and on
 // configuration change so the index honors it consistently.
@@ -67,7 +79,13 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
   kernelService.configure({ kernelLibrary: 'auto' });
   return {
     capabilities: {
-      textDocumentSync: TextDocumentSyncKind.Incremental,
+      // Object form so the client also sends `didSave` (drives the opt-in gst
+      // tier, US-414 AC2); text isn't needed — gst reads the saved file.
+      textDocumentSync: {
+        openClose: true,
+        change: TextDocumentSyncKind.Incremental,
+        save: { includeText: false },
+      },
       documentSymbolProvider: true,
       workspaceSymbolProvider: true,
       definitionProvider: true,
@@ -95,7 +113,12 @@ connection.onInitialized(async () => {
 
 // Re-scan when settings change so edits to `files.exclude` and the kernel settings take effect.
 connection.onDidChangeConfiguration(() => {
-  void configureKernel();
+  void configureKernel().then(() => {
+    // If the gst tier was just turned off, clear its squiggles immediately.
+    if (!useGst) {
+      clearAllGstDiagnostics();
+    }
+  });
   void rebuildIndex();
 });
 
@@ -163,7 +186,25 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
 // triggers (publish on open + change).
 documents.onDidChangeContent((e) => {
   scheduleIndex(e.document.uri, e.document.getText());
+  // Kill any in-flight gst run and drop stale gst squiggles (they're against the
+  // pre-edit text now) — AC3 kill-on-edit; the parser tier republishes below.
+  gstRunner.cancel(e.document.uri);
+  gstDiagnosticsByUri.delete(e.document.uri);
   scheduleDiagnostics(e.document.uri);
+});
+
+// Opt-in gst tier runs on save (US-414, AC2). Text isn't needed in the
+// notification — gst compiles the file just written to disk.
+documents.onDidSave((e) => {
+  if (useGst) {
+    void runGstDiagnostics(e.document.uri);
+  }
+});
+
+// On-demand `Smalltalk: Validate with gst` (client command → server). Runs the
+// gst tier regardless of the setting (explicit user intent).
+connection.onNotification(VALIDATE_WITH_GST_NOTIFICATION, (params: { uri: string }) => {
+  void runGstDiagnostics(params?.uri);
 });
 
 documents.onDidClose((e) => {
@@ -179,6 +220,9 @@ documents.onDidClose((e) => {
     clearTimeout(diagTimer);
     diagnosticTimers.delete(e.document.uri);
   }
+  // Tear down the gst tier for the closed doc (kill any run, drop its results).
+  gstRunner.cancel(e.document.uri);
+  gstDiagnosticsByUri.delete(e.document.uri);
   connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
   // Revert the index to the on-disk version of the closed file (drop unsaved edits).
   const fsPath = uriToPath(e.document.uri);
@@ -216,13 +260,20 @@ async function rebuildIndex(): Promise<void> {
 /** Pull `smalltalk.completion.*` and re-resolve the kernel tier. Never throws. */
 async function configureKernel(): Promise<void> {
   let cfg:
-    | { gnuSmalltalkPath?: string; completion?: { kernelLibrary?: KernelLibrarySetting; kernelPath?: string } }
+    | {
+        gnuSmalltalkPath?: string;
+        completion?: { kernelLibrary?: KernelLibrarySetting; kernelPath?: string };
+        diagnostics?: { useGst?: boolean };
+      }
     | undefined;
   try {
     cfg = (await connection.workspace.getConfiguration('smalltalk')) as typeof cfg;
   } catch {
     cfg = undefined;
   }
+  // Cache the gst settings for the diagnostics tier (US-414).
+  gnuSmalltalkPath = cfg?.gnuSmalltalkPath || undefined;
+  useGst = cfg?.diagnostics?.useGst === true;
   const requested = cfg?.completion?.kernelLibrary ?? 'auto';
   kernelService.configure({
     kernelLibrary: requested,
@@ -259,9 +310,50 @@ function publishDiagnostics(uri: string): void {
     return;
   }
   try {
-    connection.sendDiagnostics({ uri, diagnostics: toDiagnostics(getDiagnostics(doc)) });
+    // Union of the always-on parser tier and the last opt-in gst result, kept
+    // distinct by source/code so neither tier clobbers the other.
+    const parser = toDiagnostics(getDiagnostics(doc));
+    const gst = gstDiagnosticsByUri.get(uri) ?? [];
+    connection.sendDiagnostics({ uri, diagnostics: [...parser, ...gst] });
   } catch {
     // The front end shouldn't throw; if it ever does, leave existing diagnostics untouched.
+  }
+}
+
+// Run the opt-in gst tier for a document, then republish the union. Never throws;
+// silently inert when the doc is gone, isn't a file, or `gst` can't be resolved
+// (ADR-0001). A superseded/timed-out run resolves null and is ignored.
+async function runGstDiagnostics(uri: string | undefined): Promise<void> {
+  if (!uri) {
+    return;
+  }
+  const doc = documents.get(uri);
+  const filePath = uriToPath(uri);
+  if (!doc || filePath === undefined) {
+    return;
+  }
+  const gstPath = resolveGst({ configuredPath: gnuSmalltalkPath });
+  if (!gstPath) {
+    return; // tier inert without a resolvable gst
+  }
+  try {
+    const diags = await gstRunner.run(uri, gstPath, filePath, doc.getText());
+    if (diags === null) {
+      return;
+    }
+    gstDiagnosticsByUri.set(uri, diags);
+    publishDiagnostics(uri);
+  } catch {
+    // never throw from the diagnostics path
+  }
+}
+
+/** Drop all gst diagnostics and republish parser-only (e.g. when the setting goes off). */
+function clearAllGstDiagnostics(): void {
+  const uris = [...gstDiagnosticsByUri.keys()];
+  gstDiagnosticsByUri.clear();
+  for (const uri of uris) {
+    publishDiagnostics(uri);
   }
 }
 

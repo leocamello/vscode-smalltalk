@@ -103,7 +103,8 @@ send({
 const initResult = await receiveId(1);
 assert.ok(initResult.result?.capabilities, 'initialize must return capabilities');
 const caps = initResult.result.capabilities;
-assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2)');
+assert.equal(caps.textDocumentSync.change, 2, 'expected incremental textDocumentSync (change: 2)');
+assert.ok(caps.textDocumentSync.save, 'expected save sync enabled (US-414 gst-on-save)');
 assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');

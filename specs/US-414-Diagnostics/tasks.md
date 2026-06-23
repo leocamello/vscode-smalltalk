@@ -24,19 +24,23 @@ Validate command**, code actions **insert missing `]` and `)`**.
   open + change (`onDidChangeContent`); clear (empty publish) + cancel timer on close. (AC1)
 - [x] T013 Wired `eval:diagnostics` into `eval`; all four layers green + check-types + lint.
 
-## Slice B — opt-in gst diagnostics (AC2/AC3)
+## Slice B — opt-in gst diagnostics (AC2/AC3) ✅
 ### Acceptance Harness
-- [ ] T020 RED: unit `parseGstStderr` fixtures (verified gst-3.2.5 format); injected-spawner
-  no-zombie/rapid-edit test; opt-in wiring coverage in the server test where feasible.
+- [x] T020 Unit `server/test/gstDiagnostics.test.ts` (11 checks): `parseGstStderr` fixtures (verified
+  gst-3.2.5 format), injected-spawner no-zombie/kill-on-supersede + spawn-error-inert + cancel,
+  `resolveGst` cases. All CI-safe (no real gst). AC2/AC3 routed here + local manual QA (§3.5).
 ### Implementation
-- [ ] T021 `server/src/gst/gstRunner.ts` — `parseGstStderr(text,uri)` (pure) + timeout-bounded runner,
-  one in-flight child per uri, kill-on-supersede. (AC2/AC3)
-- [ ] T022 Factor gst executable resolution for server reuse (setting → PATH), injectable. (AC2)
-- [ ] T023 `server.ts` — run gst tier on `onDidSave` when `smalltalk.diagnostics.useGst`; clear stale
-  gst diagnostics on next change; union with parser diagnostics per uri. (AC2/AC3)
-- [ ] T024 `package.json` — `smalltalk.diagnostics.useGst` (default false) + `smalltalk.validateWithGst`
-  command + client→server bridge. (AC2)
-- [ ] T025 All three layers + eval green; gst tests hermetic (no gst required in CI).
+- [x] T021 `server/src/gst/gstRunner.ts` — `parseGstStderr(stderr, sourceText)` (pure, whole-line
+  ranges, source `gst`/code `compile`) + `GstDiagnosticsRunner`: timeout-bounded, one in-flight child
+  per uri, kill-on-supersede, inert on spawn error. (AC2/AC3)
+- [x] T022 `server/src/gst/resolveGst.ts` — server-side gst resolution (setting → PATH), injectable.
+- [x] T023 `server.ts` — gst tier on `onDidSave` when `useGst`; kill-on-edit + clear stale gst diags on
+  change; union with parser diagnostics per uri; clear all gst diags when the setting goes off. (AC2/AC3)
+- [x] T024 `package.json` — `smalltalk.diagnostics.useGst` (default false) + `smalltalk.validateWithGst`
+  command + palette entry; client bridge (save active doc → `smalltalk/validateWithGst` notification).
+  `textDocumentSync` → object form with `save` so the client sends `didSave`. (AC2)
+- [x] T025 All four layers green (parser/server/e2e/eval) + check-types + lint; gst tests hermetic.
+  Local smoke against real gst (resolve→spawn→parse + rapid-supersede no-zombie) verified.
 
 ## Slice C — trivial code actions (AC4)
 - [ ] T030 RED: e2e asserts insert-missing-`]`/`)` quick fix; unit for the pure mapping.

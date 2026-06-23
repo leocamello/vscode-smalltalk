@@ -24,6 +24,7 @@ export function activate(context: ExtensionContext): void {
   // Commands (workflow features; independent of the language server).
   context.subscriptions.push(
     commands.registerCommand('smalltalk.runCurrentFile', runCurrentFile),
+    commands.registerCommand('smalltalk.validateWithGst', validateWithGst),
   );
 
   // Status bar: which kernel-library completions are active (US-413 / AC7).
@@ -90,6 +91,27 @@ function updateKernelStatusBar(item: StatusBarItem, status: KernelStatus): void 
     item.tooltip = `Kernel-library completions: ${status.label}. Click to change.`;
   }
   item.show();
+}
+
+/** Custom notification to the server: run the opt-in gst diagnostics tier now. */
+const VALIDATE_WITH_GST_NOTIFICATION = 'smalltalk/validateWithGst';
+
+/**
+ * `Smalltalk: Validate with gst` — save the active Smalltalk file and ask the
+ * server to run the opt-in gst diagnostics tier on it (US-414, AC2). On-demand,
+ * independent of the `smalltalk.diagnostics.useGst` setting.
+ */
+async function validateWithGst(): Promise<void> {
+  const editor = window.activeTextEditor;
+  if (!editor || editor.document.languageId !== 'smalltalk') {
+    void window.showErrorMessage('Open a Smalltalk file to validate it with gst.');
+    return;
+  }
+  if (!client) {
+    return;
+  }
+  await editor.document.save();
+  await client.sendNotification(VALIDATE_WITH_GST_NOTIFICATION, { uri: editor.document.uri.toString() });
 }
 
 export function deactivate(): Thenable<void> | undefined {

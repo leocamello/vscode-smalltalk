@@ -10,3 +10,4 @@ import './cartridgeLoader.test.ts';
 import './kernelService.test.ts';
 import './providers.test.ts';
 import './diagnostics.test.ts';
+import './gstDiagnostics.test.ts';
