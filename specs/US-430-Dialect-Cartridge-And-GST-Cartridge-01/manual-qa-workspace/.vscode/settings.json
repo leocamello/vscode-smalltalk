@@ -1,0 +1,17 @@
+{
+  // US-430 manual QA — the kernel-sourcing knob. After changing it, reload the
+  // Extension Dev Host window (Ctrl+R / Cmd+R) so the server re-resolves the source.
+  //
+  // DEFAULT below = "auto". This box has gst, so auto resolves to INSTALLED:
+  //   status bar → "Smalltalk kernel: installed (gst)"   (verification.md row 5)
+  //
+  // Swap the active line for the other rows (keep exactly ONE kernelLibrary key):
+  //   row 4  FLOOR     → "bundled"   status bar "frozen reference (gst 3.2.5)", detail "kernel (reference)"
+  //   row 7  FALLBACK  → "auto" + the kernelPath line below (bogus dir) → one-time toast
+  //   row 8  OFF       → "off"       kernel items vanish, status bar "off"
+  "smalltalk.completion.kernelLibrary": "auto"
+
+  // Row 7 — uncomment BOTH this and set kernelLibrary to "auto" to force the floor
+  // fallback notice (no installed kernel discoverable):
+  // ,"smalltalk.completion.kernelPath": "/tmp/nope-not-a-kernel"
+}
