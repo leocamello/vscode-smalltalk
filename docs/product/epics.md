@@ -147,7 +147,7 @@
 ## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
 
 * **ID:** EPIC-005
-* **Status:** In Progress (foundation — US-430 cartridge schema + GST Cartridge #01)
+* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; next consumers US-422/423)
 * **Priority:** High
 * **Phase:** Phase 2 (extends EPIC-004)
 * **Date Proposed:** 2026-06-21
