@@ -6,7 +6,7 @@
 
 > This is a **behaviour-preserving foundation** (EPIC-005), not a user-facing feature. The hard gate is
 > that completion is **unchanged** after the cartridge swap, with two intended surface changes: the
-> status-bar label (**frozen reference** vs installed) and the completion-item provenance detail
+> status-bar label (**reference** vs installed) and the completion-item provenance detail
 > (`kernel (reference)` / `kernel (installed)`). Per PO direction (memory *manual-qa-before-release*),
 > execute the §3 matrix in the Extension Development Host — favouring **real code** and a **clean-install
 > VSIX** smoke — and sign off below before merging #64.
@@ -48,7 +48,7 @@ force the **floor** with `kernelLibrary=bundled` or a bogus `kernelPath`. Record
 | 1 | Completion unchanged — selectors | Open a `.st` file; type `x print` and trigger completion | Kernel selectors (`printString`, `printNl`, …) appear after the receiver — same as 0.5.0 | ☐ Pending |
 | 2 | Completion unchanged — class + variable | Inside a method with a temp + instance var, complete in head position | In-scope variables first, then class names (`OrderedCollection` via `OC`); correct icons | ☐ Pending |
 | 3 | Keyword snippet | Accept `at:put:` | Inserts `at:${1} put:${2}`; Tab jumps between the two argument stops | ☐ Pending |
-| 4 | **Status label — floor (changed)** | `kernelLibrary=bundled` (or `auto` with no `gst`), reload | Status bar reads **frozen reference (gst 3.2.5)** (was "bundled (gst 3.2.5)") | ☐ Pending |
+| 4 | **Status label — floor (changed)** | `kernelLibrary=bundled` (or `auto` with no `gst`), reload | Status bar reads **reference (gst 3.2.5)** (was "bundled (gst 3.2.5)") | ☐ Pending |
 | 5 | **Status label — installed** | `kernelLibrary=auto` with `gst` discoverable (this box), reload | Status bar reads **installed (gst)**; completions match the installed kernel | ☐ Pending |
 | 6 | **Provenance detail (changed)** | Inspect a floor completion's detail, then an installed one | Detail reads **`kernel (reference)`** for the floor / **`kernel (installed)`** for installed; status bar agrees | ☐ Pending |
 | 7 | Fallback notice | `kernelLibrary=auto`, no discoverable `gst` (bogus `kernelPath`) | One-time notice: kernel completions use a bundled reference (GST 3.2.5), with *Open Settings* | ☐ Pending |
@@ -56,7 +56,7 @@ force the **floor** with `kernelLibrary=bundled` or a bogus `kernelPath`. Record
 | 9 | Floor breadth sanity | On the floor, complete a class name in head position | Full base image offered (incl. `SystemExceptions`-area classes) with no obvious noise/dupes — broader than the old kernel-dir index, as designed | ☐ Pending |
 | 10 | Robustness / live edit | Type into a half-written/malformed method; add a new method then complete | Useful (partial) completions, never a thrown error; new symbols appear within ~debounce | ☐ Pending |
 | 11 | No-`gst` & zero-config | Fresh defaults (no settings; simulate no `gst`) | Useful kernel completions out of the box from the frozen floor | ☐ Pending |
-| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #3, #4 | Shipped artifact behaves like the dev build; status label is **frozen reference (gst 3.2.5)** | ☐ Pending |
+| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #3, #4 | Shipped artifact behaves like the dev build; status label is **reference (gst 3.2.5)** | ☐ Pending |
 
 **Developer Tools console:** ☐ confirm no errors emitted by *this* extension during the above.
 

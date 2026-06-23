@@ -67,6 +67,15 @@ function installedCartridgeHeader(): CartridgeHeader {
 
 const OFF: KernelIdentity = { source: 'off', label: 'off' };
 
+/** Status-bar label like `reference (gst 3.2.5)` / `installed (gst 3.2.5)`. The
+ *  version is appended only when it's a real, known version — the static installed
+ *  adapter can't determine it without running `gst`, so it stays `installed (gst)`
+ *  until a version becomes available. */
+function identityLabel(kind: 'reference' | 'installed', dialect: string, version: string): string {
+  const known = version !== '' && version !== 'installed' && /\d/.test(version);
+  return known ? `${kind} (${dialect} ${version})` : `${kind} (${dialect})`;
+}
+
 export class KernelIndexService {
   private active?: KernelIndexData;
   private identity_: KernelIdentity = OFF;
@@ -94,7 +103,7 @@ export class KernelIndexService {
         this.active = installed;
         this.identity_ = {
           source: 'installed',
-          label: `installed (${installed.dialect})`,
+          label: identityLabel('installed', installed.dialect, installed.version),
           library: installed.library,
           version: installed.version,
         };
@@ -102,12 +111,12 @@ export class KernelIndexService {
       }
     }
     // `bundled`, or `auto` with no usable installation: the Tier-2 frozen
-    // reference floor (ADR-0003). Labelled "frozen reference" to distinguish it
-    // from a version-correct installed source in the status bar.
+    // reference floor (ADR-0003). Labelled "reference" to distinguish it from a
+    // version-correct installed source in the status bar.
     this.active = this.bundled;
     this.identity_ = {
       source: 'bundled',
-      label: `frozen reference (${this.bundled.dialect} ${this.bundled.version})`,
+      label: identityLabel('reference', this.bundled.dialect, this.bundled.version),
       library: this.bundled.library,
       version: this.bundled.version,
     };

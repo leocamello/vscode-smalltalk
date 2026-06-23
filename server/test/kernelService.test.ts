@@ -89,7 +89,7 @@ test('bundled: serves the gst-3.2.5 reference floor with bundled provenance', ()
   svc.configure({ kernelLibrary: 'bundled' });
   assert.equal(svc.identity.source, 'bundled');
   // ADR-0003 status label: the frozen reference floor, distinct from installed.
-  assert.match(svc.identity.label, /frozen reference \(gst 3\.2\.5\)/);
+  assert.equal(svc.identity.label, 'reference (gst 3.2.5)');
   const classNames = svc.classes().map((c) => c.name);
   assert.ok(classNames.includes('Object'), 'bundled index should contain Object');
   const sels = svc.selectors();

@@ -6,10 +6,11 @@
   //   status bar → "Smalltalk kernel: installed (gst)"   (verification.md row 5)
   //
   // Swap the active line for the other rows (keep exactly ONE kernelLibrary key):
-  //   row 4  FLOOR     → "bundled"   status bar "frozen reference (gst 3.2.5)", detail "kernel (reference)"
+  //   row 4  FLOOR     → "bundled"   status bar "reference (gst 3.2.5)", detail "kernel (reference)"
   //   row 7  FALLBACK  → "auto" + the kernelPath line below (bogus dir) → one-time toast
   //   row 8  OFF       → "off"       kernel items vanish, status bar "off"
-  "smalltalk.completion.kernelLibrary": "auto"
+  "smalltalk.completion.kernelLibrary": "auto",
+  "smalltalk.completion.kernelPath": "/tmp/nope"
 
   // Row 7 — uncomment BOTH this and set kernelLibrary to "auto" to force the floor
   // fallback notice (no installed kernel discoverable):

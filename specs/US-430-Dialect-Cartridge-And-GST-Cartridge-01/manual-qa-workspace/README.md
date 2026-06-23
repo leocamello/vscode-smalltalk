@@ -22,7 +22,7 @@ text beside the selected item; press `Ctrl+Space` again to expand the details pa
 | 1 | `Account.st` `deposit:` | type `amount print` | `printString`, `printNl`, `printOn:` offered |
 | 2 | `Account.st` `describe` | type `ba`, then `OC` | `balance` (Field icon) above classes; `OrderedCollection` by camel-hump |
 | 3 | `Account.st` `record:value:` | type `history at`, accept `at:put:` | inserts `at:${1} put:${2}`, two Tab stops |
-| 4 | settings → `"bundled"`, reload | read status bar | **`frozen reference (gst 3.2.5)`** |
+| 4 | settings → `"bundled"`, reload | read status bar | **`reference (gst 3.2.5)`** |
 | 5 | settings → `"auto"`, reload | read status bar | **`installed (gst)`** (this box has gst) |
 | 6 | any kernel item | read the greyed detail | **`kernel (reference)`** on floor / **`kernel (installed)`** installed |
 | 7 | settings → `"auto"` + bogus `kernelPath`, reload | — | one-time toast: bundled reference (GST 3.2.5) + *Open Settings* |
@@ -34,7 +34,8 @@ text beside the selected item; press `Ctrl+Space` again to expand the details pa
 
 ## What "changed vs 0.5.0" looks like
 - **Before:** status `bundled (gst 3.2.5)`, detail `kernel (bundled)`.
-- **After:** status `frozen reference (gst 3.2.5)`, detail `kernel (reference)`. Installed wording is
-  unchanged (`installed (gst)` / `kernel (installed)`).
+- **After:** status `reference (gst 3.2.5)`, detail `kernel (reference)`. Installed wording is
+  unchanged (`installed (gst)` / `kernel (installed)`); it gains a version (`installed (gst X.Y.Z)`)
+  automatically if/when one is known.
 
 Record results in `../verification.md` §3, fill the date/sign-off line, then tick §5.
