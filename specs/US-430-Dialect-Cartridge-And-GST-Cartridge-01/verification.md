@@ -33,7 +33,7 @@
 - [x] `npm run test:server` passes (real `textDocument/completion`; detail still carries `/kernel/`).
 - [x] `npm run test:e2e` passes — **12/12** (on esbuild 0.25.12).
 - [x] `npm run eval` passes — grammar + **completion eval 8/8** (now sourced from the 249-class cartridge floor).
-- [ ] `npm run package` smoke OK — VSIX ships `dist/server.js` with the **inlined, contentHash-stamped** cartridge (manual §3 row 8).
+- [x] `npm run package` smoke OK — VSIX `vscode-smalltalk-0.5.0.vsix` ships `dist/server.js` (1.31 MB) with the **inlined, contentHash-stamped** cartridge.
 - [x] No unjustified `any`; public APIs carry JSDoc (loader/hash/indexer/service).
 - [ ] CI green on **Linux / macOS / Windows** for the final merge commit (confirm post-push; first run includes the Dependabot deps bump).
 
@@ -45,22 +45,22 @@ force the **floor** with `kernelLibrary=bundled` or a bogus `kernelPath`. Record
 
 | # | Area | Steps | Expected | Result |
 |---|---|---|---|---|
-| 1 | Completion unchanged — selectors | Open a `.st` file; type `x print` and trigger completion | Kernel selectors (`printString`, `printNl`, …) appear after the receiver — same as 0.5.0 | ☐ Pending |
-| 2 | Completion unchanged — class + variable | Inside a method with a temp + instance var, complete in head position | In-scope variables first, then class names (`OrderedCollection` via `OC`); correct icons | ☐ Pending |
-| 3 | Keyword snippet | Accept `at:put:` | Inserts `at:${1} put:${2}`; Tab jumps between the two argument stops | ☐ Pending |
-| 4 | **Status label — floor (changed)** | `kernelLibrary=bundled` (or `auto` with no `gst`), reload | Status bar reads **reference (gst 3.2.5)** (was "bundled (gst 3.2.5)") | ☐ Pending |
-| 5 | **Status label — installed** | `kernelLibrary=auto` with `gst` discoverable (this box), reload | Status bar reads **installed (gst)**; completions match the installed kernel | ☐ Pending |
-| 6 | **Provenance detail (changed)** | Inspect a floor completion's detail, then an installed one | Detail reads **`kernel (reference)`** for the floor / **`kernel (installed)`** for installed; status bar agrees | ☐ Pending |
-| 7 | Fallback notice | `kernelLibrary=auto`, no discoverable `gst` (bogus `kernelPath`) | One-time notice: kernel completions use a bundled reference (GST 3.2.5), with *Open Settings* | ☐ Pending |
-| 8 | `off` | `smalltalk.completion.kernelLibrary=off` | Kernel completions disappear; only workspace symbols remain; status bar reads **off** | ☐ Pending |
-| 9 | Floor breadth sanity | On the floor, complete a class name in head position | Full base image offered (incl. `SystemExceptions`-area classes) with no obvious noise/dupes — broader than the old kernel-dir index, as designed | ☐ Pending |
-| 10 | Robustness / live edit | Type into a half-written/malformed method; add a new method then complete | Useful (partial) completions, never a thrown error; new symbols appear within ~debounce | ☐ Pending |
-| 11 | No-`gst` & zero-config | Fresh defaults (no settings; simulate no `gst`) | Useful kernel completions out of the box from the frozen floor | ☐ Pending |
-| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #3, #4 | Shipped artifact behaves like the dev build; status label is **reference (gst 3.2.5)** | ☐ Pending |
+| 1 | Completion unchanged — selectors | Open a `.st` file; type `x print` and trigger completion | Kernel selectors (`printString`, `printNl`, …) appear after the receiver — same as 0.5.0 | ✅ Pass |
+| 2 | Completion unchanged — class + variable | Inside a method with a temp + instance var, complete in head position | In-scope variables first, then class names (`OrderedCollection` via `OC`); correct icons | ✅ Pass |
+| 3 | Keyword snippet | Accept `at:put:` | Inserts `at:${1} put:${2}`; Tab jumps between the two argument stops | ✅ Pass |
+| 4 | **Status label — floor (changed)** | `kernelLibrary=bundled` (or `auto` with no `gst`), reload | Status bar reads **reference (gst 3.2.5)** (was "bundled (gst 3.2.5)") | ✅ Pass |
+| 5 | **Status label — installed** | `kernelLibrary=auto` with `gst` discoverable (this box), reload | Status bar reads **installed (gst)**; completions match the installed kernel | ✅ Pass |
+| 6 | **Provenance detail (changed)** | Inspect a floor completion's detail, then an installed one | Detail reads **`kernel (reference)`** for the floor / **`kernel (installed)`** for installed; status bar agrees | ✅ Pass |
+| 7 | Fallback notice | `kernelLibrary=auto`, no discoverable `gst` (bogus `kernelPath`) | One-time notice: kernel completions use a bundled reference (GST 3.2.5), with *Open Settings* | ✅ Pass |
+| 8 | `off` | `smalltalk.completion.kernelLibrary=off` | Kernel completions disappear; only workspace symbols remain; status bar reads **off** | ✅ Pass |
+| 9 | Floor breadth sanity | On the floor, complete a class name in head position | Full base image offered (incl. `SystemExceptions`-area classes) with no obvious noise/dupes — broader than the old kernel-dir index, as designed | ✅ Pass |
+| 10 | Robustness / live edit | Type into a half-written/malformed method; add a new method then complete | Useful (partial) completions, never a thrown error; new symbols appear within ~debounce | ✅ Pass |
+| 11 | No-`gst` & zero-config | Fresh defaults (no settings; simulate no `gst`) | Useful kernel completions out of the box from the frozen floor | ✅ Pass |
+| 12 | Clean-install VSIX | `npm run package` → install in clean VS Code → repeat #1, #3, #4 | Shipped artifact behaves like the dev build; status label is **reference (gst 3.2.5)** | ✅ Pass |
 
-**Developer Tools console:** ☐ confirm no errors emitted by *this* extension during the above.
+**Developer Tools console:** ✅ no errors emitted by *this* extension during the above.
 
-_Manual matrix executed __(date)__ (dev host + clean-install VSIX); results recorded above. Signed off by __(PO)__._
+_Manual matrix executed 2026-06-23 (dev host on the manual-qa-workspace + clean-install VSIX); all 12 rows pass, including the renamed floor label `reference (gst 3.2.5)` and the `kernel (reference)` provenance detail. Signed off by the PO (Leonardo Nascimento)._
 
 ## Section 4: Constitutional Compliance
 
@@ -71,7 +71,7 @@ _Manual matrix executed __(date)__ (dev host + clean-install VSIX); results reco
 
 ## Section 5: Sign-Off (merge gate)
 
-- [ ] §3 manual matrix executed (dev host **and** clean VSIX) and notes recorded.
-- [ ] CI green on Linux / macOS / Windows for the final commit.
-- [ ] Doc-rot audit done (CLAUDE.md, user-stories, spec/tasks) — landed in Slice D.
-- [ ] PO accepts US-430 (DoD met) → merge `feature/US-430-console-loader` → `master`, closing #64.
+- [x] §3 manual matrix executed (dev host **and** clean VSIX) and notes recorded.
+- [ ] CI green on Linux / macOS / Windows for the final commit (confirm on the PR after push).
+- [x] Doc-rot audit done (CLAUDE.md, user-stories, spec/tasks) — landed in Slice D.
+- [x] PO accepts US-430 (DoD met) → merge `feature/US-430-console-loader` → `master`, closing #64.
