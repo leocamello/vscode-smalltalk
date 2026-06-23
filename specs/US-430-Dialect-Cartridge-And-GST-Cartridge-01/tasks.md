@@ -8,7 +8,7 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T001 Schema designed + reviewed (`server/src/types/knowledge-base.ts`). (AC1)
 - [x] T002 Reflective exporter written + validated against local gst 3.2.5. (AC3/AC6)
 - [x] T003 Cartridge #01 generated + committed (249 classes / 4746 signatures, 0 prose). (AC3)
-- [ ] T004 `requirements-validation.md` gate passed.
+- [x] T004 `requirements-validation.md` gate passed (PASS — validated against the as-built Slices A–D).
 
 ## Phase 2 — Implementation
 ### Slice B — loader + projection
