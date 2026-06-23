@@ -10,7 +10,7 @@ import { buildSymbolTable, type SymbolNode } from '../parser/symbols';
 import { parse } from '../parser/parser';
 import { tokenize } from '../parser/lexer';
 import type { ProgramNode } from '../parser/ast';
-import type { Token } from '../parser/token';
+import type { LexDiagnostic, Token } from '../parser/token';
 
 interface TextLike {
   readonly uri: string;
@@ -22,6 +22,7 @@ interface CacheEntry {
   readonly version: number;
   readonly ast: ProgramNode;
   readonly tokens: Token[];
+  readonly diagnostics: LexDiagnostic[];
   symbols?: SymbolNode[];
 }
 
@@ -33,7 +34,13 @@ function entryFor(doc: TextLike): CacheEntry {
     return hit;
   }
   const text = doc.getText();
-  const entry: CacheEntry = { version: doc.version, ast: parse(text).ast, tokens: tokenize(text).tokens };
+  const result = parse(text);
+  const entry: CacheEntry = {
+    version: doc.version,
+    ast: result.ast,
+    tokens: tokenize(text).tokens,
+    diagnostics: result.diagnostics,
+  };
   cache.set(doc.uri, entry);
   return entry;
 }
@@ -46,6 +53,11 @@ export function getAst(doc: TextLike): ProgramNode {
 /** The document's full token stream (including comment trivia). */
 export function getTokens(doc: TextLike): Token[] {
   return entryFor(doc).tokens;
+}
+
+/** The document's parser diagnostics (lexer + parser), parsed at most once per (uri, version). */
+export function getDiagnostics(doc: TextLike): LexDiagnostic[] {
+  return entryFor(doc).diagnostics;
 }
 
 /** The document's symbol table (built once, then cached on the entry). */

@@ -9,3 +9,4 @@ import './kernel.test.ts';
 import './cartridgeLoader.test.ts';
 import './kernelService.test.ts';
 import './providers.test.ts';
+import './diagnostics.test.ts';

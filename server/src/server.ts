@@ -23,7 +23,8 @@ import {
   type WorkspaceSymbolParams,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { getAst, getSymbols, getTokens, invalidate } from './documents/parseCache';
+import { getAst, getDiagnostics, getSymbols, getTokens, invalidate } from './documents/parseCache';
+import { toDiagnostics } from './providers/diagnostics';
 import { toDocumentSymbols } from './providers/documentSymbol';
 import { toFoldingRanges } from './providers/foldingRange';
 import { documentHighlightsAt } from './providers/documentHighlight';
@@ -45,6 +46,11 @@ const KERNEL_STATUS_NOTIFICATION = 'smalltalk/kernelStatus';
 
 const INDEX_DEBOUNCE_MS = 250;
 const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
+// Live parser diagnostics (US-414, AC1): debounced on its own timer so squiggles
+// stay responsive and don't flicker mid-token. The parse is already cached per
+// (uri, version), so this is cheap; the debounce only smooths rapid typing.
+const DIAGNOSTIC_DEBOUNCE_MS = 250;
+const diagnosticTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let workspaceFolders: string[] = [];
 // The exclude predicate in force; refreshed from `files.exclude` on init and on
 // configuration change so the index honors it consistently.
@@ -153,7 +159,12 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
 // Keep the workspace index fresh, debounced so rapid typing does not reparse on
 // every keystroke. (The outline reads the live doc via the version-keyed cache,
 // so it stays immediate.)
-documents.onDidChangeContent((e) => scheduleIndex(e.document.uri, e.document.getText()));
+// `onDidChangeContent` fires on open and on every edit, so it covers both AC1
+// triggers (publish on open + change).
+documents.onDidChangeContent((e) => {
+  scheduleIndex(e.document.uri, e.document.getText());
+  scheduleDiagnostics(e.document.uri);
+});
 
 documents.onDidClose((e) => {
   invalidate(e.document.uri);
@@ -162,6 +173,13 @@ documents.onDidClose((e) => {
     clearTimeout(timer);
     indexTimers.delete(e.document.uri);
   }
+  // Stop any pending diagnostics publish and clear the squiggles for the closed doc.
+  const diagTimer = diagnosticTimers.get(e.document.uri);
+  if (diagTimer) {
+    clearTimeout(diagTimer);
+    diagnosticTimers.delete(e.document.uri);
+  }
+  connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
   // Revert the index to the on-disk version of the closed file (drop unsaved edits).
   const fsPath = uriToPath(e.document.uri);
   if (fsPath !== undefined && fs.existsSync(fsPath)) {
@@ -216,6 +234,35 @@ async function configureKernel(): Promise<void> {
   // Tell the client so it can show the active source in the status bar and, on a
   // fallback to the bundle, a one-time notice (AC7).
   connection.sendNotification(KERNEL_STATUS_NOTIFICATION, { ...identity, requested });
+}
+
+// Publish parser diagnostics for a document, debounced (AC1). Reads the live doc
+// via the version-keyed cache, so it reflects the latest edit. Never throws — the
+// front end returns diagnostics, not errors; on any failure we publish nothing.
+function scheduleDiagnostics(uri: string): void {
+  const existing = diagnosticTimers.get(uri);
+  if (existing) {
+    clearTimeout(existing);
+  }
+  diagnosticTimers.set(
+    uri,
+    setTimeout(() => {
+      diagnosticTimers.delete(uri);
+      publishDiagnostics(uri);
+    }, DIAGNOSTIC_DEBOUNCE_MS),
+  );
+}
+
+function publishDiagnostics(uri: string): void {
+  const doc = documents.get(uri);
+  if (!doc) {
+    return;
+  }
+  try {
+    connection.sendDiagnostics({ uri, diagnostics: toDiagnostics(getDiagnostics(doc)) });
+  } catch {
+    // The front end shouldn't throw; if it ever does, leave existing diagnostics untouched.
+  }
 }
 
 function scheduleIndex(uri: string, text: string): void {

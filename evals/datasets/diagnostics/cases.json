@@ -1,0 +1,48 @@
+{
+  "description": "US-414 diagnostics output eval (Slice A — parser tier). Golden cases over the always-on error-tolerant front end (no gst, no VS Code). Drives parse() → toDiagnostics() and asserts: clean sources are silent; malformed sources publish parser diagnostics with source `smalltalk` / code `parse` (badge `smalltalk(parse)`), severity as the parser emits, and a sane line range. Metrics: expectClean (no diagnostics), expectMinCount, expectCode, expectSeverity (all diagnostics), expectOnLine (some diagnostic starts on a 0-based line), expectMessageIncludes (some diagnostic message contains the substring).",
+  "cases": [
+    {
+      "name": "clean source is silent",
+      "text": "| x |\nx := 1.\nTranscript showCr: x printString.",
+      "expectClean": true
+    },
+    {
+      "name": "clean brace class is silent",
+      "text": "Object subclass: Foo [\n  | a |\n  bar [ ^a ]\n]",
+      "expectClean": true
+    },
+    {
+      "name": "missing ] flags an error on the last line",
+      "text": "Object subclass: Foo [\n  bar [ ^1 \n",
+      "expectMinCount": 1,
+      "expectCode": "parse",
+      "expectSeverity": "Error",
+      "expectOnLine": 2,
+      "expectMessageIncludes": "]"
+    },
+    {
+      "name": "missing ) flags an error",
+      "text": "| x |\nx := (1 + 2.\n",
+      "expectMinCount": 1,
+      "expectCode": "parse",
+      "expectSeverity": "Error",
+      "expectMessageIncludes": ")"
+    },
+    {
+      "name": "unterminated string literal flags an error with a span",
+      "text": "Transcript showCr: 'oops.",
+      "expectMinCount": 1,
+      "expectCode": "parse",
+      "expectSeverity": "Error",
+      "expectOnLine": 0,
+      "expectMessageIncludes": "Unterminated"
+    },
+    {
+      "name": "truncated expression flags an error",
+      "text": "x := 1 +",
+      "expectMinCount": 1,
+      "expectCode": "parse",
+      "expectSeverity": "Error"
+    }
+  ]
+}
