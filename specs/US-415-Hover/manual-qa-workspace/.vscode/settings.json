@@ -1,0 +1,14 @@
+{
+  // US-415 manual QA — the kernel-sourcing knob drives the PROSE rows. After
+  // changing it, RELOAD the Extension Dev Host window (Ctrl+R / Cmd+R) so the
+  // server re-resolves the kernel source.
+  //
+  // DEFAULT below = "auto". This box has gst, so auto resolves to INSTALLED →
+  // kernel hovers carry comments (status bar: "installed (gst)").
+  //
+  // Swap the value for the provenance matrix (README rows P1–P3):
+  //   P1 INSTALLED  → "auto"     kernel class/method comments SHOWN
+  //   P2 REFERENCE  → "bundled"  kernel hovers are FACTS-ONLY (no comments); chain + signature still shown
+  //   P3 OFF        → "off"      kernel facts vanish (OrderedCollection → no hover); workspace hovers unchanged
+  "smalltalk.completion.kernelLibrary": "auto"
+}

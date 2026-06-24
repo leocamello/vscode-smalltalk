@@ -15,14 +15,20 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
-- **Releasing:** **v0.6.0 — diagnostics (US-414, EPIC-004), parser-only**: an always-on **parser tier**
+- **In review (0.7.0):** **hover (US-415, EPIC-004)** — selectors (signature + implementor list), classes
+  (superclass chain), variables (kind + declaration site), numeric literals (radix/scaled-decimal decode),
+  Markdown with code fences. **Comment prose gated by provenance** (`providers/hover.ts`, `parser/comments.ts`):
+  the installed kernel + your workspace source carry comments; the **bundled reference stays facts-only**
+  (LGPL — prose is read locally, never redistributed; [`specs/US-415-*/spec.md`](specs/US-415-Hover/spec.md) §4a).
+  New `evals/datasets/hover/` output eval. Manual-QA cleared; PR open (closes #27).
+- **Shipped:** **v0.6.0 — diagnostics (US-414, EPIC-004), parser-only**: an always-on **parser tier**
   publishes syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, severity as
   emitted, **no `gst`**); and trivial **quick fixes** insert a missing closer (`]`/`)`/`}`/`>`) or close
   an unterminated string. New `evals/datasets/diagnostics/` output eval. The **opt-in `gst`/runtime
   compile-diagnostics tier was deferred to EPIC-007** (Live Bridge): gst 3.2.5 emits only syntax errors
   the parser already catches better; its real value (semantic errors) needs a runtime
-  ([`specs/US-414-*/spec.md`](specs/US-414-Diagnostics/spec.md) §7). Release pending the manual-QA matrix.
-- **Shipped:** v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
+  ([`specs/US-414-*/spec.md`](specs/US-414-Diagnostics/spec.md) §7).
+- v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
   selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,
   bundled-fallback** ([ADR-0002](docs/decisions/0002-kernel-symbol-sourcing.md)); `kernelLibrary`
   (`auto|bundled|off`) + status-bar identity. Slices A–D (#51–#54) + eval (#55) + release (#56);
@@ -32,8 +38,7 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** **0.7.0 / US-415** — hover (selectors/classes/vars/literals + kernel facts). **EPIC-005
-  foundation landed**
+- **Next:** **EPIC-005 foundation landed**
   (US-430, lands 0.8/0.9): the Dialect Cartridge schema (`server/src/types/knowledge-base.ts`) + GST
   **Cartridge #01** (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`,
   249 classes / 4746 signatures, `contentHash`-stamped) now **drive completion**: the runtime Console
