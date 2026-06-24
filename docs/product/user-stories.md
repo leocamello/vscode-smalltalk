@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-24).** v0.2.0–v0.7.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1), and **US-414** (diagnostics — **parser-only**: live squiggles + insert-closer/close-string quick fixes; the opt-in `gst` compile tier was deferred to EPIC-007 / **US-705**, **v0.6.0**), and **US-415** (hover — selectors/classes/variables/literals + provenance-gated comment prose; radix-integer coloring fix, **v0.7.0** — closes #27). **Next:** **US-416** (formatting, EPIC-004) and the **EPIC-005** arc (US-422 cartridge-aware semantic tokens, US-423 references/senders). **Planned:** US-416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–705, incl. **US-705 runtime compile/semantic diagnostics deferred from US-414**) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
+> **Status summary (2026-06-24).** v0.2.0–v0.7.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1), and **US-414** (diagnostics — **parser-only**: live squiggles + insert-closer/close-string quick fixes; the opt-in `gst` compile tier was deferred to EPIC-007 / **US-705**, **v0.6.0**), and **US-415** (hover — selectors/classes/variables/literals + provenance-gated comment prose; radix-integer coloring fix, **v0.7.0** — closes #27). **Next:** **US-416** (formatting, EPIC-004) and the **EPIC-005** arc (US-422 cartridge-aware semantic tokens, US-423 references/senders). **Planned:** US-416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418, plus **US-424 read-only Tonel — the "Trojan Horse" wedge pulled forward to ~1.0**), **EPIC-007** (optional Live Bridge — US-701–706, incl. **US-705 runtime compile/semantic diagnostics deferred from US-414** and **US-706 writable `smalltalk-image://` VFS**) and **EPIC-008** (image-grade workbench — US-426, US-801–804). Three ideas from a 2026-06-24 strategy review are folded in: US-424 (Tonel-first), US-706 (live-image VFS), and a status-bar dialect picker on US-602.
 
 ---
 
@@ -1401,6 +1401,56 @@ Scenario: User follows Quick Start guide
 
 ---
 
+## US-424: Tonel Read-Only Editing Experience (the "Trojan Horse")
+
+* **ID:** US-424
+* **Status:** Backlog (vision — pulled forward to **~1.0**, ahead of the rest of EPIC-006) — issue TBD
+* **Epic:** EPIC-006 *(but ships as a Stream-A wedge, decoupled from the cartridge/seam work)*
+* **Priority:** High *(cheap go-to-market wedge: wins the Pharo/GemStone/VA crowd before any cartridge exists)*
+* **Estimate:** M
+* **Date Proposed:** 2026-06-24
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Pharo / GemStone / VA Smalltalk developer reviewing Tonel files in Git**, I want **correct syntax highlighting, method folding, and a document outline for Tonel (`.class.st`) files**, so that **VS Code is the best place to read my image-exported code — long before a Pharo cartridge exists.**
+
+**Context / Why now:**
+> Tonel is the modern, human-readable flat-file format image-based Smalltalkers use to export code to
+> Git. Today every Smalltalk highlighter on the Marketplace **mangles Tonel's class-definition headers**
+> (the `Class { #name : … }` STON-ish preamble), so reading Tonel in VS Code is a mediocre experience.
+> A **read-only** Tonel experience is *cheap* — TextMate grammar + a lightweight outline — needs **no
+> cartridge and no parser-core dialect work**, and instantly captures the corporate/Pharo audience.
+> This is deliberately the **read-only** slice: full Tonel *parsing* as a first-class dialect (the
+> `ContainerFormat` seam + Pharo cartridge) stays at **1.5** (US-418 / EPIC-006).
+
+**Acceptance Criteria (AC):**
+* AC1: TextMate grammar for Tonel files (`*.class.st` and the Tonel header form) — the `Class { … }` /
+  `Trait { … }` / `Extension { … }` preamble, method `>>` separators, pragmas, and method bodies all
+  colorize correctly; the header's STON metadata does not bleed into method-body scopes.
+* AC2: **Method folding** — each `Class >> selector [ … ]` method folds independently.
+* AC3: **Document outline** — packages/classes → methods appear in the breadcrumb/outline (a light,
+  Tonel-aware symbol pass; **no full parser-core change**, honoring US-418's deferral).
+* AC4: Read-only scope only — **no** completion/diagnostics/hover claims on Tonel yet; those arrive
+  with the Pharo cartridge (EPIC-006). Existing GST `.st`/`.gst` behavior is unchanged.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Decoupled from US-418 (no `ContainerFormat` seam needed for read-only grammar + outline).
+* [ ] Tonel header grammar mapped (extend the `docs/research/` grammar work for the STON preamble).
+* [ ] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Tonel grammar + folding + outline; grammar-snapshot eval; manual-QA on a real Tonel repo (e.g. a Pharo package export).
+* [ ] PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The friend's sharpest tactical point (2026-06-24 review): a read-only Tonel experience is the
+  **Trojan Horse** that lands the image-based community in Stream A, before the cartridge moat (Stream B)
+  reaches them at 1.5. Resequencing decision recorded in [`docs/ROADMAP.md`](../ROADMAP.md) (milestone ladder + Deltas).
+* When EPIC-006 builds the full Tonel `ContainerFormat` adapter (US-418) and the Pharo cartridge
+  (US-601), this read-only experience becomes the *grammar layer* under the full dialect — additive, not thrown away.
+
+---
+
 ## US-425: Signature Help
 
 * **ID:** US-425
@@ -1510,16 +1560,22 @@ Scenario: User follows Quick Start guide
 **Acceptance Criteria (AC):**
 * AC1: Auto-detect + explicit override; **orthogonal** to `kernelLibrary` sourcing (ADR-0002 §5).
 * AC2: Active dialect shown in status/provenance.
+* AC3: **Do both — auto-detect *and* a manual status-bar picker.** The active dialect is a clickable
+  status-bar item (à la the VS Code Python interpreter switcher); clicking it offers a quick-pick to
+  override the auto-detected dialect for the workspace. Auto-detection is the default; the picker is the
+  escape hatch when detection is ambiguous or the user wants to force a dialect.
 
 **Definition of Ready (DoR) Checklist:**
 * [X] Depends on US-603 (multi-cartridge loader).
 * [X] Estimated/sized (M).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Dialect detection + override + status; tests; PO accepts.
+* [ ] Dialect detection + status-bar override picker + status; tests; PO accepts.
 
 **Notes / Questions / Assumptions:**
 * `bundled` (sourcing) and `dialect` (which library) are the two orthogonal axes from ADR-0002.
+* The status-bar picker is the friend's suggested UX (2026-06-24 review); we lean on auto-detection but
+  let the user override — detect *and* offer the switcher, not one or the other.
 
 ---
 
@@ -1707,6 +1763,43 @@ Scenario: User follows Quick Start guide
 
 ---
 
+## US-706: Live-Image Virtual FileSystem (writable `smalltalk-image://`)
+
+* **ID:** US-706
+* **Status:** Backlog (vision — milestone 1.6+) — issue TBD
+* **Epic:** EPIC-007
+* **Priority:** Low *(the most ambitious live feature; ships after the higher-value live items)*
+* **Estimate:** L
+* **Date Proposed:** 2026-06-24
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Pharo/Squeak developer with a live image**, I want **the image's classes to appear as virtual files via a `smalltalk-image://` FileSystemProvider**, so that **I browse the living image inside VS Code and `Ctrl+S` compiles a method straight back into the image — the image-based editing loop, natively.**
+
+**Acceptance Criteria (AC):**
+* AC1: A `registerFileSystemProvider` (`smalltalk-image://`) populates a pseudo-directory of
+  packages/classes from the connected live image; opening a class yields a virtual text buffer.
+* AC2: **Saving compiles back** — `Ctrl+S` sends a compile command over the Live Bridge to the image
+  (not a disk write); compile errors surface as diagnostics on the virtual document.
+* AC3: Strictly part of the **optional** Live Bridge — absent with no runtime; never required (ADR-0001).
+* AC4: Complements (does not replace) the offline System Browser (US-801) — that tree stays the
+  zero-runtime experience; this VFS is the *live, writable* counterpart.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on EPIC-007 Live Bridge (US-701 runtime delegation) + a per-dialect image connection.
+* [ ] Connection/transport to the live image specified (reuses the Live Bridge channel).
+* [ ] Estimated/sized (L).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] `smalltalk-image://` FS provider + compile-on-save + diagnostics; no-runtime no-op; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The friend's Pillar #3 (2026-06-24 review): image developers browse a living heap, not files — the
+  `FileSystemProvider` API maps that experience natively. Captured as the *writable* sibling of the
+  offline System Browser (US-801 AC3 records the TreeView-vs-VFS primitive decision).
+
+---
+
 > **EPIC-008 — Image-Grade Workbench (milestones 1.1–1.4).** The browsing soul over the offline
 > Console — System Browser, search, hierarchy, refactorings — **no running image**. See
 > [`epics.md`](epics.md) EPIC-008.
@@ -1727,16 +1820,24 @@ Scenario: User follows Quick Start guide
 **Acceptance Criteria (AC):**
 * AC1: Native VS Code tree over workspace + cartridge index; **offline**.
 * AC2: Works identically across every loaded cartridge/dialect (EPIC-006).
+* AC3 **(DoR gate):** decide the surface primitive — a `TreeView` vs a **Virtual FileSystem**
+  (`registerFileSystemProvider`, `smalltalk-image://`) where classes appear as virtual files. The
+  read-only offline browser favors a `TreeView`; the VFS is the more native primitive when paired with
+  the **writable** live-image bridge (see US-706 / EPIC-007). Record the choice.
 
 **Definition of Ready (DoR) Checklist:**
 * [X] Depends on US-423 (cross-reference) + US-603 (multi-cartridge).
+* [ ] TreeView-vs-VFS primitive decided (gate, AC3).
 * [X] Estimated/sized (L).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] System Browser tree + panes; PO accepts.
+* [ ] System Browser tree (or VFS) + panes; PO accepts.
 
 **Notes / Questions / Assumptions:**
 * The signature "feels like Smalltalk" feature, delivered offline (the navigation soul).
+* The friend (2026-06-24 review) flags `registerFileSystemProvider` (`smalltalk-image://`) as arguably
+  the more native primitive than a tree view. For the *offline* browser a tree is simpler; the VFS earns
+  its keep once `Ctrl+S` can compile back into a live image — that writable bridge is **US-706** (EPIC-007).
 
 ---
 
