@@ -31,10 +31,12 @@
 - [x] **TDD**: acceptance tests precede/accompany code; output eval added.
 
 ## Section 4: Manual Verification — QA Matrix (run in the Extension Host, then a clean VSIX)
-> Per [[manual-qa-before-release]]: automated layers missed real bugs in 0.4.0. Run this matrix in the
-> **F5 Extension Development Host** against real `.st` files first (live code), then repeat the ✦-marked
-> rows against the **clean VSIX** (`npm run package` → install the `.vsix` in a fresh window). The
-> machine has `gst` 3.2.5 at `/usr/local/bin/gst` for the gst-tier rows. Record pass/fail + notes.
+> Per [[manual-qa-before-release]]: automated layers missed real bugs in 0.4.0. A **ready-to-open
+> companion workspace** with the fixtures for every row lives in `./manual-qa-workspace/` — open that
+> folder in the **F5 Extension Development Host** and follow its `README.md` (rows map 1:1 to the table
+> below). Then repeat the ✦-marked rows against the **clean VSIX** (`npm run package` → install the
+> `.vsix` in a fresh window). The machine has `gst` 3.2.5 at `/usr/local/bin/gst` for the gst-tier rows.
+> Expected messages in the table were verified against the live parser **and** real gst. Record results.
 
 | # | AC | Scenario | Expected | Result |
 |---|----|----------|----------|--------|

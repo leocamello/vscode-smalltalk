@@ -20,10 +20,13 @@ const editsOf = (action: { edit?: { changes?: Record<string, { newText: string }
 
 test('offers a quick fix to insert a missing ]', () => {
   const diags = diagnosticsFor('Object subclass: Foo [\n  bar [ ^1 \n');
+  // The parser emits two "Expected ]" diagnostics at the same spot; the provider
+  // collapses them to a single quick fix (no duplicate lightbulb entries).
+  assert.ok(diags.length >= 2, 'fixture should yield multiple Expected-] diagnostics');
   const actions = toCodeActions(URI, diags);
-  assert.ok(actions.length >= 1, 'expected at least one quick fix');
-  const fix = actions.find((a) => a.title.includes(']'));
-  assert.ok(fix, 'expected an "insert missing ]" action');
+  assert.equal(actions.length, 1, 'identical inserts must be deduped to one action');
+  const fix = actions[0]!;
+  assert.ok(fix.title.includes(']'), 'expected an "insert missing ]" action');
   assert.equal(fix.kind, CodeActionKind.QuickFix);
   assert.equal(fix.isPreferred, true);
   assert.equal(editsOf(fix)[0]?.newText, ']');

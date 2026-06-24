@@ -28,6 +28,10 @@ function isParserDiagnostic(d: Diagnostic): boolean {
  */
 export function toCodeActions(uri: string, diagnostics: readonly Diagnostic[]): CodeAction[] {
   const actions: CodeAction[] = [];
+  // The error-tolerant parser can emit several "Expected ]" diagnostics at the
+  // same spot (e.g. close-method-body + close-definition); collapse identical
+  // inserts so the lightbulb shows one action per distinct fix.
+  const seen = new Set<string>();
   for (const diag of diagnostics) {
     if (!isParserDiagnostic(diag)) {
       continue;
@@ -37,8 +41,14 @@ export function toCodeActions(uri: string, diagnostics: readonly Diagnostic[]): 
       continue;
     }
     const closer = match[1]!;
+    const pos = diag.range.end;
+    const key = `${closer}@${pos.line}:${pos.character}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
     const edit: WorkspaceEdit = {
-      changes: { [uri]: [{ range: { start: diag.range.end, end: diag.range.end }, newText: closer }] },
+      changes: { [uri]: [{ range: { start: pos, end: pos }, newText: closer }] },
     };
     actions.push({
       title: `Insert missing "${closer}"`,

@@ -1,0 +1,15 @@
+{
+  // US-414 manual QA -- the opt-in gst diagnostics tier knob.
+  //
+  // DEFAULT = false (gst tier OFF). With it off you see ONLY the always-on
+  // parser squiggles (badge `smalltalk(parse)`). This is rows 1-5, 6, 16.
+  //
+  // Turn it ON for rows 7, 8, 11, 12 -- set to true, then SAVE a malformed file
+  // to trigger gst; a second diagnostic badged `gst(compile)` should appear.
+  // This box has gst at /usr/local/bin/gst (auto-resolved via PATH).
+  "smalltalk.diagnostics.useGst": false
+
+  // Row 9 (inert on a bogus path): set useGst true AND uncomment the next line.
+  // The gst tier must go silent (no dialog); the parser tier is unaffected.
+  // ,"smalltalk.gnuSmalltalkPath": "/nonexistent/bin/gst"
+}
