@@ -54,8 +54,8 @@
 | 12 | AC3 | Rapid save/edit loop with gst on; then `pgrep -a gst` | No lingering/zombie `gst` processes | ☐ |
 | 13 ✦ | AC4 | `MissingBracket.st`: Quick Fix (Ctrl/Cmd+.) | **Insert missing "]]"** (class + method both need a `]`); one apply inserts both and **clears** | ☐ |
 | 14 | AC4 | `MissingParen.st` (`x := (1 + 2 * 3.`) | **Insert missing ")"**; inserts `)` **before** the `.` and the squiggle clears | ☐ |
-| 15 | AC4 | `MissingBrace.st` (`{ 1. 2. 3`) | **Insert missing "}"**; applies and clears | ☐ |
-| 16 | AC4 | `MissingAttribute.st` (`<category: …`) | **Insert missing ">"**; applies and clears | ☐ |
+| 15 | AC4 | `MissingBrace.st` (`{ 1. 2. 3`) | squiggle on the `{ … }` line (after `3`), **not** the line below; **Insert missing "}"** applies there and clears | ☐ |
+| 16 | AC4 | `MissingAttribute.st` (`<category: …`) | squiggle on the pragma line (after `'geometry'`), **not** the body below; **Insert missing ">"** applies there and clears | ☐ |
 | 17 | AC4 | `UnterminatedString.st` | **Insert missing "'"**; inserts `'` at end of the open line and clears | ☐ |
 | 18 | AC4 | `NoQuickFix.st` (`x := 1 +`) | No quick fix offered (real squiggle, nothing trivial to insert) | ☐ |
 | 19 ✦ | — | Clean valid file across all of the above | No diagnostics, no quick fixes, no console errors | ☐ |

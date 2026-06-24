@@ -70,8 +70,28 @@ test('inserts a missing } (brace/dynamic array)', () => {
   assertFixClears('x := { 1. 2. 3', '}');
 });
 
+test('the } fix lands on the array line, not the line below (regression)', () => {
+  // The array closer scan hits EOF on the next line; the squiggle/fix must stay
+  // on the `{ … }` content line (manual-QA finding).
+  const src = 'x := { 1. 2. 3\n';
+  const fix = actionsFor(src).find((a) => a.title.includes('}'))!;
+  assert.ok(fix, 'expected an insert-} action');
+  assert.equal(fix.edit!.changes![URI]![0]!.range.start.line, 0, 'fix on the array line, not the empty line below');
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0);
+});
+
 test('inserts a missing > (attribute)', () => {
   assertFixClears('Object subclass: Foo [\n  m [ <category: 1\n  ^1 ]\n]', '>');
+});
+
+test('the > fix lands on the pragma line, not the swallowed body (regression)', () => {
+  // An unclosed pragma must not swallow the `^` body; the squiggle/fix stays on
+  // the pragma line, not the `^0`/`]` lines below (manual-QA finding).
+  const src = "Object subclass: S [\n  m [ <category: 'x'\n  ^0 ]\n]";
+  const fix = actionsFor(src).find((a) => a.title.includes('>'))!;
+  assert.ok(fix, 'expected an insert-> action');
+  assert.equal(fix.edit!.changes![URI]![0]!.range.start.line, 1, 'fix on the pragma line, not the body below');
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0);
 });
 
 test('inserts the closing quote for an unterminated string (at end of the open line)', () => {

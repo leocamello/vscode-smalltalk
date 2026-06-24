@@ -109,6 +109,12 @@ A new `server/src/providers/diagnostics.ts` converts the LSP-free `LexDiagnostic
     swallow, preserves the code the string ran over (vs. closing at EOF).
   Pure mapping, unit-tested (each closer + string, incl. "applying the fix re-parses clean", and a
   non-fixable parse error offers nothing); e2e asserts the `]` fix clears the squiggle.
+- **Diagnostic positioning (parser):** the `}` (dynamic array) and `>` (pragma) scans run past the
+  natural close point (a `}` hits EOF; a `<…` pragma otherwise swallows the method body), so their
+  `Expected …` diagnostics anchor at the **end of the last consumed token** (`parser.ts:diagAfterPrev`)
+  rather than the unexpected current token — otherwise the squiggle *and* the quick fix land on a line
+  below the defect (a manual-QA finding). The pragma scan also stops at a `^` return so it no longer
+  consumes the body. `]`/`)` are unchanged (their current token is already the right place).
 
 ### 5.5 Settings & commands (package.json)
 - `smalltalk.diagnostics.useGst`: boolean, default `false`, scope `resource`.

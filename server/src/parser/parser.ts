@@ -500,6 +500,7 @@ class Parser {
     while (
       !this.atEnd() &&
       !this.at(TokenKind.RBracket) &&
+      !this.at(TokenKind.Caret) && // a `^` return marks the method body — don't swallow it
       !(this.at(TokenKind.BinarySelector) && this.current().text === '>')
     ) {
       if (this.at(TokenKind.Keyword)) {
@@ -516,7 +517,7 @@ class Parser {
     if (this.at(TokenKind.BinarySelector) && this.current().text === '>') {
       this.advance();
     } else {
-      this.diag('Expected ">" to close attribute', this.current());
+      this.diagAfterPrev('Expected ">" to close attribute'); // belongs after the last pragma arg
     }
     return { kind: NodeKind.Pragma, selector, arguments: args, ...this.span(startTok) };
   }
@@ -835,7 +836,7 @@ class Parser {
     if (this.at(TokenKind.RBrace)) {
       this.advance();
     } else {
-      this.diag('Expected "}"', this.current());
+      this.diagAfterPrev('Expected "}"'); // belongs right after the last element
     }
     return { kind: NodeKind.DynamicArray, temporaries, elements, ...this.span(startTok) };
   }
@@ -973,6 +974,23 @@ class Parser {
       start: tok.start,
       end: tok.end,
       startPos: tok.startPos,
+      endPos: tok.endPos,
+    });
+  }
+
+  // A zero-width diagnostic at the END of the last consumed token — i.e. where a
+  // missing token *belongs* — used for closers whose scan runs past the natural
+  // close point (a `}` array hits EOF; a `<…` pragma stops at the next
+  // statement). Anchoring at the unexpected current token would mis-place the
+  // squiggle (and the quick fix) on a later line.
+  private diagAfterPrev(message: string): void {
+    const tok = this.prev;
+    this.diagnostics.push({
+      message,
+      severity: DiagnosticSeverity.Error,
+      start: tok.end,
+      end: tok.end,
+      startPos: tok.endPos,
       endPos: tok.endPos,
     });
   }
