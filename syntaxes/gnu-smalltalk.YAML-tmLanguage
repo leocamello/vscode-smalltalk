@@ -264,7 +264,7 @@ repository:
       
       # Floats with radix prefix, exponent, and decimal: 16rF.Fe2
       - name: constant.numeric.float.smalltalk
-        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)([edq])(-?\d+)?
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]+)([edq])(-?\d+)?
         captures:
           '2': {name: constant.numeric.radix.base.smalltalk}
           '3': {name: constant.numeric.radix.number.smalltalk}
@@ -274,7 +274,7 @@ repository:
       
       # Floats with radix prefix and precision suffix: 16rF.Fd
       - name: constant.numeric.float.smalltalk
-        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)([edq])
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]+)([edq])
         captures:
           '2': {name: constant.numeric.radix.base.smalltalk}
           '3': {name: constant.numeric.radix.number.smalltalk}
@@ -290,9 +290,10 @@ repository:
           '4': {name: constant.numeric.float.exponent-indicator.smalltalk}
           '5': {name: constant.numeric.integer.smalltalk}
       
-      # Floats with radix prefix, just decimal: 16rF.F
+      # Floats with radix prefix, just decimal: 16rF.F (fraction required — a bare
+      # `16rFF.` is a radix integer followed by a statement period, not a float).
       - name: constant.numeric.float.smalltalk
-        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]*)
+        match: (-)?(\d+r)([0-9A-Za-z_]+)\.([0-9A-Za-z_]+)
         captures:
           '2': {name: constant.numeric.radix.base.smalltalk}
           '3': {name: constant.numeric.radix.number.smalltalk}

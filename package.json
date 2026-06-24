@@ -164,7 +164,8 @@
         "test:grammar": "node src/test/grammar-verification.js",
         "eval:completion": "tsx evals/datasets/completion/run.ts",
         "eval:diagnostics": "tsx evals/datasets/diagnostics/run.ts",
-        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics",
+        "eval:hover": "tsx evals/datasets/hover/run.ts",
+        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover",
         "new-story": "bash scripts/new-story.sh"
     }
 }

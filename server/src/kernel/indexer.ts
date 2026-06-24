@@ -6,28 +6,40 @@
 // adapter: it emits the same canonical cartridge shape as the reflective exporter
 // (classes tier), so `KernelIndexService` resolves installed and floor like-for-like.
 //
-// Facts only (LGPL-2.1): we read class names, superclass links, and selectors +
-// arity from the symbol table, which carries no comment prose. Never throws —
-// unreadable or unparsable files are skipped, mirroring the index's robustness.
+// Facts always; PROSE only when `header.carriesProse` (US-415 slice B). The
+// installed adapter reads class/method comments from the user's OWN local `.st`
+// files — never redistributed — so provenance, not licence, gates it (spec §4a).
+// The shipped *bundled* cartridge stays facts-only (carriesProse:false), enforced
+// by `kernelIndex`/`cartridgeLoader` tests. Never throws — unreadable or unparsable
+// files are skipped, mirroring the index's robustness.
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { extractComments, type FileComments } from '../parser/comments';
+import { tokenize } from '../parser/lexer';
 import { parse } from '../parser/parser';
 import { buildSymbolTable, SymbolKind, type SymbolNode } from '../parser/symbols';
 import type {
   CartridgeHeader,
   ClassFact,
   DialectCartridge,
+  Documentation,
   SelectorSignature,
 } from '../types/knowledge-base';
 
 const ST_FILE = /\.st$/i;
 
+interface SelectorAcc {
+  readonly arity: number;
+  comment?: string;
+}
+
 interface ClassAcc {
   superclass?: string;
-  /** selector -> arity */
-  readonly instance: Map<string, number>;
-  readonly klass: Map<string, number>;
+  comment?: string;
+  /** selector -> arity (+ comment when prose is carried) */
+  readonly instance: Map<string, SelectorAcc>;
+  readonly klass: Map<string, SelectorAcc>;
 }
 
 function accFor(classes: Map<string, ClassAcc>, name: string): ClassAcc {
@@ -40,25 +52,33 @@ function accFor(classes: Map<string, ClassAcc>, name: string): ClassAcc {
   return created;
 }
 
-/** Walk the symbol tree, merging class facts across files/chunks into `classes`. */
-function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>): void {
+/** Walk the symbol tree, merging class facts (and `comments`, when present) across
+ *  files/chunks into `classes`. */
+function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>, comments: FileComments | undefined): void {
   for (const node of nodes) {
     if (node.kind === SymbolKind.Class) {
       const acc = accFor(classes, node.name);
       if (acc.superclass === undefined && node.detail) {
         acc.superclass = node.detail;
       }
+      if (acc.comment === undefined) {
+        acc.comment = comments?.classComment(node.name);
+      }
       for (const child of node.children) {
         if (child.kind === SymbolKind.Method && child.selector) {
-          const into = child.classSide ? acc.klass : acc.instance;
+          const classSide = child.classSide ?? false;
+          const into = classSide ? acc.klass : acc.instance;
           if (!into.has(child.selector)) {
-            into.set(child.selector, child.arity ?? 0);
+            into.set(child.selector, {
+              arity: child.arity ?? 0,
+              comment: comments?.methodComment(node.name, classSide, child.selector),
+            });
           }
         }
       }
-      collect(node.children, classes); // nested classes
+      collect(node.children, classes, comments); // nested classes
     } else if (node.kind === SymbolKind.Namespace) {
-      collect(node.children, classes);
+      collect(node.children, classes, comments);
     }
   }
 }
@@ -70,8 +90,11 @@ function keywordsOf(selector: string): string[] {
 
 /** Parse every `.st` in `dir` and collect class facts; returns the raw accumulator
  *  plus the sorted list of REAL class names (synthetic placeholders dropped).
- *  Never throws. */
-function collectKernelDirectory(dir: string): { classes: Map<string, ClassAcc>; names: string[] } {
+ *  When `carriesProse`, class/method comments are recovered too. Never throws. */
+function collectKernelDirectory(
+  dir: string,
+  carriesProse: boolean,
+): { classes: Map<string, ClassAcc>; names: string[] } {
   const classes = new Map<string, ClassAcc>();
 
   let files: string[] = [];
@@ -89,7 +112,9 @@ function collectKernelDirectory(dir: string): { classes: Map<string, ClassAcc>; 
       continue;
     }
     try {
-      collect(buildSymbolTable(parse(text).ast), classes);
+      const ast = parse(text).ast;
+      const comments = carriesProse ? extractComments(ast, tokenize(text).tokens) : undefined;
+      collect(buildSymbolTable(ast), classes, comments);
     } catch {
       // Never throw from indexing — skip a pathological file.
     }
@@ -100,24 +125,37 @@ function collectKernelDirectory(dir: string): { classes: Map<string, ClassAcc>; 
   return { classes, names };
 }
 
-function toSignatures(m: Map<string, number>): SelectorSignature[] {
-  return [...m.keys()]
-    .sort()
-    .map((selector) => ({ selector, arity: m.get(selector) ?? 0, keywords: keywordsOf(selector) }));
+function docOf(text: string | undefined): Documentation | undefined {
+  return text && text.trim() !== '' ? { text } : undefined;
+}
+
+function toSignatures(m: Map<string, SelectorAcc>): SelectorSignature[] {
+  return [...m.keys()].sort().map((selector) => {
+    const acc = m.get(selector) as SelectorAcc;
+    const documentation = docOf(acc.comment);
+    return {
+      selector,
+      arity: acc.arity,
+      keywords: keywordsOf(selector),
+      ...(documentation ? { documentation } : {}),
+    };
+  });
 }
 
 /** Index every `.st` file in `dir` into a DialectCartridge (ADR-0003 Tier-1
  *  installed adapter). Still NO runtime `gst` — a static parse of the source dir,
  *  emitting the canonical cartridge shape so the resolution chain compares
  *  installed and floor like-for-like. Emits the `classes` tier only;
- *  `crossReference` is left to the reflective exporter.
+ *  `crossReference` is left to the reflective exporter. Comments are populated
+ *  only when `header.carriesProse` is true.
  *
  *  Flat-id dialect: a class's `id` IS its simple name (GST source carries no
  *  namespace qualifier here). Instance/class variables are not recovered by the
  *  static collector, so those fact lists are empty — selectors + superclass are
  *  the tier this adapter guarantees. */
 export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHeader): DialectCartridge {
-  const { classes, names } = collectKernelDirectory(dir);
+  const carriesProse = header.carriesProse === true;
+  const { classes, names } = collectKernelDirectory(dir, carriesProse);
 
   const out: Record<string, ClassFact> = {};
   for (const name of names) {
@@ -125,6 +163,7 @@ export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHe
     if (!acc) {
       continue;
     }
+    const documentation = docOf(acc.comment);
     out[name] = {
       id: name,
       name,
@@ -136,6 +175,7 @@ export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHe
       instanceMethods: toSignatures(acc.instance),
       classMethods: toSignatures(acc.klass),
       taxonomy: {},
+      ...(documentation ? { documentation } : {}),
     };
   }
 

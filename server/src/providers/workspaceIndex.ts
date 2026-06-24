@@ -8,6 +8,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { extractComments, type FileComments } from '../parser/comments';
+import { tokenize } from '../parser/lexer';
 import { parse } from '../parser/parser';
 import { buildSymbolTable, SymbolKind, type SymbolNode } from '../parser/symbols';
 import type { Position } from '../parser/token';
@@ -22,6 +24,11 @@ export interface IndexEntry {
   readonly name: string;
   readonly kind: SymbolKind;
   readonly classSide?: boolean;
+  /** The immediate superclass name, for `Class` entries that declare one (US-415). */
+  readonly superclass?: string;
+  /** Best-effort comment prose for hover: a class's `<comment:>` or a method's
+   *  leading `"…"` (US-415). The user's own source, so no licence gate. */
+  readonly comment?: string;
   /** The enclosing class/namespace name, when known. */
   readonly containerName?: string;
   readonly uri: string;
@@ -60,9 +67,21 @@ function toRange(r: { startPos: Position; endPos: Position }): IndexRange {
   return { start: r.startPos, end: r.endPos };
 }
 
-function flatten(uri: string, nodes: SymbolNode[], container: string | undefined, out: IndexEntry[]): void {
+function flatten(
+  uri: string,
+  nodes: SymbolNode[],
+  container: string | undefined,
+  comments: FileComments,
+  out: IndexEntry[],
+): void {
   for (const node of nodes) {
     if (node.kind === SymbolKind.Class || node.kind === SymbolKind.Namespace || node.kind === SymbolKind.Method) {
+      const comment =
+        node.kind === SymbolKind.Class
+          ? comments.classComment(node.name)
+          : node.kind === SymbolKind.Method && container !== undefined
+            ? comments.methodComment(container, node.classSide ?? false, node.name)
+            : undefined;
       const entry: IndexEntry = {
         name: node.name,
         kind: node.kind,
@@ -70,13 +89,17 @@ function flatten(uri: string, nodes: SymbolNode[], container: string | undefined
         range: toRange(node.range),
         selectionRange: toRange(node.selectionRange),
         ...(node.classSide !== undefined ? { classSide: node.classSide } : {}),
+        // A Class symbol's `detail` is its immediate superclass (symbols.ts); a
+        // method's `detail` is a signature, so only carry it for class entries.
+        ...(node.kind === SymbolKind.Class && node.detail ? { superclass: node.detail } : {}),
+        ...(comment ? { comment } : {}),
         ...(container !== undefined ? { containerName: container } : {}),
       };
       out.push(entry);
     }
     const nextContainer =
       node.kind === SymbolKind.Class || node.kind === SymbolKind.Namespace ? node.name : container;
-    flatten(uri, node.children, nextContainer, out);
+    flatten(uri, node.children, nextContainer, comments, out);
   }
 }
 
@@ -86,7 +109,9 @@ export class WorkspaceIndex {
   /** (Re)index a single document from its text. */
   setFile(uri: string, text: string): void {
     const out: IndexEntry[] = [];
-    flatten(uri, buildSymbolTable(parse(text).ast), undefined, out);
+    const ast = parse(text).ast;
+    const comments = extractComments(ast, tokenize(text).tokens);
+    flatten(uri, buildSymbolTable(ast), undefined, comments, out);
     this.byUri.set(uri, out);
   }
 

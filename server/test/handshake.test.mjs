@@ -111,6 +111,7 @@ assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
 assert.ok(caps.codeActionProvider, 'expected codeActionProvider (US-414)');
+assert.equal(caps.hoverProvider, true, 'expected hoverProvider (US-415)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -266,6 +267,45 @@ assert.ok(
   cmpHeadItems.some((i) => i.label === 'Object'),
   'expected the kernel class Object in head-context completion',
 );
+
+// --- textDocument/hover (US-415) ---
+// Selector hover: signature + an implementor (Object implements printString in
+// both the bundled floor and an installed kernel), rendered as Markdown.
+const hovUri = 'file:///hover-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: hovUri, languageId: 'smalltalk', version: 1, text: 'x printString' } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 8,
+  method: 'textDocument/hover',
+  params: { textDocument: { uri: hovUri }, position: { line: 0, character: 8 } }, // inside printString
+});
+const hovResult = (await receiveId(8)).result;
+assert.ok(hovResult?.contents, 'hover must return contents for a selector');
+const hovValue = typeof hovResult.contents === 'string' ? hovResult.contents : hovResult.contents.value ?? '';
+assert.match(hovValue, /printString/, 'selector hover names the selector');
+assert.match(hovValue, /Object/, 'selector hover lists the kernel implementor Object');
+assert.match(hovValue, /```/, 'hover content is Markdown with a code fence (AC5)');
+
+// Literal hover: a radix integer decodes to its decimal value.
+const hovLitUri = 'file:///hover-literal-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: hovLitUri, languageId: 'smalltalk', version: 1, text: '16rFF' } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 9,
+  method: 'textDocument/hover',
+  params: { textDocument: { uri: hovLitUri }, position: { line: 0, character: 2 } },
+});
+const hovLit = (await receiveId(9)).result;
+const hovLitValue = typeof hovLit?.contents === 'string' ? hovLit.contents : hovLit?.contents?.value ?? '';
+assert.match(hovLitValue, /255/, 'radix literal hover decodes 16rFF to 255');
 
 // --- textDocument/publishDiagnostics (US-414 slice A) — parser tier ---
 // Open a malformed doc; the server publishes parser diagnostics (debounced).

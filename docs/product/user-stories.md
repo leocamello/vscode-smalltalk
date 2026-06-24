@@ -924,13 +924,16 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Hover provider implemented.
-* [ ] **Language Server:** unit tests for hover content per symbol kind.
-* [ ] **End-to-End:** integration test asserting hover Markdown.
-* [ ] PO accepts the story.
+* [X] Hover provider implemented (`server/src/providers/hover.ts`; selectors/classes/variables/literals).
+* [X] **Language Server:** unit tests for hover content per symbol kind (`server/test/hover.test.ts`, `comments.test.ts`).
+* [X] **End-to-End:** integration test asserting hover Markdown (`client/test-e2e/US-415.acceptance.test.js`).
+* [ ] PO accepts the story (pending release: manual-QA matrix + CI green).
 
 **Notes / Questions / Assumptions:**
 * Reuses the workspace + kernel indexes from US-412/US-413.
+* Comment prose is gated on **provenance** (the deferred "ship kernel comments?" decision, line 862):
+  bundled reference = facts-only; the locally-built **installed** cartridge + the user's **workspace**
+  source may carry comments (read locally, never redistributed — LGPL-clean). See `specs/US-415-Hover/spec.md` §4a.
 
 ---
 

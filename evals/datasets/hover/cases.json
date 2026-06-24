@@ -1,0 +1,55 @@
+{
+  "description": "US-415 hover output eval — golden cases over the bundled gst-3.2.5 kernel (facts-only). Drives the real hoverAt provider with a HoverContext resolved from the bundled KernelIndexService (no gst, no VS Code). The `▮` marks the cursor. Metric: `expectIncludes` substrings must all appear in the rendered Markdown; `expectAbsent` substrings must not. Pins user-observable hover content per symbol kind (US-414 lesson). Bundled = facts-only, so no comment prose appears.",
+  "cases": [
+    {
+      "name": "AC1 selector hover shows signature + a kernel implementor + a fence",
+      "text": "x printStr▮ing",
+      "expectIncludes": ["printString", "Implementors", "Object", "```"]
+    },
+    {
+      "name": "AC1 keyword selector renders keyword parts",
+      "text": "d at: 1 pu▮t: 2",
+      "expectIncludes": ["at:", "put:", "```"]
+    },
+    {
+      "name": "AC1 bundled (reference) kernel carries NO comment prose",
+      "text": "x printStr▮ing",
+      "expectAbsent": ["comment"]
+    },
+    {
+      "name": "AC2 class hover shows the full superclass chain",
+      "text": "Ordered▮Collection",
+      "expectIncludes": ["OrderedCollection", "SequenceableCollection", "Collection", "Object", "→"]
+    },
+    {
+      "name": "AC2 Object hover shows the root (no superclass)",
+      "text": "Obje▮ct",
+      "expectIncludes": ["Object", "class", "```"]
+    },
+    {
+      "name": "AC3 instance variable shows kind + declaration site",
+      "text": "Object subclass: Foo [ | count | bar [ ^cou▮nt ] ]",
+      "expectIncludes": ["instance variable", "line"]
+    },
+    {
+      "name": "AC3 block parameter is reported as a parameter",
+      "text": "Object subclass: Foo [ bar: x [ ^x▮ ] ]",
+      "expectIncludes": ["parameter"]
+    },
+    {
+      "name": "AC4 radix integer decodes to decimal",
+      "text": "16rF▮F",
+      "expectIncludes": ["255", "base 16", "```"]
+    },
+    {
+      "name": "AC4 binary radix decodes to decimal",
+      "text": "2r101▮0",
+      "expectIncludes": ["10", "base 2"]
+    },
+    {
+      "name": "AC4 scaled decimal shows value + scale",
+      "text": "3.14s▮2",
+      "expectIncludes": ["3.14", "scale"]
+    }
+  ]
+}

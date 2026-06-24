@@ -19,6 +19,8 @@ import {
   type DocumentSymbolParams,
   type FoldingRange,
   type FoldingRangeParams,
+  type Hover,
+  type HoverParams,
   type InitializeParams,
   type InitializeResult,
   type Location,
@@ -36,6 +38,7 @@ import { WorkspaceIndex, defaultExclude, excludeFromConfig, type ExcludePredicat
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
 import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
+import { hoverAt, type HoverContext, type HoverImplementor } from './providers/hover';
 import { KernelIndexService, type KernelLibrarySetting } from './kernel/kernelIndexService';
 import { Provenance } from './kernel/model';
 import { SymbolKind } from './parser/symbols';
@@ -77,6 +80,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       foldingRangeProvider: true,
       documentHighlightProvider: true,
+      // Hover over selectors/classes/variables/numeric literals (US-415).
+      hoverProvider: true,
       // Trivial quick fixes (US-414 AC4): insert a missing closer (`]`/`)`/`}`/`>`)
       // or close an unterminated string.
       codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
@@ -166,6 +171,54 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     selectors,
     classes,
   );
+});
+
+connection.onHover((params: HoverParams): Hover | null => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return null;
+  }
+  const entries = index.all();
+  const classNames = new Set(
+    entries.filter((e) => e.kind === SymbolKind.Class || e.kind === SymbolKind.Namespace).map((e) => e.name),
+  );
+  // Workspace classes' immediate superclass + comment, for the chain walk and
+  // class hover (prefer the user's own definition over the kernel when both know it).
+  const workspaceSuper = new Map<string, string>();
+  const workspaceClassComment = new Map<string, string>();
+  for (const e of entries) {
+    if (e.kind === SymbolKind.Class) {
+      if (e.superclass !== undefined && !workspaceSuper.has(e.name)) {
+        workspaceSuper.set(e.name, e.superclass);
+      }
+      if (e.comment !== undefined && !workspaceClassComment.has(e.name)) {
+        workspaceClassComment.set(e.name, e.comment);
+      }
+    }
+  }
+  const ctx: HoverContext = {
+    isClass: (name) => classNames.has(name) || kernelService.hasClass(name),
+    superclassOf: (name) => workspaceSuper.get(name) ?? kernelService.superclassOf(name),
+    classComment: (name) => workspaceClassComment.get(name) ?? kernelService.classComment(name),
+    implementorsOf: (selector) => {
+      // Workspace methods carry the user's own comments (no licence gate); kernel
+      // implementors carry prose only when the active source allows it (§4a).
+      const workspace: HoverImplementor[] = entries
+        .filter((e) => e.kind === SymbolKind.Method && e.name === selector && e.containerName !== undefined)
+        .map((e) => ({
+          className: e.containerName as string,
+          provenance: Provenance.Workspace,
+          ...(e.comment ? { comment: e.comment } : {}),
+        }));
+      const kernel: HoverImplementor[] = kernelService.implementorsOf(selector).map((c) => ({
+        className: c.name,
+        provenance: c.provenance,
+        ...(c.comment ? { comment: c.comment } : {}),
+      }));
+      return [...workspace, ...kernel];
+    },
+  };
+  return hoverAt(doc.offsetAt(params.position), doc.getText(), getTokens(doc), getAst(doc), getSymbols(doc), ctx);
 });
 
 // Keep the workspace index fresh, debounced so rapid typing does not reparse on

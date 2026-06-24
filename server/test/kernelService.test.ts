@@ -150,6 +150,49 @@ test('installed adapter (indexKernelDirectoryToCartridge) emits cartridge shape'
   assert.equal(fact?.documentation, undefined);
 });
 
+/** A throwaway kernel dir whose class + method carry comments (US-415 slice B). */
+function makeCommentedKernel(className = 'Widget'): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'st-prose-'));
+  fs.writeFileSync(
+    path.join(dir, `${className}.st`),
+    `Object subclass: ${className} [\n  <comment: 'A ${className}.'>\n  bar [ "Answer bar." ^42 ]\n]\n`,
+    'utf8',
+  );
+  return dir;
+}
+
+test('installed adapter captures prose when carriesProse=true (US-415)', () => {
+  const dir = makeCommentedKernel('Widget');
+  const cart = indexKernelDirectoryToCartridge(dir, {
+    ...TEST_CARTRIDGE_HEADER,
+    carriesProse: true,
+    tiers: ['classes', 'documentation'],
+  });
+  const fact = cart.classes['Widget'];
+  assert.equal(fact?.documentation?.text, 'A Widget.');
+  assert.equal(fact?.instanceMethods.find((m) => m.selector === 'bar')?.documentation?.text, 'Answer bar.');
+});
+
+test('installed adapter stays facts-only when carriesProse=false (US-415)', () => {
+  const dir = makeCommentedKernel('Gizmo');
+  const cart = indexKernelDirectoryToCartridge(dir, TEST_CARTRIDGE_HEADER); // carriesProse:false
+  const fact = cart.classes['Gizmo'];
+  assert.equal(fact?.documentation, undefined, 'class prose must not leak when facts-only');
+  assert.equal(fact?.instanceMethods.find((m) => m.selector === 'bar')?.documentation, undefined);
+});
+
+test('service surfaces installed prose; bundled reference stays facts-only (US-415)', () => {
+  const dir = makeCommentedKernel('Sprig');
+  const svc = new KernelIndexService(undefined, []);
+  svc.configure({ kernelLibrary: 'auto', kernelPath: dir });
+  assert.equal(svc.identity.source, 'installed');
+  assert.equal(svc.classComment('Sprig'), 'A Sprig.');
+  assert.equal(svc.implementorsOf('bar').find((c) => c.name === 'Sprig')?.comment, 'Answer bar.');
+  // The shipped reference floor is facts-only: provenance gates prose, not dialect.
+  svc.configure({ kernelLibrary: 'bundled' });
+  assert.equal(svc.classComment('Object'), undefined, 'bundled reference must not surface prose');
+});
+
 test('auto installed: status label reads "installed", resolved via the cartridge adapter', () => {
   const dir = makeFixtureKernel('Cog');
   const svc = new KernelIndexService(undefined, []);

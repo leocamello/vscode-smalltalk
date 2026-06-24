@@ -6,6 +6,24 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+
+-   **Hover information** for GNU Smalltalk, powered by the bundled language engine — **no `gst` required** (US-415):
+    -   **Selectors** — hover a message send to see its signature and the list of implementors (workspace + kernel).
+    -   **Classes** — hover a class name to see its full superclass chain and, when available, its class comment.
+    -   **Variables** — hover a temporary, parameter, or instance/class variable to see its kind and declaration site.
+    -   **Numeric literals** — hover a radix integer (e.g. `16rFF` → `255`) or scaled decimal (e.g. `3.14s2`) to see its decoded value.
+    -   All hover content is Markdown with code fences.
+-   **Comment prose in hover, gated by source** — comments are surfaced from your **own workspace source** and, when the
+    `auto` kernel resolves to your **installed** GNU Smalltalk, from the installed kernel too. The shipped **bundled
+    reference** kernel remains **facts-only** (no comment prose), respecting the GNU Smalltalk (LGPL) licensing: prose is
+    only ever read from files already on your machine, never redistributed in the extension.
+
+### Fixed
+
+-   **Syntax coloring** — a radix integer immediately followed by a statement period (e.g. `16rFF.`) no longer mis-colors
+    the `.` as part of the number; a radix *float* still requires a fraction digit (`16rF.F`).
+
 ## [0.6.0] - 2026-06-24
 
 ### Added

@@ -9,7 +9,7 @@
 // The resolved identity drives the status bar (slice D). Pure logic + Node `fs`;
 // no `vscode`. Re-`configure()` on `didChangeConfiguration`.
 
-import type { CartridgeHeader } from '../types/knowledge-base';
+import type { CartridgeHeader, DialectCartridge } from '../types/knowledge-base';
 import { bundledCartridge, cartridgeToKernelIndex } from './cartridgeLoader';
 import { DEFAULT_COMMON_LOCATIONS, discoverKernelDir } from './discovery';
 import { indexKernelDirectoryToCartridge } from './indexer';
@@ -44,11 +44,16 @@ export interface KernelClassEntry {
   readonly name: string;
   readonly superclass?: string;
   readonly provenance: Provenance;
+  /** Comment prose, present only when the active source carries it (US-415). */
+  readonly comment?: string;
 }
 
 /** Cartridge header for a live-indexed installed kernel (ADR-0003 Tier-1). The
  *  static source parse can't know the exact version without running `gst`, so it
- *  is left as a placeholder; `builtAt` is stamped per live index. Facts-only. */
+ *  is left as a placeholder; `builtAt` is stamped per live index. `carriesProse`
+ *  is TRUE: the installed cartridge is built locally from the user's OWN `.st`
+ *  files and never redistributed, so it may carry class/method comments for hover
+ *  (US-415 §4a). The shipped *bundled* cartridge stays facts-only. */
 function installedCartridgeHeader(): CartridgeHeader {
   return {
     schema: 1,
@@ -58,8 +63,8 @@ function installedCartridgeHeader(): CartridgeHeader {
     version: 'installed',
     source: 'gst-source',
     sourceLicense: 'LGPL-2.1-only',
-    carriesProse: false,
-    tiers: ['classes'],
+    carriesProse: true,
+    tiers: ['classes', 'documentation'],
     builtAt: new Date().toISOString(),
     contentHash: 'unstamped', // US-603 keys the generate-and-cache chain on this.
   };
@@ -78,9 +83,12 @@ function identityLabel(kind: 'reference' | 'installed', dialect: string, version
 
 export class KernelIndexService {
   private active?: KernelIndexData;
+  /** The source cartridge behind `active`, retained so license-gated prose can be
+   *  queried (the projected `KernelIndexData` is deliberately facts-only). */
+  private activeCartridge?: DialectCartridge;
   private identity_: KernelIdentity = OFF;
   /** Cache of the last live-indexed directory, to avoid re-indexing on every config event. */
-  private installedCache?: { readonly dir: string; readonly index: KernelIndexData };
+  private installedCache?: { readonly dir: string; readonly index: KernelIndexData; readonly cartridge: DialectCartridge };
 
   constructor(
     /** The bundled reference floor: the committed GST Cartridge #01 projected to
@@ -94,26 +102,29 @@ export class KernelIndexService {
   configure(config: KernelConfig): void {
     if (config.kernelLibrary === 'off') {
       this.active = undefined;
+      this.activeCartridge = undefined;
       this.identity_ = OFF;
       return;
     }
     if (config.kernelLibrary === 'auto') {
       const installed = this.tryInstalled(config);
       if (installed) {
-        this.active = installed;
+        this.active = installed.index;
+        this.activeCartridge = installed.cartridge;
         this.identity_ = {
           source: 'installed',
-          label: identityLabel('installed', installed.dialect, installed.version),
-          library: installed.library,
-          version: installed.version,
+          label: identityLabel('installed', installed.index.dialect, installed.index.version),
+          library: installed.index.library,
+          version: installed.index.version,
         };
         return;
       }
     }
     // `bundled`, or `auto` with no usable installation: the Tier-2 frozen
     // reference floor (ADR-0003). Labelled "reference" to distinguish it from a
-    // version-correct installed source in the status bar.
+    // version-correct installed source in the status bar. Facts-only.
     this.active = this.bundled;
+    this.activeCartridge = bundledCartridge;
     this.identity_ = {
       source: 'bundled',
       label: identityLabel('reference', this.bundled.dialect, this.bundled.version),
@@ -122,7 +133,7 @@ export class KernelIndexService {
     };
   }
 
-  private tryInstalled(config: KernelConfig): KernelIndexData | undefined {
+  private tryInstalled(config: KernelConfig): { index: KernelIndexData; cartridge: DialectCartridge } | undefined {
     const dir = discoverKernelDir(
       { kernelPath: config.kernelPath, gnuSmalltalkPath: config.gnuSmalltalkPath },
       this.commonLocations,
@@ -131,13 +142,14 @@ export class KernelIndexService {
       return undefined;
     }
     if (this.installedCache?.dir === dir) {
-      return this.installedCache.index;
+      return { index: this.installedCache.index, cartridge: this.installedCache.cartridge };
     }
+    let cartridge: DialectCartridge;
     let index: KernelIndexData;
     try {
       // Tier-1 installed adapter: parse the source dir into cartridge shape, then
       // project to the completion model — like-for-like with the floor (ADR-0003).
-      const cartridge = indexKernelDirectoryToCartridge(dir, installedCartridgeHeader());
+      cartridge = indexKernelDirectoryToCartridge(dir, installedCartridgeHeader());
       if (Object.keys(cartridge.classes).length === 0) {
         return undefined; // empty/non-kernel dir → fall back to the floor
       }
@@ -145,8 +157,8 @@ export class KernelIndexService {
     } catch {
       return undefined; // never throw from configuration
     }
-    this.installedCache = { dir, index };
-    return index;
+    this.installedCache = { dir, index, cartridge };
+    return { index, cartridge };
   }
 
   get identity(): KernelIdentity {
@@ -191,5 +203,62 @@ export class KernelIndexService {
     return [...arities.keys()]
       .sort()
       .map((selector) => ({ selector, arity: arities.get(selector) ?? 0, provenance: prov }));
+  }
+
+  /** Provenance of the active kernel source (hover prose gate). */
+  get activeProvenance(): Provenance {
+    return this.provenance;
+  }
+
+  /** Is `name` a class in the active kernel? */
+  hasClass(name: string): boolean {
+    return this.active?.classes[name] !== undefined;
+  }
+
+  /** Immediate superclass of `name` in the active kernel, or undefined. */
+  superclassOf(name: string): string | undefined {
+    return this.active?.classes[name]?.superclass;
+  }
+
+  /** Whether the active source may surface comment prose (US-415 §4a gate). */
+  private get carriesProse(): boolean {
+    return this.activeCartridge?.header.carriesProse === true;
+  }
+
+  /** Kernel classes implementing `selector` (instance or class side), with
+   *  provenance and — when the active source carries prose — the method comment. */
+  implementorsOf(selector: string): KernelClassEntry[] {
+    const cart = this.activeCartridge;
+    if (!cart) {
+      return [];
+    }
+    const prov = this.provenance;
+    const withProse = this.carriesProse;
+    const out: KernelClassEntry[] = [];
+    for (const c of Object.values(cart.classes)) {
+      const sig =
+        c.instanceMethods.find((m) => m.selector === selector) ??
+        c.classMethods.find((m) => m.selector === selector);
+      if (sig) {
+        const comment = withProse ? sig.documentation?.text : undefined;
+        out.push({
+          name: c.name, // simple name (matches the projected view + installed tier)
+          provenance: prov,
+          ...(c.superclass != null ? { superclass: c.superclass } : {}),
+          ...(comment ? { comment } : {}),
+        });
+      }
+    }
+    return out;
+  }
+
+  /** Class comment for `name`, only when the active source carries prose (else
+   *  undefined). The bundled reference cartridge is facts-only, so it returns
+   *  undefined there by construction. */
+  classComment(name: string): string | undefined {
+    if (!this.carriesProse) {
+      return undefined;
+    }
+    return this.activeCartridge?.classes[name]?.documentation?.text;
   }
 }

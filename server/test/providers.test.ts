@@ -96,6 +96,13 @@ test('index.setFile + query finds classes and selectors', () => {
   assert.equal(idx.query('').length, 3); // Foo + bar + at:put:
 });
 
+test('index attaches workspace comments to class + method entries (US-415)', () => {
+  const idx = new WorkspaceIndex();
+  idx.setFile('file:///a.st', "Object subclass: Foo [ <comment: 'A Foo.'> bar [ \"Answer bar.\" ^1 ] ]");
+  assert.equal(idx.query('Foo').find((e) => e.kind === SymbolKind.Class)?.comment, 'A Foo.');
+  assert.equal(idx.query('bar').find((e) => e.kind === SymbolKind.Method)?.comment, 'Answer bar.');
+});
+
 test('indexFolder scans real .st files and records locations', () => {
   const idx = new WorkspaceIndex();
   idx.indexFolder(FIXTURE_DIR);

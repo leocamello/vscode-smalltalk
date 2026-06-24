@@ -11,3 +11,5 @@ import './kernelService.test.ts';
 import './providers.test.ts';
 import './diagnostics.test.ts';
 import './codeAction.test.ts';
+import './comments.test.ts';
+import './hover.test.ts';
