@@ -18,8 +18,8 @@ expected messages here were verified against the live parser **and** real `gst` 
 | File | Defect | Parser diagnostic | gst diagnostic (on save, useGst on) |
 |---|---|---|---|
 | `Clean.st` | none (valid) | — (silent) | — (silent) |
-| `MissingBracket.st` | class body missing `]` | `Expected "]" to close definition` (L26) | `parse error, expected ']'` (L26) |
-| `MissingParen.st` | unclosed `(` in `compute` | `Expected ")"` (L16) | `parse error, expected ')'` (L17) |
+| `MissingBracket.st` | class **and** method body missing `]` | two `Expected "]"` (L26) → one `]]` fix | `parse error, expected ']'` (L26) |
+| `MissingParen.st` | unclosed `(` before the `.` in `compute` | `Expected ")"` (L18) | `parse error, expected ')'` (L19) |
 | `UnterminatedString.st` | string never closed | `Unterminated string literal` (L15) | `Unterminated string, attempting recovery` (L16) |
 
 ## Row-by-row script (maps to `../verification.md` §4)
@@ -41,8 +41,8 @@ expected messages here were verified against the live parser **and** real `gst` 
 | 10 | `MissingBracket.st` | (on a machine with **no gst**) `useGst: true`, save | tier inert; parser tier still works |
 | 11 | `MissingBracket.st` | gst on; save (gst squiggle shows), then **edit** the file | the stale `gst(compile)` squiggle clears on the edit (no error against edited text) |
 | 12 | `MissingBracket.st` | gst on; rapidly save/edit several times, then in a terminal: `pgrep -a gst` | **no lingering/zombie `gst` processes** |
-| 13 ✦ | `MissingBracket.st` | caret on the squiggle → `Ctrl/Cmd+.` | a **single** `Insert missing "]"` quick fix (deduped); applying it inserts `]` and clears the parser squiggle. `Ctrl/Cmd+Z` to re-run |
-| 14 | `MissingParen.st` | caret on the squiggle → `Ctrl/Cmd+.` | `Insert missing ")"` offered and applies |
+| 13 ✦ | `MissingBracket.st` | caret on the squiggle → `Ctrl/Cmd+.` | a **single** `Insert missing "]]"` quick fix (the class **and** method both need a `]`); applying it once inserts both and **fully clears** the squiggle. `Ctrl/Cmd+Z` to re-run |
+| 14 | `MissingParen.st` | caret on the squiggle → `Ctrl/Cmd+.` | `Insert missing ")"`; applying it inserts `)` **before** the `.` and the squiggle clears (a `)` after the `.` would not fix it) |
 | 15 | `UnterminatedString.st` | caret on the squiggle → `Ctrl/Cmd+.` | **no** bracket quick fix offered (only bracket diagnostics get one) |
 | 16 ✦ | `Clean.st` | open / save (with gst on or off) | no diagnostics, no quick fixes |
 | 17 ✦ | — | Developer Tools console (`Help → Toggle Developer Tools`) during all of the above | no exceptions thrown by the server |

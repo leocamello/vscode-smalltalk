@@ -1,7 +1,7 @@
 // Unit tests for the quick-fix code-action provider (US-414, Slice C / AC4).
 // Pure — drives the real parser → diagnostics → code actions, no VS Code.
 import assert from 'node:assert/strict';
-import { CodeActionKind, DiagnosticSeverity, type Diagnostic } from 'vscode-languageserver-types';
+import { CodeActionKind, DiagnosticSeverity, type CodeAction, type Diagnostic } from 'vscode-languageserver-types';
 import { parse } from '../src/parser/parser.ts';
 import { toDiagnostics } from '../src/providers/diagnostics.ts';
 import { toCodeActions } from '../src/providers/codeAction.ts';
@@ -15,40 +15,54 @@ function test(name: string, fn: () => void): void {
 
 const URI = 'file:///x.st';
 const diagnosticsFor = (src: string): Diagnostic[] => toDiagnostics(parse(src).diagnostics);
-const editsOf = (action: { edit?: { changes?: Record<string, { newText: string }[]> } }) =>
-  action.edit?.changes?.[URI] ?? [];
 
-test('offers a quick fix to insert a missing ]', () => {
-  const diags = diagnosticsFor('Object subclass: Foo [\n  bar [ ^1 \n');
-  // The parser emits two "Expected ]" diagnostics at the same spot; the provider
-  // collapses them to a single quick fix (no duplicate lightbulb entries).
+function offsetOf(text: string, line: number, character: number): number {
+  const lines = text.split('\n');
+  let offset = 0;
+  for (let i = 0; i < line; i++) {
+    offset += lines[i]!.length + 1;
+  }
+  return offset + character;
+}
+
+/** Apply a single-edit quick fix to `src` and return the resulting text. */
+function applyFix(src: string, fix: CodeAction): string {
+  const edit = fix.edit!.changes![URI]![0]!;
+  const at = offsetOf(src, edit.range.start.line, edit.range.start.character);
+  return src.slice(0, at) + edit.newText + src.slice(at);
+}
+
+test('offers one quick fix that inserts both missing ] (nested unclosed brackets)', () => {
+  const src = 'Object subclass: Foo [\n  bar [ ^1 \n';
+  const diags = diagnosticsFor(src);
   assert.ok(diags.length >= 2, 'fixture should yield multiple Expected-] diagnostics');
   const actions = toCodeActions(URI, diags);
-  assert.equal(actions.length, 1, 'identical inserts must be deduped to one action');
+  assert.equal(actions.length, 1, 'same-spot closers collapse into one action');
   const fix = actions[0]!;
-  assert.ok(fix.title.includes(']'), 'expected an "insert missing ]" action');
   assert.equal(fix.kind, CodeActionKind.QuickFix);
   assert.equal(fix.isPreferred, true);
-  assert.equal(editsOf(fix)[0]?.newText, ']');
-  // The edit attaches to the diagnostic it fixes.
-  assert.equal(fix.diagnostics?.length, 1);
+  assert.equal(fix.edit!.changes![URI]![0]!.newText, ']]', 'inserts both needed closers');
+  assert.equal(fix.diagnostics?.length, 2, 'the action references both diagnostics it fixes');
 });
 
-test('offers a quick fix to insert a missing )', () => {
-  const diags = diagnosticsFor('| x |\nx := (1 + 2.\n');
-  const actions = toCodeActions(URI, diags);
-  const fix = actions.find((a) => a.title.includes(')'));
-  assert.ok(fix, 'expected an "insert missing )" action');
-  assert.equal(editsOf(fix)[0]?.newText, ')');
+test('the ] fix, when applied, actually clears the parse', () => {
+  const src = 'Object subclass: Foo [\n  bar [ ^1 \n';
+  const fix = toCodeActions(URI, diagnosticsFor(src))[0]!;
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0, 'applying the fix must yield valid code');
 });
 
-test('the insert is a zero-width edit at the diagnostic range end', () => {
-  const diags = diagnosticsFor('| x |\nx := (1 + 2.\n');
+test('the ) fix inserts before the offending token and clears the parse', () => {
+  // `(1 + 2.` — the `.` is where `)` was expected; the closer must go BEFORE it.
+  const src = 'Object subclass: Calc [\n  compute [ | x | x := (1 + 2 * 3.\n    ^x ]\n]';
+  const diags = diagnosticsFor(src);
   const fix = toCodeActions(URI, diags).find((a) => a.title.includes(')'))!;
+  assert.ok(fix, 'expected an "insert missing )" action');
+  const edit = fix.edit!.changes![URI]![0]!;
+  assert.equal(edit.newText, ')');
+  // Inserted at the diagnostic's range START (before the unexpected token), and it fixes the parse.
   const target = diags.find((d) => /Expected "\)"/.test(d.message))!;
-  const edit = editsOf(fix)[0]!;
-  assert.deepEqual(edit.range.start, target.range.end);
-  assert.deepEqual(edit.range.end, target.range.end);
+  assert.deepEqual(edit.range.start, target.range.start);
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0, 'applying the fix must yield valid code');
 });
 
 test('clean source offers no code actions', () => {
@@ -67,7 +81,7 @@ test('ignores non-parser diagnostics and unrelated parser messages', () => {
   const unrelated: Diagnostic = {
     range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } },
     severity: DiagnosticSeverity.Error,
-    message: 'Unexpected EOF ""',
+    message: 'Unterminated string literal',
     source: 'smalltalk',
     code: 'parse',
   };

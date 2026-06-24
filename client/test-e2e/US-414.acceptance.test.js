@@ -93,5 +93,12 @@ suite('US-414 acceptance (e2e)', () => {
     const applied = await vscode.workspace.applyEdit(fix.edit);
     assert.ok(applied, 'the quick-fix edit should apply');
     assert.ok(doc.getText().includes(']'), 'after the fix the document contains a "]"');
+    // The fix must actually resolve the parse — the squiggle clears (it persisted
+    // in manual QA when the closer was inserted at the wrong position).
+    const remaining = await waitFor(
+      () => Promise.resolve(vscode.languages.getDiagnostics(doc.uri).filter((d) => d.source === 'smalltalk' && d.code === 'parse')),
+      (d) => d.length === 0,
+    );
+    assert.equal(remaining.length, 0, 'parser diagnostics must clear after applying the quick fix');
   });
 });

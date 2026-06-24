@@ -52,8 +52,8 @@
 | 10 | AC2 | Setting on but no gst on PATH / not installed | Tier inert; parser tier still works | ☐ |
 | 11 | AC3 | With gst on, save then immediately edit the file | Stale `gst(compile)` squiggles clear on the edit; no error against edited text | ☐ |
 | 12 | AC3 | Rapid save/edit loop with gst on; then `pgrep -a gst` | No lingering/zombie `gst` processes | ☐ |
-| 13 ✦ | AC4 | On the missing-`]` diagnostic, open the Quick Fix (Ctrl/Cmd+.) | **Insert missing "]"** offered; applying it inserts `]` and clears the diagnostic | ☐ |
-| 14 | AC4 | Missing `)` case (`x := (1 + 2.`) | **Insert missing ")"** offered and applies | ☐ |
+| 13 ✦ | AC4 | On the missing-`]` diagnostic, open the Quick Fix (Ctrl/Cmd+.) | **Insert missing "]]"** offered (class + method both need a `]`); applying it once inserts both and **clears** the diagnostic | ☐ |
+| 14 | AC4 | Missing `)` case (`x := (1 + 2 * 3.`) | **Insert missing ")"** offered; applying it inserts `)` **before** the `.` and the squiggle clears | ☐ |
 | 15 | AC4 | A non-bracket parse error (`x := 1 +`) | No spurious quick fix offered | ☐ |
 | 16 ✦ | — | Clean valid file across all of the above | No diagnostics, no quick fixes, no console errors | ☐ |
 | 17 ✦ | — | Developer Tools console during the session | No exceptions thrown from the server | ☐ |

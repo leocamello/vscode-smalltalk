@@ -9,6 +9,7 @@ import {
   CodeAction,
   CodeActionKind,
   type Diagnostic,
+  type Position,
   type WorkspaceEdit,
 } from 'vscode-languageserver-types';
 import { DIAGNOSTIC_SOURCE, PARSE_DIAGNOSTIC_CODE } from './diagnostics';
@@ -21,17 +22,24 @@ function isParserDiagnostic(d: Diagnostic): boolean {
   return d.source === DIAGNOSTIC_SOURCE && d.code === PARSE_DIAGNOSTIC_CODE;
 }
 
+interface CloserGroup {
+  readonly closer: string;
+  readonly position: Position;
+  readonly diagnostics: Diagnostic[];
+}
+
 /**
- * Quick fixes for the diagnostics in a code-action request `context`. Inserts the
- * missing delimiter at the position the parser expected it (the diagnostic range
- * end). Returns one `QuickFix` per fixable diagnostic; empty when none apply.
+ * Quick fixes for the diagnostics in a code-action request `context`. The closer
+ * is inserted at the diagnostic range **start** — the position the parser was at
+ * when it expected the delimiter, i.e. *before* the unexpected token (inserting
+ * at the range end would land the `)` after the offending token and not fix the
+ * parse). The error-tolerant parser can report several missing closers at one
+ * spot (nested unclosed `[`/`(`); those are grouped into a single action that
+ * inserts all of them, so one click closes them all. Returns one `QuickFix` per
+ * (position, closer) group; empty when none apply.
  */
 export function toCodeActions(uri: string, diagnostics: readonly Diagnostic[]): CodeAction[] {
-  const actions: CodeAction[] = [];
-  // The error-tolerant parser can emit several "Expected ]" diagnostics at the
-  // same spot (e.g. close-method-body + close-definition); collapse identical
-  // inserts so the lightbulb shows one action per distinct fix.
-  const seen = new Set<string>();
+  const groups = new Map<string, CloserGroup>();
   for (const diag of diagnostics) {
     if (!isParserDiagnostic(diag)) {
       continue;
@@ -41,19 +49,26 @@ export function toCodeActions(uri: string, diagnostics: readonly Diagnostic[]): 
       continue;
     }
     const closer = match[1]!;
-    const pos = diag.range.end;
-    const key = `${closer}@${pos.line}:${pos.character}`;
-    if (seen.has(key)) {
-      continue;
+    const position = diag.range.start;
+    const key = `${closer}@${position.line}:${position.character}`;
+    const group = groups.get(key);
+    if (group) {
+      group.diagnostics.push(diag);
+    } else {
+      groups.set(key, { closer, position, diagnostics: [diag] });
     }
-    seen.add(key);
+  }
+
+  const actions: CodeAction[] = [];
+  for (const { closer, position, diagnostics: group } of groups.values()) {
+    const insert = closer.repeat(group.length);
     const edit: WorkspaceEdit = {
-      changes: { [uri]: [{ range: { start: pos, end: pos }, newText: closer }] },
+      changes: { [uri]: [{ range: { start: position, end: position }, newText: insert }] },
     };
     actions.push({
-      title: `Insert missing "${closer}"`,
+      title: `Insert missing "${insert}"`,
       kind: CodeActionKind.QuickFix,
-      diagnostics: [diag],
+      diagnostics: group,
       edit,
       isPreferred: true,
     });

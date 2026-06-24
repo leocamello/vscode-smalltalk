@@ -92,8 +92,13 @@ A new `server/src/providers/diagnostics.ts` converts the LSP-free `LexDiagnostic
 
 ### 5.4 Code actions (Slice C — AC4)
 - Advertise `codeActionProvider` in `onInitialize`. New `server/src/providers/codeAction.ts`: for a
-  parser diagnostic whose message is "expected `]`"/"expected `)`", offer a `QuickFix` `WorkspaceEdit`
-  inserting the delimiter at the diagnostic range end. Pure mapping, unit-tested; e2e asserts the fix.
+  parser diagnostic whose message is `Expected "]"`/`Expected ")"`, offer a `QuickFix` `WorkspaceEdit`
+  inserting the delimiter at the diagnostic range **start** — i.e. *before* the unexpected token the
+  parser tripped on (inserting at the range *end* lands the `)` after that token and does **not** fix
+  the parse — found in manual QA). When the error-tolerant parser reports several missing closers at
+  the same spot (nested unclosed `[`/`(`, e.g. an unclosed method body *and* class), they are grouped
+  into a single action that inserts all of them (`]]`), so one click fully closes them. Pure mapping,
+  unit-tested (incl. "applying the fix re-parses clean"); e2e asserts the fix.
 
 ### 5.5 Settings & commands (package.json)
 - `smalltalk.diagnostics.useGst`: boolean, default `false`, scope `resource`.
