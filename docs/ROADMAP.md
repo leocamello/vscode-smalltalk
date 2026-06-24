@@ -82,7 +82,7 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | 0.3 🟢 | LSP scaffold + Run File | 003/004 | client↔server; `gst` opt-in run | A/C | — |
 | 0.4 🟢 | Navigation | 004 | outline, workspace symbols, go-to-def, folding, highlight | A+B | core navigation |
 | 0.5 🟢 | Completion + kernel index | 004 | completion; GST kernel (installed-first/bundled) | A+B | core IntelliSense |
-| **0.6** 🔵 | **Diagnostics** | 004 | parser squiggles; opt-in `gst` compile errors | A ⚖️ | error-checking |
+| 0.6 🟢 | Diagnostics | 004 | live parser squiggles + insert-closer/close-string quick fixes (runtime compile errors → EPIC-007) | A ⚖️ | error-checking |
 | **0.7** 🔵 | **Hover** | 004 | selectors/classes/vars/literals + kernel facts | A+B | hover |
 | **0.8** 🟣 | **Console & Cartridge foundation** 🏰 | 005 | cartridge canonical + loader + **semantic tokens** (US-422/430) | **B** | semantic highlighting (image-IDE parity) |
 | **0.9** 🟣 | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** + signature help; unknown-selector spike (SPIKE-01) | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
@@ -90,7 +90,7 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | **1.0** 🔵 | **Complete Offline GST IDE** | 416/902 | formatting + scope-rename; product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
 | **1.1–1.4** 🟣 | **Image-Grade Workbench** 🏰 | 008 | **System Browser view**, full-text method search, class-hierarchy view, more refactorings (extract method) | A+B | the "feels like Smalltalk" IDE (System Browser parity, offline) |
 | **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + Tonel container seam (US-418) + `smalltalk.dialect` auto-detect | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
-| **1.6+** 🟣➕ | **The Live Bridge** | 007 | Do-it / Print-it / **Inspect-it** / run-tests / Playground — optional, per-dialect | C | live eval/inspect (image-IDE parity) |
+| **1.6+** 🟣➕ | **The Live Bridge** | 007 | Do-it / Print-it / **Inspect-it** / run-tests / Playground + **runtime compile/semantic diagnostics** (deferred from US-414) — optional, per-dialect | C | live eval/inspect + real compile errors (image-IDE parity) |
 | **1.x** 🟣➕ | **Debugging (DAP)** | sep. ext | `vscode-smalltalk-debugger`: breakpoints, step, stack, frame restart | C | debugging (image-IDE parity) |
 | **2.0** 🟣 | **The Ultimate Multi-Dialect Extension** | all | N cartridges (Squeak/Cuis/GemStone), cartridge registry, full workbench + optional live per dialect, notebooks ➕ | A+B+C | **everything they do, across every dialect, zero-setup by default** |
 
@@ -108,7 +108,7 @@ scope (EPIC-006/007/008). The 0.6 → 1.0 line is otherwise unchanged.
 | Highlight / snippets / config | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Completion | ✅ | ✅ | ✅ | ✅ (image) | ✅ (image) |
 | Outline / symbols / go-to-def | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Diagnostics | — | ⏳0.6 | ✅ | ✅ (image) | ✅ (image) |
+| Diagnostics | — | ✅0.6 | ✅ | ✅ (image) | ✅ (image) |
 | Hover | — | ⏳0.7 | ✅ | ✅ | ✅ |
 | Semantic tokens | — | ⏳0.8 | ✅ | — | ✅ |
 | References / **Senders / Implementors** | — | ⏳0.9 | ✅ | partial | ✅ (image) |
@@ -129,9 +129,12 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
 
 ## Next up
 
-1. **0.6.0 / US-414 — Diagnostics** is the next shipping milestone. Slice A is small (the US-411 parser
-   already emits `parse().diagnostics`): publish them on change, debounced, code `smalltalk(parse)`. Then
-   the opt-in `gst`-on-save path (timeout/kill-on-edit, no zombies), then trivial code actions.
+1. **0.6.0 / US-414 — Diagnostics** is implemented and **in release**, **parser-only**: the always-on
+   parser tier (debounced squiggles, badge `smalltalk(parse)`, severity as emitted) + insert-missing-
+   closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
+   `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
+   (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
+   (semantic errors) needs a runtime. **Next shipping milestone: 0.7.0 / US-415 — hover.**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
@@ -175,10 +178,13 @@ output-eval dataset** in `evals/datasets/<feature>/` (use `completion/` as the t
 corpus + clean VSIX) → bump version + CHANGELOG → **check the `MARKETPLACE` PAT** → cut the `vX.Y.Z`
 Release (CI publishes). Full detail in [`CLAUDE.md`](../CLAUDE.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
-_Last updated: 2026-06-23 — **EPIC-005 foundation landed**: US-430 (Console loader + cartridge
-convergence) merged (#82) — completion now runs off GST Cartridge #01 (Tier-1 installed / Tier-2 frozen
-floor), `kernel-index.json` retired, `contentHash` stamped. Next EPIC-005 consumers: US-422 (semantic
-tokens) / US-423 (references/senders). Near-term shipping focus unchanged: 0.6.0 / US-414 (diagnostics)._
+_Last updated: 2026-06-24 — **0.6.0 / US-414 (diagnostics) implemented, parser-only**: always-on parser
+squiggles + insert-closer/close-string quick fixes; new `evals/datasets/diagnostics/` output eval. The
+opt-in `gst`/runtime compile-diagnostics tier was built then **deferred to EPIC-007** (Live Bridge) —
+redundant with the parser for syntax, real value (semantic errors) needs a runtime. In release pending
+the manual-QA matrix. **EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
+convergence) merged (#82) — completion runs off GST Cartridge #01. Next shipping: 0.7.0 / US-415 (hover); next EPIC-005
+consumers: US-422 (semantic tokens) / US-423 (references/senders)._
 
 **Dialect scope:** GNU Smalltalk through 1.0 (the complete offline GST IDE). The **second dialect
 (Pharo)** lands at **1.5** (EPIC-006), which is when the *pluggable* `ContainerFormat` seam (US-418)

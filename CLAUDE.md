@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-23)
+## Current status (2026-06-24)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,13 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Releasing:** **v0.6.0 — diagnostics (US-414, EPIC-004), parser-only**: an always-on **parser tier**
+  publishes syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, severity as
+  emitted, **no `gst`**); and trivial **quick fixes** insert a missing closer (`]`/`)`/`}`/`>`) or close
+  an unterminated string. New `evals/datasets/diagnostics/` output eval. The **opt-in `gst`/runtime
+  compile-diagnostics tier was deferred to EPIC-007** (Live Bridge): gst 3.2.5 emits only syntax errors
+  the parser already catches better; its real value (semantic errors) needs a runtime
+  ([`specs/US-414-*/spec.md`](specs/US-414-Diagnostics/spec.md) §7). Release pending the manual-QA matrix.
 - **Shipped:** v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
   selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,
   bundled-fallback** ([ADR-0002](docs/decisions/0002-kernel-symbol-sourcing.md)); `kernelLibrary`
@@ -25,7 +32,8 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** **0.6.0 / US-414** — diagnostics (parser live; `gst` opt-in). **EPIC-005 foundation landed**
+- **Next:** **0.7.0 / US-415** — hover (selectors/classes/vars/literals + kernel facts). **EPIC-005
+  foundation landed**
   (US-430, lands 0.8/0.9): the Dialect Cartridge schema (`server/src/types/knowledge-base.ts`) + GST
   **Cartridge #01** (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`,
   249 classes / 4746 signatures, `contentHash`-stamped) now **drive completion**: the runtime Console
@@ -37,8 +45,18 @@ Marketplace as `leocamello.vscode-smalltalk`.
 - **Source:** parser/symbols in `server/src/parser/` (`lexer.ts`, `parser.ts`, `ast.ts`, `symbols.ts`,
   `walk.ts`; GST containers/chunk live in `parser.ts`). LSP providers in `server/src/providers/`
   (`documentSymbol`, `workspaceSymbol` + `workspaceIndex`, `definition`, `foldingRange`,
-  `documentHighlight`, `completion`); `server/src/documents/parseCache.ts` memoizes AST/tokens/symbols
-  by `(uri, version)`; wiring + advertised capabilities in `server/src/server.ts`.
+  `documentHighlight`, `completion`, `diagnostics`, `codeAction`); `server/src/documents/parseCache.ts`
+  memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
+  `server/src/server.ts`.
+- **Diagnostics (US-414 → 0.6.0, parser-only):** `providers/diagnostics.ts` maps the parser's
+  `LexDiagnostic`s to LSP `Diagnostic`s (always-on, badge `smalltalk(parse)`); `server.ts` publishes
+  them debounced (own 250 ms timer) on open/change, clears on close. `providers/codeAction.ts` offers
+  the insert-missing-closer (`]`/`)`/`}`/`>`, inserted at the diagnostic range **start**, grouped) and
+  close-unterminated-string quick fixes. The `}`/`>` `Expected …` diagnostics anchor at the **end of
+  the last token** (`parser.ts:diagAfterPrev`) so the squiggle/fix land on the defect line. Output eval:
+  `evals/datasets/diagnostics/`. **The opt-in `gst`/runtime compile-diagnostics tier was deferred to
+  EPIC-007** — its built-and-removed implementation (server-side runner, no-zombie discipline, stderr
+  parsing, setting/command) lives in git history (commit `a02518d`); see `specs/US-414-*/spec.md` §7.
 - **Kernel completion (US-413 → US-430):** `server/src/kernel/` — neutral `model.ts` (the
   `KernelIndexData` projection target the completion service consumes), `cartridgeLoader.ts` (inlines the
   committed cartridge, builds resolved views, and projects to `KernelIndexData` via

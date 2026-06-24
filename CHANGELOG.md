@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-24
+
+### Added
+
+-   **Diagnostics (error checking)** for GNU Smalltalk, powered by the bundled language engine — **no `gst` required**:
+    -   **Live parser diagnostics** — syntax errors are flagged with squiggles **as you type** (debounced), badged `smalltalk(parse)`, with severity as the parser reports it. They clear as you fix the code.
+    -   **Quick fixes** — insert a missing closer (`]`, `)`, `}`, `>`) or the closing quote of an unterminated string, directly from the reported diagnostic.
+
+> Optional `gst`/runtime *compile* diagnostics (semantic errors from a real runtime) are planned for a later release as part of the Live Bridge — see the roadmap.
+
 ## [0.5.0] - 2026-06-21
 
 ### Added

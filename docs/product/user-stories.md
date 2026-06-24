@@ -1,6 +1,6 @@
 # vscode-smalltalk User Stories
 
-> **Status summary (2026-06-21).** v0.2.0–v0.5.0 are shipped. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1). **Next:** US-414 (diagnostics, 0.6.0). **Planned:** US-414–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–704) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
+> **Status summary (2026-06-24).** v0.2.0–v0.5.0 are shipped; **v0.6.0 (US-414 diagnostics) is in release**. **Done:** US-101–106 & US-200–203 (declarative foundation, v0.2.0), US-301 (Run Current File, v0.3.0), US-410 (LSP scaffold, v0.3.0), **US-411** (error-tolerant parser + symbol table, internal milestone M3), **US-412** (outline + workspace symbols + go-to-definition, v0.4.0), **US-417** (semantic folding + scope-aware document highlight, v0.4.1), and **US-413** (completion + GNU Smalltalk kernel index, **v0.5.0** — closes #1), and **US-414** (diagnostics — **parser-only**: live squiggles + insert-closer/close-string quick fixes; the opt-in `gst` compile tier was deferred to EPIC-007 / **US-705**, **v0.6.0**, in release). **Next:** US-415 (hover, 0.7.0). **Planned:** US-415–416. **Backlog (0.5.0 plan reconciliation):** US-418 (dialect seam, deferred), US-419 (kernel categories), US-420 (completion pseudo-variables), US-421 (CI kernel fixtures), US-901 (0.10.0 hardening/perf), US-902 (1.0.0 polish + Open VSX). **Superseded by [ADR-0001](../decisions/0001-typescript-bundled-lsp-server.md):** US-401–403 (the server is TypeScript, not Smalltalk). The per-story `Status` fields below reflect this; see [`docs/ROADMAP.md`](../ROADMAP.md) for the live milestone view. **EPIC-005 (Offline Knowledge Graph / "Console & Cartridges")** opens the next arc: US-430 (cartridge schema + GST Cartridge #01 reflective exporter), US-422 (cartridge-aware semantic tokens), US-423 (references/senders/implementors, two-tier engine), SPIKE-01 (unknown-selector heuristic), and US-431 (kernel-sourcing transparency — installed version label + settings UX, deferred from US-430). The post-1.0 vision continues in **EPIC-006** (multi-dialect — US-601–603 + US-418), **EPIC-007** (optional Live Bridge — US-701–705, incl. **US-705 runtime compile/semantic diagnostics deferred from US-414**) and **EPIC-008** (image-grade workbench — US-426, US-801–804).
 
 ---
 
@@ -864,10 +864,10 @@ Scenario: User follows Quick Start guide
 
 ---
 
-## US-414: Diagnostics (Parser Live; gst Opt-In)
+## US-414: Diagnostics (Live Parser Tier)
 
 * **ID:** US-414
-* **Status:** Planned
+* **Status:** Done (v0.6.0 — in release), **parser-only**. Shipped: live parser squiggles (AC1) + quick fixes that insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated string (AC4). Decisions: parser debounce 250 ms; severity as-emitted; quick fixes inserted at the diagnostic range **start** (before the offending token); `}`/`>` diagnostics anchored at the end of the last token so squiggle/fix land on the defect line — both manual-QA findings. **AC2/AC3 (opt-in `gst` compile tier) were built then deferred to EPIC-007** (scope decision 2026-06-24): gst 3.2.5 emits only syntax errors the parser already catches better; semantic value needs a runtime. See `specs/US-414-*/spec.md` §7 and **US-705** below.
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -875,28 +875,27 @@ Scenario: User follows Quick Start guide
 * **Owner:** Leonardo Nascimento
 
 **User Story:**
-> As a **Smalltalk developer**, I want **error squiggles as I type, plus optional real compile errors from `gst`**, so that **I catch mistakes without leaving the editor.**
+> As a **Smalltalk developer**, I want **error squiggles as I type**, so that **I catch mistakes without leaving the editor.**
 
 **Acceptance Criteria (AC):**
-* AC1: Parser diagnostics (syntax errors/warnings) are published on change, debounced, with code `smalltalk(parse)`.
-* AC2: An opt-in setting `smalltalk.diagnostics.useGst` (default off) runs `gst` on save, parses stderr (`file.st:LINE: error: ...`), maps to ranges, and tags source `gst`.
-* AC3: gst processes time out and are killed on edit; diagnostics never block typing.
-* AC4: Trivial code actions (e.g. insert missing `]`) are offered where cheap.
+* AC1: Parser diagnostics (syntax errors/warnings) are published on change, debounced, with code `smalltalk(parse)`. ✅
+* AC4: Trivial code actions (insert a missing closer `]`/`)`/`}`/`>`, or close an unterminated string) are offered where cheap. ✅
+* ~~AC2: opt-in `smalltalk.diagnostics.useGst` runs `gst` on save → diagnostics.~~ **Deferred to EPIC-007 (US-705).**
+* ~~AC3: gst processes time out / are killed on edit; never block typing.~~ **Deferred to EPIC-007 (US-705).**
 
 **Definition of Ready (DoR) Checklist:**
 * [X] Depends on US-411 (parser diagnostics are free from it).
-* [X] gst integration is strictly optional.
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [ ] Live parser diagnostics + opt-in gst path implemented.
-* [ ] **Language Server:** unit tests for diagnostic ranges; stderr-parsing tests.
-* [ ] **End-to-End:** integration test asserting squiggles on malformed input.
-* [ ] No zombie gst processes under rapid edits.
-* [ ] PO accepts the story.
+* [X] Live parser diagnostics + AC4 insert-closer/close-string quick fixes implemented.
+* [X] **Language Server:** unit tests for diagnostic ranges + code actions (`server/test/{diagnostics,codeAction}.test.ts`).
+* [X] **End-to-End:** integration test asserting squiggles on malformed input + the quick fix clears it — `client/test-e2e/US-414.acceptance.test.js`; handshake asserts `publishDiagnostics`/capabilities.
+* [X] AC2/AC3 (gst tier) descoped to EPIC-007 (US-705); implementation preserved in git history (`a02518d`).
+* [ ] PO accepts the story (manual-QA matrix in `specs/US-414-*/verification.md` + clean VSIX).
 
 **Notes / Questions / Assumptions:**
-* Verify gst stderr format against the bundled GNU Smalltalk 3.2.5 sources.
+* gst stderr verified on GNU Smalltalk 3.2.5: `<file>:<LINE>: <message>` — line-only, no column/severity (the AC2 `error:` form was an assumption). gst is dynamic (undeclared vars print `nil`), so it adds no *semantic* value over the parser — the reason the tier moved to EPIC-007.
 
 ---
 
@@ -1667,6 +1666,41 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * Lowest-priority live feature; ships after the higher-value live items.
+
+---
+
+## US-705: Runtime Compile / Semantic Diagnostics (deferred from US-414)
+
+* **ID:** US-705
+* **Status:** Backlog (vision — milestone 1.6+). Deferred from US-414 (2026-06-24).
+* **Epic:** EPIC-007
+* **Priority:** Medium
+* **Estimate:** M
+* **Date Proposed:** 2026-06-24
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer with a runtime present**, I want **real compile/semantic diagnostics from the Live Bridge** (undeclared variables, unknown selectors, doesNotUnderstand, arity), so that **I catch errors the static parser fundamentally cannot — without leaving the editor.**
+
+**Why this is here and not in US-414 (0.6.0):**
+> An opt-in `gst`-on-save tier was built for US-414 (server-side runner, no-zombie discipline, stderr→diagnostics, `useGst` setting + *Validate* command) and then **deferred**: GNU Smalltalk 3.2.5 is dynamic and emits only *syntax* errors, which the parser tier already catches **more precisely (column), live (on change), and fixably** — so as a syntax tier it was redundant, line-only, save-only, and the highest-risk surface (process lifecycle). Its genuine, non-redundant value is **semantic**, which requires compiling/loading into a runtime — i.e. the Live Bridge. The US-414 implementation is preserved in git history (`feature/US-414-diagnostics`, commit `a02518d`) as this story's seed.
+
+**Acceptance Criteria (AC):**
+* AC1: When a runtime/image is present (per EPIC-007), surface its **compile/semantic** diagnostics (badge e.g. `gst`/runtime), distinct from the always-on `smalltalk(parse)` tier; **degrades to nothing** without a runtime (ADR-0001).
+* AC2: Bounded, no-zombie process discipline (timeout, kill-on-edit, one in-flight per uri) — reuse the US-414 runner.
+* AC3: Overlap with the parser tier is handled (suppress/merge) so the user sees one actionable signal per error, not duplicate squiggles.
+* AC4: Generalize beyond gst-3.2.5 to the Live Bridge backend(s); not tied to a single dialect.
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Depends on EPIC-007 Live Bridge (US-701 runtime delegation).
+* [X] Seed implementation exists (US-414 `a02518d`).
+* [X] Estimated/sized (M).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Runtime diagnostics provider; no-runtime no-op; overlap handling; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The overlap-handling decision (AC3) was surfaced during US-414 manual QA: parser + runtime tiers disagree on position (runtime is often line-only) and duplicate syntax errors — so the runtime tier should add value only where it differs.
 
 ---
 

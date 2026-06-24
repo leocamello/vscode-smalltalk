@@ -85,7 +85,7 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Code Folding:** collapse class/method/block bodies and multi-line comments.
 *   **Highlight Occurrences:** put the cursor on a selector or variable to highlight its other uses in the file (scope-aware).
 *   **Auto Completion:** selectors after a receiver, class names, and in-scope variables — including **standard kernel-library** classes/selectors. Multi-part keyword selectors insert as snippets (`at:put:` → `at:⟨1⟩ put:⟨2⟩`). Kernel completions come from your **installed** GNU Smalltalk when found, otherwise a **bundled** reference (GNU Smalltalk 3.2.5); the active source is shown in the status bar. Configurable via [`smalltalk.completion.kernelLibrary`](#configuration).
-*   _(Coming Soon)_ Diagnostics (Error Checking)
+*   **Diagnostics (Error Checking):** syntax errors are flagged with squiggles **as you type** — no `gst` needed — badged `smalltalk(parse)`, with severity as the parser reports it; they clear as you fix the code. Quick fixes insert a missing closer (`]`, `)`, `}`, `>`) or close an unterminated string.
 *   _(Coming Soon)_ Hover Information
 *   _(Coming Soon)_ Formatting
 

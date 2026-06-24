@@ -28,6 +28,9 @@ function respond(id, result) {
 let buffer = Buffer.alloc(0);
 const queue = [];
 let waiter = null;
+// Latest pushed parser diagnostics, by document uri (US-414 slice A). Captured
+// out of band so they don't interfere with the request/response (id) flow.
+const diagnosticsByUri = new Map();
 
 child.stdout.on('data', (chunk) => {
   buffer = Buffer.concat([buffer, chunk]);
@@ -49,6 +52,12 @@ child.stdout.on('data', (chunk) => {
         ? (msg.params?.items ?? [{}]).map(() => ({ exclude: {} }))
         : null;
       respond(msg.id, result);
+      continue;
+    }
+    // Server→client notification: capture pushed diagnostics, don't let them
+    // disturb the id-based receive flow.
+    if (msg.method === 'textDocument/publishDiagnostics') {
+      diagnosticsByUri.set(msg.params.uri, msg.params.diagnostics ?? []);
       continue;
     }
     if (waiter) {
@@ -101,6 +110,7 @@ assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
+assert.ok(caps.codeActionProvider, 'expected codeActionProvider (US-414)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -257,11 +267,38 @@ assert.ok(
   'expected the kernel class Object in head-context completion',
 );
 
+// --- textDocument/publishDiagnostics (US-414 slice A) — parser tier ---
+// Open a malformed doc; the server publishes parser diagnostics (debounced).
+const diagUri = 'file:///diagnostics-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: { uri: diagUri, languageId: 'smalltalk', version: 1, text: 'Object subclass: Foo [\n  bar [ ^1 \n' },
+  },
+});
+let diagList = [];
+for (let i = 0; i < 25 && diagList.length === 0; i++) {
+  await sleep(100);
+  diagList = diagnosticsByUri.get(diagUri) ?? [];
+}
+assert.ok(diagList.length > 0, 'malformed source must publish at least one parser diagnostic');
+const parseDiag = diagList.find((d) => d.source === 'smalltalk' && d.code === 'parse');
+assert.ok(parseDiag, 'expected a diagnostic with source "smalltalk" and code "parse" (badge smalltalk(parse))');
+assert.equal(parseDiag.severity, 1, 'a missing `]` is an Error (LSP severity 1)');
+
+// A clean doc carries no parser diagnostics (the earlier completion doc `x print`).
+const cleanDiags = diagnosticsByUri.get(cmpUri);
+assert.ok(
+  cleanDiags === undefined || cleanDiags.every((d) => d.code !== 'parse'),
+  'a clean document must not carry parser diagnostics',
+);
+
 send({ jsonrpc: '2.0', id: 3, method: 'shutdown' });
 await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
