@@ -15,13 +15,13 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
-- **Releasing:** **v0.6.0 — diagnostics (US-414, EPIC-004)**: an always-on **parser tier** publishes
-  syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, no `gst`); an **opt-in `gst`
-  tier** (`smalltalk.diagnostics.useGst`, default off) runs the real compiler on save + a *Validate with
-  gst* command (badge `gst(compile)`, timeout + kill-on-edit, no zombies); and trivial **quick fixes**
-  insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated string. Slices A–C implemented +
-  a new `evals/datasets/diagnostics/` output eval;
-  release pending the manual-QA matrix (`specs/US-414-*/verification.md`).
+- **Releasing:** **v0.6.0 — diagnostics (US-414, EPIC-004), parser-only**: an always-on **parser tier**
+  publishes syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, severity as
+  emitted, **no `gst`**); and trivial **quick fixes** insert a missing closer (`]`/`)`/`}`/`>`) or close
+  an unterminated string. New `evals/datasets/diagnostics/` output eval. The **opt-in `gst`/runtime
+  compile-diagnostics tier was deferred to EPIC-007** (Live Bridge): gst 3.2.5 emits only syntax errors
+  the parser already catches better; its real value (semantic errors) needs a runtime
+  ([`specs/US-414-*/spec.md`](specs/US-414-Diagnostics/spec.md) §7). Release pending the manual-QA matrix.
 - **Shipped:** v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
   selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,
   bundled-fallback** ([ADR-0002](docs/decisions/0002-kernel-symbol-sourcing.md)); `kernelLibrary`
@@ -48,14 +48,15 @@ Marketplace as `leocamello.vscode-smalltalk`.
   `documentHighlight`, `completion`, `diagnostics`, `codeAction`); `server/src/documents/parseCache.ts`
   memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
   `server/src/server.ts`.
-- **Diagnostics (US-414 → 0.6.0):** `providers/diagnostics.ts` maps the parser's `LexDiagnostic`s to LSP
-  `Diagnostic`s (always-on tier, badge `smalltalk(parse)`); `server.ts` publishes them debounced (own
-  250 ms timer) on open/change. The **opt-in `gst` tier** lives in `server/src/gst/` — `gstRunner.ts`
-  (pure `parseGstStderr` + a no-zombie `GstDiagnosticsRunner`: one in-flight child per uri, timeout,
-  kill-on-supersede) and `resolveGst.ts` (server-side setting→PATH resolution); gated by
-  `smalltalk.diagnostics.useGst` (default off), run on save + the `smalltalk.validateWithGst` command.
-  `providers/codeAction.ts` offers the insert-missing-`]`/`)` quick fixes. Output eval:
-  `evals/datasets/diagnostics/`. The gst tier stays hermetic in CI (fixture strings + injected spawner).
+- **Diagnostics (US-414 → 0.6.0, parser-only):** `providers/diagnostics.ts` maps the parser's
+  `LexDiagnostic`s to LSP `Diagnostic`s (always-on, badge `smalltalk(parse)`); `server.ts` publishes
+  them debounced (own 250 ms timer) on open/change, clears on close. `providers/codeAction.ts` offers
+  the insert-missing-closer (`]`/`)`/`}`/`>`, inserted at the diagnostic range **start**, grouped) and
+  close-unterminated-string quick fixes. The `}`/`>` `Expected …` diagnostics anchor at the **end of
+  the last token** (`parser.ts:diagAfterPrev`) so the squiggle/fix land on the defect line. Output eval:
+  `evals/datasets/diagnostics/`. **The opt-in `gst`/runtime compile-diagnostics tier was deferred to
+  EPIC-007** — its built-and-removed implementation (server-side runner, no-zombie discipline, stderr
+  parsing, setting/command) lives in git history (commit `a02518d`); see `specs/US-414-*/spec.md` §7.
 - **Kernel completion (US-413 → US-430):** `server/src/kernel/` — neutral `model.ts` (the
   `KernelIndexData` projection target the completion service consumes), `cartridgeLoader.ts` (inlines the
   committed cartridge, builds resolved views, and projects to `KernelIndexData` via

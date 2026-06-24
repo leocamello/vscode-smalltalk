@@ -85,7 +85,7 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Code Folding:** collapse class/method/block bodies and multi-line comments.
 *   **Highlight Occurrences:** put the cursor on a selector or variable to highlight its other uses in the file (scope-aware).
 *   **Auto Completion:** selectors after a receiver, class names, and in-scope variables — including **standard kernel-library** classes/selectors. Multi-part keyword selectors insert as snippets (`at:put:` → `at:⟨1⟩ put:⟨2⟩`). Kernel completions come from your **installed** GNU Smalltalk when found, otherwise a **bundled** reference (GNU Smalltalk 3.2.5); the active source is shown in the status bar. Configurable via [`smalltalk.completion.kernelLibrary`](#configuration).
-*   **Diagnostics (Error Checking):** syntax errors are flagged with squiggles **as you type** (no `gst` needed), badged `smalltalk(parse)`. Optionally, set [`smalltalk.diagnostics.useGst`](#configuration) to also run the real GNU Smalltalk compiler **on save** for authoritative compile errors (or run **Smalltalk: Validate with gst** on demand). Quick fixes insert a missing closer (`]`, `)`, `}`, `>`) or close an unterminated string.
+*   **Diagnostics (Error Checking):** syntax errors are flagged with squiggles **as you type** — no `gst` needed — badged `smalltalk(parse)`, with severity as the parser reports it; they clear as you fix the code. Quick fixes insert a missing closer (`]`, `)`, `}`, `>`) or close an unterminated string.
 *   _(Coming Soon)_ Hover Information
 *   _(Coming Soon)_ Formatting
 
@@ -111,11 +111,6 @@ The following settings are available:
     *   **Type:** `string`
     *   **Default:** `""`
 
-*   **`smalltalk.diagnostics.useGst`**
-    *   **Description:** Also run the GNU Smalltalk compiler (`gst`) **on save** to report real compile errors, in addition to the always-on parser diagnostics. When on, `gst` is resolved from `smalltalk.gnuSmalltalkPath` or your `PATH`; if it isn't found, this tier stays silent. You can also run it on demand with **Smalltalk: Validate with gst**.
-    *   **Type:** `boolean`
-    *   **Default:** `false`
-
 <!-- Commands (US-301) -->
 ## Commands
 
@@ -125,7 +120,6 @@ right-click menu when a Smalltalk file is active:
 | Command | Description |
 | --- | --- |
 | **Smalltalk: Run Current File** | Saves and runs the active `.st`/`.gst` file with your configured GNU Smalltalk interpreter in the integrated terminal. Uses [`smalltalk.gnuSmalltalkPath`](#configuration) if set, otherwise looks for `gst` on your `PATH`; if neither is found, it offers to open the setting. |
-| **Smalltalk: Validate with gst** | Saves the active file and runs the GNU Smalltalk compiler on it to report compile errors as diagnostics — on demand, regardless of [`smalltalk.diagnostics.useGst`](#configuration). Silent if `gst` can't be found. |
 
 <!-- Troubleshooting (US-106) -->
 ## Troubleshooting

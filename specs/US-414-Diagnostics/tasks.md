@@ -3,9 +3,10 @@
 **ID**: US-414 | **Spec**: ./spec.md | **Plan**: ./plan.md
 
 Mark each task `[x]` as it lands. Tasks map to acceptance criteria. Decisions locked (Clarify):
-parser debounce **250 ms** (dedicated timer), parser severity **as emitted**, gst trigger **save + a
-Validate command**, code actions **insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated
-string** (expanded from `]`/`)` after manual QA).
+parser debounce **250 ms** (dedicated timer), parser severity **as emitted**, code actions **insert a
+missing closer (`]`/`)`/`}`/`>`) or close an unterminated string** (expanded from `]`/`)` after manual
+QA). **Shipped scope = AC1 + AC4 (parser-only); the opt-in `gst` tier (AC2/AC3) is deferred to
+EPIC-007** (scope decision 2026-06-24 — see spec §7).
 
 ## Phase 1 — Spec & Setup
 - [x] T001 Spec reviewed; `requirements-validation.md` gate passed (incl. §3.5 AC routing). PASS.
@@ -25,23 +26,13 @@ string** (expanded from `]`/`)` after manual QA).
   open + change (`onDidChangeContent`); clear (empty publish) + cancel timer on close. (AC1)
 - [x] T013 Wired `eval:diagnostics` into `eval`; all four layers green + check-types + lint.
 
-## Slice B — opt-in gst diagnostics (AC2/AC3) ✅
-### Acceptance Harness
-- [x] T020 Unit `server/test/gstDiagnostics.test.ts` (11 checks): `parseGstStderr` fixtures (verified
-  gst-3.2.5 format), injected-spawner no-zombie/kill-on-supersede + spawn-error-inert + cancel,
-  `resolveGst` cases. All CI-safe (no real gst). AC2/AC3 routed here + local manual QA (§3.5).
-### Implementation
-- [x] T021 `server/src/gst/gstRunner.ts` — `parseGstStderr(stderr, sourceText)` (pure, whole-line
-  ranges, source `gst`/code `compile`) + `GstDiagnosticsRunner`: timeout-bounded, one in-flight child
-  per uri, kill-on-supersede, inert on spawn error. (AC2/AC3)
-- [x] T022 `server/src/gst/resolveGst.ts` — server-side gst resolution (setting → PATH), injectable.
-- [x] T023 `server.ts` — gst tier on `onDidSave` when `useGst`; kill-on-edit + clear stale gst diags on
-  change; union with parser diagnostics per uri; clear all gst diags when the setting goes off. (AC2/AC3)
-- [x] T024 `package.json` — `smalltalk.diagnostics.useGst` (default false) + `smalltalk.validateWithGst`
-  command + palette entry; client bridge (save active doc → `smalltalk/validateWithGst` notification).
-  `textDocumentSync` → object form with `save` so the client sends `didSave`. (AC2)
-- [x] T025 All four layers green (parser/server/e2e/eval) + check-types + lint; gst tests hermetic.
-  Local smoke against real gst (resolve→spawn→parse + rapid-supersede no-zombie) verified.
+## Slice B — opt-in gst diagnostics (AC2/AC3) — ⛔ DEFERRED to EPIC-007
+Built and verified (gstRunner + resolveGst + server wiring + setting/command, no-zombie proven against
+real gst), then **removed from 0.6.0** as a scope decision (2026-06-24): gst 3.2.5 emits only syntax
+errors the parser already catches better; its real value (semantic compile errors) needs a runtime and
+belongs with the **Live Bridge (EPIC-007)**. See spec §7. The implementation lives in git history on
+`feature/US-414-diagnostics` (commit `a02518d`) as the seed for the EPIC-007 runtime-diagnostics
+provider. Doc trail: ROADMAP / user-stories EPIC-007 backlog.
 
 ## Slice C — trivial code actions (AC4) ✅
 - [x] T030 e2e asserts the `]` quick fix applies **and the squiggle clears** (`client/test-e2e/US-414`);

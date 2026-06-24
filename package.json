@@ -70,21 +70,12 @@
                 "command": "smalltalk.runCurrentFile",
                 "title": "Run Current File",
                 "category": "Smalltalk"
-            },
-            {
-                "command": "smalltalk.validateWithGst",
-                "title": "Validate with gst",
-                "category": "Smalltalk"
             }
         ],
         "menus": {
             "commandPalette": [
                 {
                     "command": "smalltalk.runCurrentFile",
-                    "when": "editorLangId == smalltalk"
-                },
-                {
-                    "command": "smalltalk.validateWithGst",
                     "when": "editorLangId == smalltalk"
                 }
             ],
@@ -123,12 +114,6 @@
                     "type": "string",
                     "default": "",
                     "markdownDescription": "Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `#smalltalk.gnuSmalltalkPath#` and common install locations."
-                },
-                "smalltalk.diagnostics.useGst": {
-                    "type": "boolean",
-                    "default": false,
-                    "scope": "resource",
-                    "markdownDescription": "Run the GNU Smalltalk compiler (`gst`) on **save** to report real compile errors, in addition to the always-on parser diagnostics. **Off by default** — the parser tier needs no `gst`. When on, `gst` is resolved from `#smalltalk.gnuSmalltalkPath#` or your PATH; if it isn't found, this tier stays silent. You can also run it on demand with **Smalltalk: Validate with gst**."
                 },
                 "smalltalk.trace.server": {
                     "type": "string",

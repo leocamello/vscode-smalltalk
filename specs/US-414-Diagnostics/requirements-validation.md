@@ -6,17 +6,17 @@
 
 ---
 
+> **Scope note:** these gates were validated for the original two-tier design; the `gst` tier was
+> deferred to EPIC-007 (spec §7). The shipped scope is the parser tier (AC1) + quick fixes (AC4).
+
 ## Section 1: Constitution Gates (Mandatory)
-- [x] **Native Look & Feel**: Uses standard LSP push diagnostics (`textDocument/publishDiagnostics`),
-  standard `CodeAction` quick fixes, and a standard command — all rendered by VS Code natively.
-- [x] **Zero Config**: Parser tier is always-on, no setup, no `gst`. The `gst` tier is opt-in
-  (`smalltalk.diagnostics.useGst` default `false`) and auto-resolves the executable (setting → PATH).
-- [x] **Protocol First**: Pure LSP — `publishDiagnostics`, `codeAction`. No bespoke channels except the
-  thin `validateWithGst` command bridge (client→server), which still drives standard diagnostics.
-- [x] **Robustness**: Front end never throws (empty list on failure); `gst` tier is bounded by timeout,
-  killed on supersede, and silently inert when `gst` is absent; no zombies (AC3).
-- [x] **Dialect Agnostic**: Parser tier already feeds from the layered front end; the `gst` runner is a
-  GST-specific *optional* adapter, isolated in `server/src/gst/` — other dialects add their own later.
+- [x] **Native Look & Feel**: Uses standard LSP push diagnostics (`textDocument/publishDiagnostics`)
+  and standard `CodeAction` quick fixes — all rendered by VS Code natively.
+- [x] **Zero Config**: Parser tier is always-on, no setup, **no `gst`**.
+- [x] **Protocol First**: Pure LSP — `publishDiagnostics`, `codeAction`. No bespoke channels.
+- [x] **Robustness**: Front end never throws (empty list on failure); diagnostics never block typing.
+- [x] **Dialect Agnostic**: Parser tier feeds from the layered front end; no GST-specific runtime
+  dependency ships (the deferred gst runner would be an isolated EPIC-007 adapter).
 
 ## Section 2: Specification Completeness
 - [x] Goals and Non-Goals explicitly listed? (spec §2/§3)
@@ -26,12 +26,12 @@
 - [x] Dependencies listed? US-411 (parser diagnostics), US-301 (gst resolution lineage), ADR-0001.
 
 ## Section 3: Technical Design
-- [x] API/Command contracts defined? `smalltalk.diagnostics.useGst` setting; `smalltalk.validateWithGst`
-  command; `publishDiagnostics`/`codeAction` shapes (spec §5.1–§5.5).
-- [x] Data structures defined? `LexDiagnostic → Diagnostic` mapping; `parseGstStderr(text,uri) →
-  Diagnostic[]`; per-uri in-flight child + timer maps.
+- [x] API/Command contracts defined? `publishDiagnostics`/`codeAction` shapes (spec §5.1–§5.3).
+- [x] Data structures defined? `LexDiagnostic → Diagnostic` mapping; the per-uri diagnostics debounce
+  timer map; the closer/string `toCodeActions` grouping.
 - [x] Error handling strategy defined? (Robustness gate above; spec §6).
 - [x] Testing strategy (Unit vs Integration) defined? (§3.5 below).
+- _gst-tier contracts (setting/command/runner) **deferred to EPIC-007** — see spec §7._
 
 ## Section 3.5: Acceptance Harness (TDD e2e plan) — AC routing
 - [x] Each AC routed to a verification layer:
@@ -39,18 +39,13 @@
     (open malformed `.st`, assert diagnostics with code `smalltalk(parse)`); **+ unit** for the
     `LexDiagnostic → Diagnostic` mapping (ranges/severity); **+ eval** golden dataset
     `evals/datasets/diagnostics/` (malformed sources → expected diagnostic codes/ranges/severity).
-  - **AC2** (gst stderr → diagnostics, opt-in) → **unit** `parseGstStderr` against verified gst-3.2.5
-    fixture strings (CI-safe, no gst); the opt-in wiring/command is exercised by the server test where
-    feasible. (e2e for the live gst run is **local-only**, gated behind gst presence, recorded in
-    `verification.md` manual-QA — CI must not require gst.)
-  - **AC3** (no zombies / non-blocking) → **unit/integration** an explicit "rapid edits spawn no
-    surviving children" test on `gstRunner` with an injected fake spawner (deterministic, no gst).
-  - **AC4** (insert missing `]`/`)`) → **e2e** assert the quick fix appears and edits the buffer; **+
-    unit** for the pure code-action mapping.
+  - **AC4** (insert a missing closer `]`/`)`/`}`/`>` or close a string) → **e2e** assert the quick fix
+    appears, edits the buffer, and the squiggle clears; **+ unit** for the pure code-action mapping
+    (each closer + string, "applying re-parses clean", non-fixable parse error offers nothing, position
+    regressions for `}`/`>`).
+  - **AC2/AC3** (opt-in gst tier) → **deferred to EPIC-007** (spec §7); no longer in 0.6.0 scope.
 - [x] User-observable ACs (AC1, AC4) pinned by acceptance tests written **before** implementation
   (red → green) in `client/test-e2e/US-414.acceptance.test.js`.
-- [x] AC2/AC3 have no fully CI-reproducible user-observable surface (gst is optional/absent in CI);
-  routed to unit + injected-spawner integration + local manual-QA. The e2e stub is **kept** (AC1/AC4).
 
 ## Section 4: Validation Result
-- [x] **PASS — Ready for implementation.** (Slice A first: AC1.)
+- [x] **PASS.** Shipped scope: AC1 (parser tier) + AC4 (quick fixes). AC2/AC3 deferred to EPIC-007.

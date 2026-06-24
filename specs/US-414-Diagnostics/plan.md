@@ -27,7 +27,12 @@ resolution (factor so the server can reuse it), and the `completion/` eval harne
 4. Acceptance harness (RED first): e2e asserts squiggles with code `smalltalk(parse)` on malformed
    input; unit for the mapping; new `evals/datasets/diagnostics/` golden dataset.
 
-### Slice B — opt-in gst diagnostics (AC2/AC3)
+### Slice B — opt-in gst diagnostics (AC2/AC3) — ⛔ DEFERRED to EPIC-007 (US-705)
+> Built and verified, then removed from 0.6.0 (scope decision 2026-06-24 — spec §7). gst 3.2.5 emits
+> only syntax errors the parser already catches better; the real (semantic) value needs a runtime, so
+> this moves to the Live Bridge. The steps below are the original plan, preserved for the EPIC-007
+> revival (implementation in git history, commit `a02518d`).
+
 5. `gst/gstRunner.ts`: `parseGstStderr(text, uri) → Diagnostic[]` (pure, fixture-tested) + a runner
    that spawns gst with a timeout, one in-flight child per uri, kill-on-supersede.
 6. Factor gst resolution so the server resolves the executable (setting → PATH), injectable for tests.
