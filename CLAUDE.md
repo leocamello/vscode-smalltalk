@@ -15,12 +15,13 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
-- **In review (0.7.0):** **hover (US-415, EPIC-004)** — selectors (signature + implementor list), classes
+- **Shipped:** **v0.7.0 — hover (US-415, EPIC-004)** — selectors (signature + implementor list), classes
   (superclass chain), variables (kind + declaration site), numeric literals (radix/scaled-decimal decode),
   Markdown with code fences. **Comment prose gated by provenance** (`providers/hover.ts`, `parser/comments.ts`):
   the installed kernel + your workspace source carry comments; the **bundled reference stays facts-only**
   (LGPL — prose is read locally, never redistributed; [`specs/US-415-*/spec.md`](specs/US-415-Hover/spec.md) §4a).
-  New `evals/datasets/hover/` output eval. Manual-QA cleared; PR open (closes #27).
+  New `evals/datasets/hover/` output eval + a `specs/US-415-*/manual-qa-workspace/`. Manual-QA cleared (#27, #86).
+  Shipped alongside a radix-integer **syntax-coloring fix** (`16rFF.` no longer swallows the period).
 - **Shipped:** **v0.6.0 — diagnostics (US-414, EPIC-004), parser-only**: an always-on **parser tier**
   publishes syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, severity as
   emitted, **no `gst`**); and trivial **quick fixes** insert a missing closer (`]`/`)`/`}`/`>`) or close

@@ -83,7 +83,7 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | 0.4 🟢 | Navigation | 004 | outline, workspace symbols, go-to-def, folding, highlight | A+B | core navigation |
 | 0.5 🟢 | Completion + kernel index | 004 | completion; GST kernel (installed-first/bundled) | A+B | core IntelliSense |
 | 0.6 🟢 | Diagnostics | 004 | live parser squiggles + insert-closer/close-string quick fixes (runtime compile errors → EPIC-007) | A ⚖️ | error-checking |
-| **0.7** 🔵 | **Hover** | 004 | selectors/classes/vars/literals + kernel facts | A+B | hover |
+| 0.7 🟢 | Hover | 004 | selectors/classes/vars/literals + provenance-gated comment prose | A+B | hover |
 | **0.8** 🟣 | **Console & Cartridge foundation** 🏰 | 005 | cartridge canonical + loader + **semantic tokens** (US-422/430) | **B** | semantic highlighting (image-IDE parity) |
 | **0.9** 🟣 | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** + signature help; unknown-selector spike (SPIKE-01) | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
 | **0.10** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
@@ -109,7 +109,7 @@ scope (EPIC-006/007/008). The 0.6 → 1.0 line is otherwise unchanged.
 | Completion | ✅ | ✅ | ✅ | ✅ (image) | ✅ (image) |
 | Outline / symbols / go-to-def | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Diagnostics | — | ✅0.6 | ✅ | ✅ (image) | ✅ (image) |
-| Hover | — | ⏳0.7 | ✅ | ✅ | ✅ |
+| Hover | — | ✅0.7 | ✅ | ✅ | ✅ |
 | Semantic tokens | — | ⏳0.8 | ✅ | — | ✅ |
 | References / **Senders / Implementors** | — | ⏳0.9 | ✅ | partial | ✅ (image) |
 | Call hierarchy | — | ⏳0.9 | ✅ | — | ✅ |
@@ -134,7 +134,7 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **Next shipping milestone: 0.7.0 / US-415 — hover.**
+   (semantic errors) needs a runtime. **0.7.0 / US-415 — hover — shipped; next: 0.8 / EPIC-005 (US-422 semantic tokens) or US-416 (formatting).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
@@ -181,9 +181,9 @@ Release (CI publishes). Full detail in [`CLAUDE.md`](../CLAUDE.md) and [`CONTRIB
 _Last updated: 2026-06-24 — **0.6.0 / US-414 (diagnostics) implemented, parser-only**: always-on parser
 squiggles + insert-closer/close-string quick fixes; new `evals/datasets/diagnostics/` output eval. The
 opt-in `gst`/runtime compile-diagnostics tier was built then **deferred to EPIC-007** (Live Bridge) —
-redundant with the parser for syntax, real value (semantic errors) needs a runtime. In release pending
-the manual-QA matrix. **EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
-convergence) merged (#82) — completion runs off GST Cartridge #01. Next shipping: 0.7.0 / US-415 (hover); next EPIC-005
+redundant with the parser for syntax, real value (semantic errors) needs a runtime; shipped **v0.6.0**.
+**EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
+convergence) merged (#82) — completion runs off GST Cartridge #01. **US-415 hover shipped (v0.7.0).** Next EPIC-005
 consumers: US-422 (semantic tokens) / US-423 (references/senders)._
 
 **Dialect scope:** GNU Smalltalk through 1.0 (the complete offline GST IDE). The **second dialect
