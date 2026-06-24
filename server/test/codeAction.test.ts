@@ -15,6 +15,7 @@ function test(name: string, fn: () => void): void {
 
 const URI = 'file:///x.st';
 const diagnosticsFor = (src: string): Diagnostic[] => toDiagnostics(parse(src).diagnostics);
+const actionsFor = (src: string): CodeAction[] => toCodeActions(URI, diagnosticsFor(src), src);
 
 function offsetOf(text: string, line: number, character: number): number {
   const lines = text.split('\n');
@@ -32,45 +33,70 @@ function applyFix(src: string, fix: CodeAction): string {
   return src.slice(0, at) + edit.newText + src.slice(at);
 }
 
-test('offers one quick fix that inserts both missing ] (nested unclosed brackets)', () => {
+/** A closer/string quick fix should re-parse clean after it is applied. */
+function assertFixClears(src: string, contains: string): void {
+  const fix = actionsFor(src).find((a) => a.title.includes(contains));
+  assert.ok(fix, `expected a quick fix containing ${contains}`);
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0, `applying ${contains} must yield valid code`);
+}
+
+test('inserts both missing ] (nested unclosed brackets) in one action', () => {
   const src = 'Object subclass: Foo [\n  bar [ ^1 \n';
   const diags = diagnosticsFor(src);
   assert.ok(diags.length >= 2, 'fixture should yield multiple Expected-] diagnostics');
-  const actions = toCodeActions(URI, diags);
+  const actions = toCodeActions(URI, diags, src);
   assert.equal(actions.length, 1, 'same-spot closers collapse into one action');
   const fix = actions[0]!;
   assert.equal(fix.kind, CodeActionKind.QuickFix);
   assert.equal(fix.isPreferred, true);
   assert.equal(fix.edit!.changes![URI]![0]!.newText, ']]', 'inserts both needed closers');
   assert.equal(fix.diagnostics?.length, 2, 'the action references both diagnostics it fixes');
-});
-
-test('the ] fix, when applied, actually clears the parse', () => {
-  const src = 'Object subclass: Foo [\n  bar [ ^1 \n';
-  const fix = toCodeActions(URI, diagnosticsFor(src))[0]!;
-  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0, 'applying the fix must yield valid code');
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0);
 });
 
 test('the ) fix inserts before the offending token and clears the parse', () => {
-  // `(1 + 2.` — the `.` is where `)` was expected; the closer must go BEFORE it.
   const src = 'Object subclass: Calc [\n  compute [ | x | x := (1 + 2 * 3.\n    ^x ]\n]';
   const diags = diagnosticsFor(src);
-  const fix = toCodeActions(URI, diags).find((a) => a.title.includes(')'))!;
+  const fix = toCodeActions(URI, diags, src).find((a) => a.title.includes(')'))!;
   assert.ok(fix, 'expected an "insert missing )" action');
   const edit = fix.edit!.changes![URI]![0]!;
   assert.equal(edit.newText, ')');
-  // Inserted at the diagnostic's range START (before the unexpected token), and it fixes the parse.
   const target = diags.find((d) => /Expected "\)"/.test(d.message))!;
-  assert.deepEqual(edit.range.start, target.range.start);
-  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0, 'applying the fix must yield valid code');
+  assert.deepEqual(edit.range.start, target.range.start, 'inserted before the unexpected token');
+  assert.equal(parse(applyFix(src, fix)).diagnostics.length, 0);
+});
+
+test('inserts a missing } (brace/dynamic array)', () => {
+  assertFixClears('x := { 1. 2. 3', '}');
+});
+
+test('inserts a missing > (attribute)', () => {
+  assertFixClears('Object subclass: Foo [\n  m [ <category: 1\n  ^1 ]\n]', '>');
+});
+
+test('inserts the closing quote for an unterminated string (at end of the open line)', () => {
+  // Single line: the quote closes the string.
+  assertFixClears("Transcript showCr: 'oops", "'");
+  // Multi-line swallow: closing at end of the opening line preserves the following code.
+  const src = "Transcript showCr: 'oops.\nx := 1";
+  const fix = actionsFor(src).find((a) => a.title.includes("'"))!;
+  assert.ok(fix, 'expected a close-string quick fix');
+  const out = applyFix(src, fix);
+  assert.ok(out.includes('x := 1'), 'the code the string ran over is preserved');
 });
 
 test('clean source offers no code actions', () => {
-  const diags = diagnosticsFor('| x |\nx := 1.\nTranscript showCr: x printString.');
-  assert.deepEqual(toCodeActions(URI, diags), []);
+  assert.deepEqual(actionsFor('| x |\nx := 1.\nTranscript showCr: x printString.'), []);
 });
 
-test('ignores non-parser diagnostics and unrelated parser messages', () => {
+test('a non-fixable parse error (truncated expression) offers no quick fix', () => {
+  // `x := 1 +` -> "Unexpected EOF" : a real squiggle, but nothing to insert.
+  const diags = diagnosticsFor('x := 1 +\n');
+  assert.ok(diags.length >= 1, 'expected a diagnostic');
+  assert.deepEqual(toCodeActions(URI, diags, 'x := 1 +\n'), []);
+});
+
+test('ignores non-parser diagnostics (gst tier, etc.)', () => {
   const foreign: Diagnostic = {
     range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } },
     severity: DiagnosticSeverity.Error,
@@ -78,14 +104,7 @@ test('ignores non-parser diagnostics and unrelated parser messages', () => {
     source: 'gst', // not the parser tier
     code: 'compile',
   };
-  const unrelated: Diagnostic = {
-    range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } },
-    severity: DiagnosticSeverity.Error,
-    message: 'Unterminated string literal',
-    source: 'smalltalk',
-    code: 'parse',
-  };
-  assert.deepEqual(toCodeActions(URI, [foreign, unrelated]), []);
+  assert.deepEqual(toCodeActions(URI, [foreign], 'x'), []);
 });
 
 console.log(`code actions: ${passed} checks passed.`);

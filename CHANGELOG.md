@@ -10,7 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 -   **Diagnostics (error checking)** for GNU Smalltalk, powered by the bundled language engine:
     -   **Live parser diagnostics** — syntax errors are flagged with squiggles **as you type** (debounced, no `gst` required), badged `smalltalk(parse)`, with severity as the parser reports it. They clear as you fix the code.
-    -   **Quick fixes** — insert a missing `]` or `)` directly from the reported diagnostic.
+    -   **Quick fixes** — insert a missing closer (`]`, `)`, `}`, `>`) or the closing quote of an unterminated string, directly from the reported diagnostic.
 -   **Opt-in `gst` compile diagnostics** — when `smalltalk.diagnostics.useGst` is enabled, the real GNU Smalltalk compiler runs **on save** and surfaces its errors (badged `gst(compile)`) alongside the parser diagnostics. Runs are bounded by a timeout and killed on edit, so no stray `gst` processes accumulate. A **Smalltalk: Validate with gst** command runs the same check on demand.
 
 ### Settings

@@ -19,7 +19,8 @@ Marketplace as `leocamello.vscode-smalltalk`.
   syntax squiggles as you type (debounced 250 ms, badge `smalltalk(parse)`, no `gst`); an **opt-in `gst`
   tier** (`smalltalk.diagnostics.useGst`, default off) runs the real compiler on save + a *Validate with
   gst* command (badge `gst(compile)`, timeout + kill-on-edit, no zombies); and trivial **quick fixes**
-  insert a missing `]`/`)`. Slices A–C implemented + a new `evals/datasets/diagnostics/` output eval;
+  insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated string. Slices A–C implemented +
+  a new `evals/datasets/diagnostics/` output eval;
   release pending the manual-QA matrix (`specs/US-414-*/verification.md`).
 - **Shipped:** v0.5.0 — **completion + a GNU Smalltalk kernel index** (US-413, closes #1) —
   selector/class/variable completion over the workspace + a kernel tier sourced **installed-first,

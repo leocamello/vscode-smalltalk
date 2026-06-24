@@ -132,7 +132,8 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
 1. **0.6.0 / US-414 — Diagnostics** is implemented (Slices A–C) and **in release**: the always-on parser
    tier (debounced squiggles, badge `smalltalk(parse)`), the opt-in `gst`-on-save tier
    (`smalltalk.diagnostics.useGst` + a *Validate with gst* command, timeout/kill-on-edit, no zombies),
-   and insert-missing-`]`/`)` quick fixes. **Next shipping milestone: 0.7.0 / US-415 — hover.**
+   and insert-missing-closer (`]`/`)`/`}`/`>`) + close-unterminated-string quick fixes. **Next shipping
+   milestone: 0.7.0 / US-415 — hover.**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /

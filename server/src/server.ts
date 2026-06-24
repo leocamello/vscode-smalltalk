@@ -156,9 +156,10 @@ connection.onDocumentHighlight((params: DocumentHighlightParams): DocumentHighli
   return doc ? documentHighlightsAt(getAst(doc), getTokens(doc), doc.offsetAt(params.position)) : [];
 });
 
-connection.onCodeAction((params: CodeActionParams): CodeAction[] =>
-  toCodeActions(params.textDocument.uri, params.context.diagnostics),
-);
+connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+  const doc = documents.get(params.textDocument.uri);
+  return toCodeActions(params.textDocument.uri, params.context.diagnostics, doc?.getText() ?? '');
+});
 
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const doc = documents.get(params.textDocument.uri);

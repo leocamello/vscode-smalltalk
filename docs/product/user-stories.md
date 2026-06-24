@@ -867,7 +867,7 @@ Scenario: User follows Quick Start guide
 ## US-414: Diagnostics (Parser Live; gst Opt-In)
 
 * **ID:** US-414
-* **Status:** Done (v0.6.0 — in release). Delivered as 3 slices: parser tier (live squiggles), opt-in `gst` tier (save + *Validate with gst*, no zombies), insert-missing-`]`/`)` quick fixes. Decisions: parser debounce 250 ms; parser severity as-emitted; gst trigger save + command; quick fixes for `]`/`)`. gst stderr is line-only (`<file>:<LINE>: <message>`, no column/severity — AC2's `error:` assumption corrected in the spec).
+* **Status:** Done (v0.6.0 — in release). Delivered as 3 slices: parser tier (live squiggles), opt-in `gst` tier (save + *Validate with gst*, no zombies), quick fixes that insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated string. Decisions: parser debounce 250 ms; parser severity as-emitted; gst trigger save + command; quick fixes inserted at the diagnostic range **start** (before the offending token) — a manual-QA finding. gst stderr is line-only (`<file>:<LINE>: <message>`, no column/severity — AC2's `error:` assumption corrected in the spec).
 * **Epic:** EPIC-004
 * **Priority:** Medium
 * **Estimate:** L
@@ -889,7 +889,7 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized.
 
 **Definition of Done (DoD) Checklist:**
-* [X] Live parser diagnostics + opt-in gst path implemented (+ AC4 bracket quick fixes).
+* [X] Live parser diagnostics + opt-in gst path implemented (+ AC4 insert-closer/close-string quick fixes).
 * [X] **Language Server:** unit tests for diagnostic ranges; stderr-parsing tests (`server/test/{diagnostics,gstDiagnostics,codeAction}.test.ts`).
 * [X] **End-to-End:** integration test asserting squiggles on malformed input (+ the quick fix) — `client/test-e2e/US-414.acceptance.test.js`; handshake asserts `publishDiagnostics`/capabilities.
 * [X] No zombie gst processes under rapid edits (injected-spawner test + local real-gst smoke).

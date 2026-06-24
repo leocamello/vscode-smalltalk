@@ -36,7 +36,9 @@ degrades cleanly to nothing when it is not.
   column, no severity (see §6). `gst` diagnostics are whole-line ranges.
 - gst-on-*change* (live) execution. The `gst` tier is save/command-triggered only.
 - Diagnostics for non-`.st`/`.gst` documents; multi-file/project compile.
-- Code actions beyond missing `]`/`)` (e.g. insert missing `.`, rename fixes) — deferred.
+- Code actions beyond inserting a missing closer (`]`/`)`/`}`/`>`) or a closing string `'` — e.g.
+  inserting a missing `.`, closing an unterminated *comment*/character/symbol (ambiguous close
+  position), or rename fixes — deferred.
 
 ## 4. User Stories & Acceptance Criteria
 **US-414**: As a **Smalltalk developer**, I want **error squiggles as I type, plus optional real
@@ -51,8 +53,10 @@ compile errors from `gst`**, so that **I catch mistakes without leaving the edit
   is silently inert (ADR-0001 — degrades to nothing); the parser tier is unaffected.
 - **AC3**: `gst` processes time out (bounded) and are killed on the next edit or re-run; no zombie
   processes accumulate under rapid edits/saves. The parser tier is never blocked by the `gst` tier.
-- **AC4**: Trivial code actions are offered where cheap: a quick fix to insert a missing `]` or `)`
-  when the parse diagnostic is the corresponding "expected `]`/`)`".
+- **AC4**: Trivial code actions are offered where cheap: a quick fix to insert a missing closer
+  (`]`, `)`, `}`, `>`) when the parse diagnostic is the corresponding `Expected "X"`, and to insert
+  the closing `'` for an `Unterminated string literal`. Applying a fix re-parses clean; non-fixable
+  parse errors (e.g. a truncated expression) offer no action.
 
 ## 5. Technical Design
 
@@ -91,14 +95,20 @@ A new `server/src/providers/diagnostics.ts` converts the LSP-free `LexDiagnostic
   injecting the probe (see [[dev-box-has-gst-installed]] discipline).
 
 ### 5.4 Code actions (Slice C — AC4)
-- Advertise `codeActionProvider` in `onInitialize`. New `server/src/providers/codeAction.ts`: for a
-  parser diagnostic whose message is `Expected "]"`/`Expected ")"`, offer a `QuickFix` `WorkspaceEdit`
-  inserting the delimiter at the diagnostic range **start** — i.e. *before* the unexpected token the
-  parser tripped on (inserting at the range *end* lands the `)` after that token and does **not** fix
-  the parse — found in manual QA). When the error-tolerant parser reports several missing closers at
-  the same spot (nested unclosed `[`/`(`, e.g. an unclosed method body *and* class), they are grouped
-  into a single action that inserts all of them (`]]`), so one click fully closes them. Pure mapping,
-  unit-tested (incl. "applying the fix re-parses clean"); e2e asserts the fix.
+- Advertise `codeActionProvider` in `onInitialize`. New `server/src/providers/codeAction.ts`
+  (`toCodeActions(uri, diagnostics, text)`):
+  - **Missing closer** — an anchored `^Expected "([\])}>])"` match (covers `]`, `)`, `}`, `>`; an
+    anchored regex avoids the ambiguous `Expected "." or "}" in dynamic array` and never offers to
+    insert an *opener*). The closer is inserted at the diagnostic range **start** — *before* the
+    unexpected token the parser tripped on (inserting at the range *end* lands the closer after that
+    token and does **not** fix the parse — found in manual QA). Several closers reported at one spot
+    (nested unclosed `[`/`(`, e.g. method body *and* class) are grouped into a single action that
+    inserts all of them (`]]`), so one click fully closes them.
+  - **Unterminated string** — insert the closing `'` at the **end of the line where the string
+    opened** (needs the document `text`): closes the common single-line typo and, for a multi-line
+    swallow, preserves the code the string ran over (vs. closing at EOF).
+  Pure mapping, unit-tested (each closer + string, incl. "applying the fix re-parses clean", and a
+  non-fixable parse error offers nothing); e2e asserts the `]` fix clears the squiggle.
 
 ### 5.5 Settings & commands (package.json)
 - `smalltalk.diagnostics.useGst`: boolean, default `false`, scope `resource`.

@@ -4,7 +4,8 @@
 
 Mark each task `[x]` as it lands. Tasks map to acceptance criteria. Decisions locked (Clarify):
 parser debounce **250 ms** (dedicated timer), parser severity **as emitted**, gst trigger **save + a
-Validate command**, code actions **insert missing `]` and `)`**.
+Validate command**, code actions **insert a missing closer (`]`/`)`/`}`/`>`) or close an unterminated
+string** (expanded from `]`/`)` after manual QA).
 
 ## Phase 1 — Spec & Setup
 - [x] T001 Spec reviewed; `requirements-validation.md` gate passed (incl. §3.5 AC routing). PASS.
@@ -43,12 +44,16 @@ Validate command**, code actions **insert missing `]` and `)`**.
   Local smoke against real gst (resolve→spawn→parse + rapid-supersede no-zombie) verified.
 
 ## Slice C — trivial code actions (AC4) ✅
-- [x] T030 e2e asserts the insert-missing-`]` quick fix applies (`client/test-e2e/US-414.acceptance`);
-  unit `server/test/codeAction.test.ts` (5 checks) for `]`/`)` + clean + non-parser filtering.
+- [x] T030 e2e asserts the `]` quick fix applies **and the squiggle clears** (`client/test-e2e/US-414`);
+  unit `server/test/codeAction.test.ts` (8 checks): each closer `]`/`)`/`}`/`>`, the close-string fix,
+  "applying re-parses clean", a non-fixable parse error, and non-parser filtering.
 - [x] T031 `codeActionProvider: { codeActionKinds: [QuickFix] }`; `server/src/providers/codeAction.ts` —
-  `toCodeActions(uri, diagnostics)` inserts the missing `]`/`)` at the diagnostic range end, derived
-  from the parser message (`Expected "]"…` / `Expected ")"`). Wired `connection.onCodeAction`. (AC4)
-- [x] T032 All four layers + eval green; handshake asserts `codeActionProvider`.
+  `toCodeActions(uri, diagnostics, text)` inserts a missing closer (anchored `^Expected "([\])}>])"`)
+  at the diagnostic range **start** (before the offending token — manual-QA fix), grouping multiple
+  same-spot closers into one action (`]]`); and inserts a closing `'` for an unterminated string at the
+  end of its opening line. Wired `connection.onCodeAction` (passes the doc text). (AC4)
+- [x] T032 All four layers + eval green; handshake asserts `codeActionProvider`. Manual-QA workspace
+  extended: `MissingBrace`/`MissingAttribute`/`NoQuickFix` fixtures + README/verification rows.
 
 ## Phase 4 — Verify & Release (0.6.0)
 - [ ] T900 Acceptance tests GREEN; `npm run eval`, `npm run test:e2e`, `test:parser`, `test:server` pass.
