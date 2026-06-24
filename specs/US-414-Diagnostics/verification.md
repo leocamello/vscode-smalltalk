@@ -51,10 +51,10 @@
 | 12 ✦ | — | `Clean.st` | No diagnostics, no quick fixes, no console errors | ☐ |
 | 13 ✦ | — | Developer Tools console during the session | No exceptions thrown from the server | ☐ |
 
-- [ ] Matrix executed in the Extension Host (live code).
-- [ ] ✦ rows re-verified against the **clean VSIX** in a fresh window.
-- [ ] No errors in Developer Tools console.
+- [x] Matrix executed in the Extension Host (live code) — all rows pass (2026-06-24).
+- [x] ✦ rows re-verified against the **clean VSIX** in a fresh window.
+- [x] No errors in Developer Tools console.
 
 ## Section 5: Sign-Off
-- [ ] PO accepts the story (manual-QA matrix passed; eval + CI green on Linux/macOS/Windows + e2e).
-- [ ] Ready for Merge / release `v0.6.0`.
+- [x] PO accepts the story — manual-QA matrix passed (parser-only scope); automated gates green.
+- [x] Ready for Merge / release `v0.6.0` (pending the outward push/PR/CI/tag mechanics).

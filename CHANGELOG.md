@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-24
+
 ### Added
 
 -   **Diagnostics (error checking)** for GNU Smalltalk, powered by the bundled language engine — **no `gst` required**:
