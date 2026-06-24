@@ -2,7 +2,7 @@
 
 **ID**: US-422
 **Feature**: `textDocument/semanticTokens` — role-accurate highlighting, including a cartridge-driven known-class vs unknown-global distinction
-**Status**: Draft
+**Status**: Implemented — automated layers green (pending Extension-Host manual QA + CI)
 **Owner**: Leonardo Nascimento
 **Created**: 2026-06-22
 **Architecture**: [ADR-0003](../../docs/decisions/0003-cartridge-resolution.md)

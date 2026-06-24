@@ -1,0 +1,53 @@
+{
+  "description": "US-422 semantic-tokens output eval — golden cases over the bundled gst-3.2.5 kernel (no gst, no VS Code). Drives the real collectSemanticTokens provider with a SemanticTokenContext resolved from the bundled KernelIndexService ∪ the snippet's own workspace classes. The `▮` marks the identifier of interest; the metric asserts the semantic token covering that position has `expectType` and (when given) every `expectModifiers` and no `expectAbsentModifiers`. Pins the role classification — and the cartridge-driven class/global distinction (AC2) — that themes color.",
+  "cases": [
+    {
+      "name": "AC2 a kernel class is a class, with defaultLibrary (the cartridge consumer)",
+      "text": "Ordered▮Collection new",
+      "expectType": "class",
+      "expectModifiers": ["defaultLibrary"]
+    },
+    {
+      "name": "AC2 a kernel superclass receiver is a class",
+      "text": "Obj▮ect subclass: Foo [ ]",
+      "expectType": "class",
+      "expectModifiers": ["defaultLibrary"]
+    },
+    {
+      "name": "AC2 a workspace-defined class is a class, without defaultLibrary",
+      "text": "Object subclass: Wid▮get [ ]",
+      "expectType": "class",
+      "expectAbsentModifiers": ["defaultLibrary"]
+    },
+    {
+      "name": "AC2 an unknown capitalized name is a global variable, not a class",
+      "text": "Zo▮rk new",
+      "expectType": "variable"
+    },
+    {
+      "name": "AC1 an instance variable is a property",
+      "text": "Object subclass: Foo [ | count | bar [ ^cou▮nt ] ]",
+      "expectType": "property"
+    },
+    {
+      "name": "AC1 a method parameter is a parameter",
+      "text": "Object subclass: Foo [ bar: x [ ^▮x ] ]",
+      "expectType": "parameter"
+    },
+    {
+      "name": "AC1 a temporary is a variable",
+      "text": "Object subclass: Foo [ bar [ | tmp | ^▮tmp ] ]",
+      "expectType": "variable"
+    },
+    {
+      "name": "AC3 a keyword-message part is a method",
+      "text": "d at: 1 pu▮t: 2",
+      "expectType": "method"
+    },
+    {
+      "name": "AC3 a pseudo-variable is a keyword",
+      "text": "Object subclass: Foo [ bar [ ^se▮lf ] ]",
+      "expectType": "keyword"
+    }
+  ]
+}

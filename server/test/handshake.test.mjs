@@ -112,6 +112,11 @@ assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightPr
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
 assert.ok(caps.codeActionProvider, 'expected codeActionProvider (US-414)');
 assert.equal(caps.hoverProvider, true, 'expected hoverProvider (US-415)');
+assert.ok(caps.semanticTokensProvider, 'expected semanticTokensProvider (US-422)');
+const stLegend = caps.semanticTokensProvider.legend;
+assert.ok(Array.isArray(stLegend?.tokenTypes) && stLegend.tokenTypes.length > 0, 'semantic tokens legend advertises token types');
+assert.ok(stLegend.tokenTypes.includes('class'), 'legend includes the `class` token type (AC2)');
+assert.ok(caps.semanticTokensProvider.full, 'semantic tokens advertises the `full` document request (AC1)');
 
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
@@ -307,6 +312,41 @@ const hovLit = (await receiveId(9)).result;
 const hovLitValue = typeof hovLit?.contents === 'string' ? hovLit.contents : hovLit?.contents?.value ?? '';
 assert.match(hovLitValue, /255/, 'radix literal hover decodes 16rFF to 255');
 
+// --- textDocument/semanticTokens/full (US-422) ---
+// A kernel class is classified as a `class` token off the bundled cartridge
+// (no gst). Decode the delta-encoded stream and assert OrderedCollection's role.
+const stUri = 'file:///semantic-tokens-test.st';
+const stText = 'OrderedCollection new';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: stUri, languageId: 'smalltalk', version: 1, text: stText } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 10,
+  method: 'textDocument/semanticTokens/full',
+  params: { textDocument: { uri: stUri } },
+});
+const stResult = (await receiveId(10)).result;
+assert.ok(Array.isArray(stResult?.data) && stResult.data.length > 0, 'semanticTokens/full returns a non-empty token stream');
+assert.equal(stResult.data.length % 5, 0, 'semantic tokens data is a flat run of 5-tuples');
+// Decode and find the token at column 0 (OrderedCollection); assert its type is `class`.
+const classTypeIndex = stLegend.tokenTypes.indexOf('class');
+let stLine = 0;
+let stChar = 0;
+let foundClassAtZero = false;
+for (let i = 0; i + 4 < stResult.data.length; i += 5) {
+  const dl = stResult.data[i];
+  const dc = stResult.data[i + 1];
+  stLine += dl;
+  stChar = dl === 0 ? stChar + dc : dc;
+  if (stLine === 0 && stChar === 0 && stResult.data[i + 3] === classTypeIndex) {
+    foundClassAtZero = true;
+  }
+}
+assert.ok(foundClassAtZero, 'OrderedCollection (col 0) is classified as a `class` from the bundled cartridge (AC2)');
+
 // --- textDocument/publishDiagnostics (US-414 slice A) — parser tier ---
 // Open a malformed doc; the server publishes parser diagnostics (debounced).
 const diagUri = 'file:///diagnostics-test.st';
@@ -339,6 +379,6 @@ await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, diagnostics, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
