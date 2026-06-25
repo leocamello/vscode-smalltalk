@@ -88,9 +88,10 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | **0.9** 🟣 | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** + signature help; unknown-selector spike (SPIKE-01) | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
 | **0.10** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
 | **1.0** 🔵 | **Complete Offline GST IDE** | 416/902 | formatting + scope-rename; product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
+| **~1.0** 🟣 | **Tonel read-only wedge** ("Trojan Horse") | 006 | **read-only Tonel** grammar + folding + outline (US-424) — *no cartridge, no seam* | A ⚖️ | best-in-class Tonel reading — lands the Pharo/GemStone/VA crowd early |
 | **1.1–1.4** 🟣 | **Image-Grade Workbench** 🏰 | 008 | **System Browser view**, full-text method search, class-hierarchy view, more refactorings (extract method) | A+B | the "feels like Smalltalk" IDE (System Browser parity, offline) |
-| **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + Tonel container seam (US-418) + `smalltalk.dialect` auto-detect | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
-| **1.6+** 🟣➕ | **The Live Bridge** | 007 | Do-it / Print-it / **Inspect-it** / run-tests / Playground + **runtime compile/semantic diagnostics** (deferred from US-414) — optional, per-dialect | C | live eval/inspect + real compile errors (image-IDE parity) |
+| **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + full Tonel container seam (US-418) + `smalltalk.dialect` auto-detect **+ status-bar picker** (US-602) | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
+| **1.6+** 🟣➕ | **The Live Bridge** | 007 | Do-it / Print-it / **Inspect-it** / run-tests / Playground + **runtime compile/semantic diagnostics** (US-705) + **writable `smalltalk-image://` VFS** (US-706) — optional, per-dialect | C | live eval/inspect + real compile errors + live-image editing (image-IDE parity) |
 | **1.x** 🟣➕ | **Debugging (DAP)** | sep. ext | `vscode-smalltalk-debugger`: breakpoints, step, stack, frame restart | C | debugging (image-IDE parity) |
 | **2.0** 🟣 | **The Ultimate Multi-Dialect Extension** | all | N cartridges (Squeak/Cuis/GemStone), cartridge registry, full workbench + optional live per dialect, notebooks ➕ | A+B+C | **everything they do, across every dialect, zero-setup by default** |
 
@@ -99,6 +100,18 @@ the old 0.9 hardening becomes **0.10**; **0.8/0.9 become the Console / cross-ref
 (where the vision's architecture goes load-bearing); everything from **1.1** on is net-new vision
 scope (EPIC-006/007/008). The 0.6 → 1.0 line is otherwise unchanged.
 
+**Delta (2026-06-24 strategy review).** Three ideas from an external review are folded into the plan:
+(1) **Tonel as the "Trojan Horse" — resequencing decision:** a **read-only** Tonel experience (grammar +
+folding + outline, **US-424**) is **pulled forward to ~1.0** in **Stream A** — it needs *no* cartridge and
+*no* `ContainerFormat` seam, is cheap, and lands the Pharo/GemStone/VA community long before the Pharo
+cartridge. The **full** Tonel dialect (US-418 seam + Pharo cartridge) stays at **1.5**; US-424 becomes the
+grammar layer beneath it (additive, not thrown away). (2) **Live-image Virtual FileSystem** (`smalltalk-image://`
+via `registerFileSystemProvider`, writable `Ctrl+S`→compile) is captured as **US-706** under the Live
+Bridge (1.6+), and US-801 gains a TreeView-vs-VFS primitive gate. (3) **Status-bar dialect picker:** US-602
+now does **both** — auto-detect *and* a manual override picker. *What we did **not** adopt:* the review's
+"decoupled external-LSP client" framing — our **Console & Cartridges** engine (own offline intelligence,
+not a launcher for other servers) is the moat; an external live server stays an *optional* EPIC-007 bonus.
+
 ## Parity scorecard — vs. the assessed extensions
 
 `✅ have · ⏳ planned-ver · ➕ optional-live · — none`
@@ -106,6 +119,7 @@ scope (EPIC-006/007/008). The 0.6 → 1.0 line is otherwise unchanged.
 | Capability | Us @0.5 | Us →1.0 | Us →2.0 | Image LSP extension | Image IDE extension |
 |---|---|---|---|---|---|
 | Highlight / snippets / config | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Tonel read-only (grammar/fold/outline)** | — | ⏳~1.0 | ✅ | partial | partial |
 | Completion | ✅ | ✅ | ✅ | ✅ (image) | ✅ (image) |
 | Outline / symbols / go-to-def | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Diagnostics | — | ✅0.6 | ✅ | ✅ (image) | ✅ (image) |
@@ -152,7 +166,8 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 
 | Story | What | When to do it | Issue |
 |---|---|---|---|
-| US-418 | Container-format seam (dialect door) | **Trigger fires at 1.5** (Pharo/Tonel — EPIC-006) | #58 |
+| US-424 | Tonel **read-only** wedge (grammar + folding + outline) | **Pull forward to ~1.0** (Stream A, no cartridge/seam — EPIC-006) | TBD |
+| US-418 | Container-format seam (dialect door) — *full* Tonel parsing | **Trigger fires at 1.5** (Pharo/Tonel — EPIC-006) | #58 |
 | US-419 | Kernel-index method categories | Ride with **US-415 hover** (needs the grouping) | #59 |
 | US-420 | Completion pseudo-variables | Near-term — v0.5.1 or front of US-414 | #60 |
 | US-421 | CI vendored kernel smoke fixtures | Near-term — v0.5.1 or front of US-414 | #61 |
@@ -163,7 +178,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 |---|---|---|---|
 | EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | In progress (→1.0) |
 | EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (foundation landed — US-430; next US-422/423) |
-| EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | B | Planned (1.5) |
+| EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | A+B | Planned (read-only Tonel wedge US-424 ~1.0; full second dialect 1.5) |
 | EPIC-007 | The Live Bridge (optional runtime delegation) | C | Planned (1.6+) |
 | EPIC-008 | Image-Grade Workbench (System Browser, refactorings, search) | A+B | Planned (1.1–1.4) |
 | — | Debugging (DAP) — separate `vscode-smalltalk-debugger` extension | C | Future |
@@ -184,13 +199,18 @@ opt-in `gst`/runtime compile-diagnostics tier was built then **deferred to EPIC-
 redundant with the parser for syntax, real value (semantic errors) needs a runtime; shipped **v0.6.0**.
 **EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
 convergence) merged (#82) — completion runs off GST Cartridge #01. **US-415 hover shipped (v0.7.0).** Next EPIC-005
-consumers: US-422 (semantic tokens) / US-423 (references/senders)._
+consumers: US-422 (semantic tokens) / US-423 (references/senders). **2026-06-24 strategy review folded in:**
+US-424 (read-only Tonel "Trojan Horse" — resequenced to ~1.0, Stream A), US-706 (writable `smalltalk-image://`
+VFS under the Live Bridge), and a status-bar dialect picker on US-602; the external-LSP-client framing was
+considered and declined in favor of the Console & Cartridges moat._
 
-**Dialect scope:** GNU Smalltalk through 1.0 (the complete offline GST IDE). The **second dialect
-(Pharo)** lands at **1.5** (EPIC-006), which is when the *pluggable* `ContainerFormat` seam (US-418)
-is finally built — see [ADR-0001 §Update](decisions/0001-typescript-bundled-lsp-server.md). The
-Console/cartridge architecture (EPIC-005) is what makes that an additive change, not a rewrite
-(Constitution Principle IV, *Dialect Agnostic*).
+**Dialect scope:** GNU Smalltalk through 1.0 (the complete offline GST IDE). A **read-only Tonel
+wedge** (US-424) lands around **~1.0** as a cheap Stream-A grab of the image-based community — it needs
+no cartridge and no seam. The **second dialect (Pharo)** — full Tonel *parsing* + the Pharo cartridge —
+lands at **1.5** (EPIC-006), which is when the *pluggable* `ContainerFormat` seam (US-418) is finally
+built — see [ADR-0001 §Update](decisions/0001-typescript-bundled-lsp-server.md). The Console/cartridge
+architecture (EPIC-005) is what makes that an additive change, not a rewrite (Constitution Principle IV,
+*Dialect Agnostic*).
 
 **Sustainability:** every milestone is independently shippable; work-in-progress is kept to one
 milestone at a time; formatting (1.0) and all optional-runtime features (EPIC-007, debugging) are
