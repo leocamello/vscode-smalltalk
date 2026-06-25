@@ -86,7 +86,9 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Highlight Occurrences:** put the cursor on a selector or variable to highlight its other uses in the file (scope-aware).
 *   **Auto Completion:** selectors after a receiver, class names, and in-scope variables — including **standard kernel-library** classes/selectors. Multi-part keyword selectors insert as snippets (`at:put:` → `at:⟨1⟩ put:⟨2⟩`). Kernel completions come from your **installed** GNU Smalltalk when found, otherwise a **bundled** reference (GNU Smalltalk 3.2.5); the active source is shown in the status bar. Configurable via [`smalltalk.completion.kernelLibrary`](#configuration).
 *   **Diagnostics (Error Checking):** syntax errors are flagged with squiggles **as you type** — no `gst` needed — badged `smalltalk(parse)`, with severity as the parser reports it; they clear as you fix the code. Quick fixes insert a missing closer (`]`, `)`, `}`, `>`) or close an unterminated string.
-*   _(Coming Soon)_ Hover Information
+*   **Hover Information:** hover a selector (signature + implementors), a class (superclass chain), a variable (kind + declaration site), or a numeric literal (e.g. `16rFF` → `255`). Class/method comments are shown from your own workspace source and your installed kernel; the bundled reference stays facts-only.
+*   **Semantic Highlighting:** role-accurate coloring — instance/class variables, temporaries, parameters, selectors, and pseudo-variables are each colored by meaning, and a capitalized name is colored as a **class** only when it's a real class in your workspace or the kernel (otherwise a global). Enable `editor.semanticHighlighting.enabled` if your theme defaults it off.
+*   _(Coming Soon)_ References / Senders & Implementors
 *   _(Coming Soon)_ Formatting
 
 <!-- Configuration (US-105) -->
