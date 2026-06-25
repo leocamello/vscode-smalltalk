@@ -7,6 +7,7 @@ import {
   type ServerOptions,
 } from 'vscode-languageclient/node';
 import { runCurrentFile } from './commands/runCurrentFile';
+import { registerCrossReferences } from './crossReferences';
 
 let client: LanguageClient | undefined;
 
@@ -56,6 +57,11 @@ export function activate(context: ExtensionContext): void {
     serverOptions,
     clientOptions,
   );
+
+  // Senders/Implementors commands + the cross-reference panel + the read-only
+  // cartridge virtual-document provider (US-423 AC2). Registered eagerly; the
+  // requests they fire wait for the client to be ready.
+  registerCrossReferences(context, client);
 
   let fallbackNoticeShown = false;
   void client.start().then(() => {

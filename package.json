@@ -70,12 +70,47 @@
                 "command": "smalltalk.runCurrentFile",
                 "title": "Run Current File",
                 "category": "Smalltalk"
+            },
+            {
+                "command": "smalltalk.sendersOf",
+                "title": "Senders of…",
+                "category": "Smalltalk"
+            },
+            {
+                "command": "smalltalk.implementorsOf",
+                "title": "Implementors of…",
+                "category": "Smalltalk"
             }
         ],
+        "viewsContainers": {
+            "panel": [
+                {
+                    "id": "smalltalkReferences",
+                    "title": "Smalltalk References",
+                    "icon": "media/references.svg"
+                }
+            ]
+        },
+        "views": {
+            "smalltalkReferences": [
+                {
+                    "id": "smalltalkCrossReferences",
+                    "name": "Senders / Implementors"
+                }
+            ]
+        },
         "menus": {
             "commandPalette": [
                 {
                     "command": "smalltalk.runCurrentFile",
+                    "when": "editorLangId == smalltalk"
+                },
+                {
+                    "command": "smalltalk.sendersOf",
+                    "when": "editorLangId == smalltalk"
+                },
+                {
+                    "command": "smalltalk.implementorsOf",
                     "when": "editorLangId == smalltalk"
                 }
             ],
@@ -84,6 +119,16 @@
                     "command": "smalltalk.runCurrentFile",
                     "when": "editorLangId == smalltalk",
                     "group": "navigation"
+                },
+                {
+                    "command": "smalltalk.implementorsOf",
+                    "when": "editorLangId == smalltalk",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "smalltalk.sendersOf",
+                    "when": "editorLangId == smalltalk",
+                    "group": "navigation@3"
                 }
             ]
         },

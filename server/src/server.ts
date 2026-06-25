@@ -56,7 +56,8 @@ import {
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
 import { WorkspaceXref } from './xref/workspaceXref';
-import { resolveSenders, type WorkspaceMethodRef, type XrefSources } from './xref/resolve';
+import { resolveImplementors, resolveSenders, type WorkspaceMethodRef, type XrefSources } from './xref/resolve';
+import { buildCrossReference, type CrossReferenceResult, type XrefDirection } from './providers/crossReference';
 import { definitionLinks, definitionLocations, referenceLocations } from './providers/references';
 import {
   incomingCalls,
@@ -236,6 +237,33 @@ function buildXrefSources(selector: string): XrefSources {
     isKnownClass: (name) => workspaceClasses.has(name) || kernelService.hasClass(name),
   };
 }
+
+/** Custom request backing the branded `Smalltalk: Senders of…` / `Implementors
+ *  of…` commands (US-423 AC2). Resolves the selector under the cursor (method
+ *  def or send), then returns the honest union + per-row provenance the client
+ *  renders as a tree. Returns null when the cursor is not on a selector. */
+const CROSS_REFERENCE_REQUEST = 'smalltalk/crossReference';
+interface CrossReferenceParams {
+  readonly textDocument: { readonly uri: string };
+  readonly position: { readonly line: number; readonly character: number };
+  readonly direction: XrefDirection;
+}
+connection.onRequest(CROSS_REFERENCE_REQUEST, (params: CrossReferenceParams): CrossReferenceResult | null => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return null;
+  }
+  const target = resolveCallTarget(getAst(doc), getTokens(doc), doc.offsetAt(params.position));
+  if (!target) {
+    return null;
+  }
+  const sources = buildXrefSources(target.selector);
+  const refs =
+    params.direction === 'senders'
+      ? resolveSenders(sources, target.selector)
+      : resolveImplementors(sources, target.selector);
+  return buildCrossReference(params.direction, target.selector, refs);
+});
 
 connection.languages.callHierarchy.onPrepare((params: CallHierarchyPrepareParams): CallHierarchyItem[] => {
   const doc = documents.get(params.textDocument.uri);

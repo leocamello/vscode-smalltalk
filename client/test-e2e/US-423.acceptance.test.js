@@ -84,6 +84,24 @@ suite('US-423 references + senders/implementors (e2e)', () => {
     assert.ok(Array.isArray(defs) && defs.length >= 2, `both implementors are offered (got ${defs && defs.length})`);
   });
 
+  test('AC2: Implementors of… returns a tree result with a union disclaimer + per-row provenance', async () => {
+    const doc = await openSmalltalk(SRC);
+    const editor = await vscode.window.showTextDocument(doc);
+    // Place the cursor on the `greet` send inside Stage>>run:.
+    const pos = positionOfNth(doc, SRC, 'greet', 2);
+    editor.selection = new vscode.Selection(pos, pos);
+    const result = await waitFor(
+      () => vscode.commands.executeCommand('smalltalk.implementorsOf'),
+      (r) => r && Array.isArray(r.rows) && r.rows.length >= 2,
+    );
+    assert.ok(result, 'the command returns a structured result');
+    assert.match(result.title, /Implementors of #greet/, 'header names the query');
+    assert.ok(result.disclaimer && result.disclaimer.length > 0, 'header carries the union/uncertainty disclaimer (AC2)');
+    assert.ok(result.rows.length >= 2, 'both implementors are listed (union)');
+    assert.ok(result.rows.every((row) => typeof row.provenance === 'string' && row.provenance.length > 0), 'every row has provenance (AC2)');
+    assert.ok(result.rows.some((row) => row.provenance === 'workspace'), 'workspace implementors are tagged workspace');
+  });
+
   test('AC4: call hierarchy incoming calls = senders of the method', async () => {
     const doc = await openSmalltalk(SRC);
     // Prepare on the `greet` implementor in Speaker.
