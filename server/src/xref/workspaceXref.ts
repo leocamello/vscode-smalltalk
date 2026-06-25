@@ -107,6 +107,30 @@ function rangeOfToken(tok: Token): XrefRange {
   return { start: tok.startPos, end: tok.endPos };
 }
 
+/** The token bearing a message send's selector (for cursor hit-testing). */
+export function messageSelectorTokenOf(node: MessageNode, tokens: readonly Token[]): Token | undefined {
+  return selectorToken(tokens, node.selector, node.messageType, node.receiver.end, node.end);
+}
+
+/** The token bearing a method definition's selector pattern. */
+export function methodSelectorTokenOf(node: MethodDefinitionNode, tokens: readonly Token[]): Token | undefined {
+  const anchor = node.target ? node.target.end : node.start;
+  return selectorToken(tokens, node.selector, node.messageType, anchor, node.end);
+}
+
+/** Range of a message send's selector (the jump/peek target). Falls back to the
+ *  whole send when the token can't be pinpointed (e.g. a recovery node). */
+export function messageSelectorRange(node: MessageNode, tokens: readonly Token[]): XrefRange {
+  const tok = messageSelectorTokenOf(node, tokens);
+  return tok ? rangeOfToken(tok) : { start: node.startPos, end: node.endPos };
+}
+
+/** Range of a method definition's selector pattern (its declaration site). */
+export function methodSelectorRange(node: MethodDefinitionNode, tokens: readonly Token[]): XrefRange {
+  const tok = methodSelectorTokenOf(node, tokens);
+  return tok ? rangeOfToken(tok) : { start: node.startPos, end: node.endPos };
+}
+
 /** A cheap static receiver hint (AC6) — `self`/`super`, or a capitalized literal
  *  receiver name (a candidate class), else `null` for a dynamic receiver. */
 function receiverHintOf(receiver: Node): ReceiverHint {
@@ -131,8 +155,7 @@ function recordSend(out: WorkspaceSendSite[], uri: string, node: MessageNode, to
   if (node.selector === '') {
     return;
   }
-  const tok = selectorToken(tokens, node.selector, node.messageType, node.receiver.end, node.end);
-  const range: XrefRange = tok ? rangeOfToken(tok) : { start: node.startPos, end: node.endPos };
+  const range = messageSelectorRange(node, tokens);
   out.push({
     uri,
     selector: node.selector,

@@ -16,3 +16,4 @@ import './hover.test.ts';
 import './semanticTokens.test.ts';
 import './workspaceXref.test.ts';
 import './resolve.test.ts';
+import './callHierarchy.test.ts';

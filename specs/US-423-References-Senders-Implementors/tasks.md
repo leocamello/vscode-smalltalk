@@ -26,8 +26,8 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [ ] T032 E2e on the command tree + cartridge jump.
 
 ### Slice D — call hierarchy
-- [ ] T040 `providers/callHierarchy.ts` (incoming = senders, outgoing = sends) reusing the engine. (AC4)
-- [ ] T041 Unit + e2e.
+- [x] T040 `providers/callHierarchy.ts` (incoming = senders via the merge engine, outgoing = the method's body sends via `workspaceXref.sendsFrom`) reusing the engine; `resolveCallTarget` does method-definition + send position resolution (incl. class-side) for `prepareCallHierarchy`; identity round-trips on `CallHierarchyItem.data`. Capability advertised + 3 handlers wired in `server.ts`. (AC4)
+- [x] T041 Unit (`server/test/callHierarchy.test.ts`, 8: resolve method/send/class-side, prepare+data, incoming grouping incl. top-level, outgoing grouping) + `test:server` prepare→incoming/outgoing over the real server; e2e stub covers AC4.
 
 ## Phase 3 — Verify
 - [ ] T900 `evals/datasets/references/` added + green (`npm run eval`).

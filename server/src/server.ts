@@ -8,6 +8,12 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
   CodeActionKind,
+  type CallHierarchyIncomingCall,
+  type CallHierarchyItem,
+  type CallHierarchyIncomingCallsParams,
+  type CallHierarchyOutgoingCall,
+  type CallHierarchyOutgoingCallsParams,
+  type CallHierarchyPrepareParams,
   type CodeAction,
   type CodeActionParams,
   type CompletionItem,
@@ -50,8 +56,15 @@ import {
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
 import { WorkspaceXref } from './xref/workspaceXref';
-import type { WorkspaceMethodRef, XrefSources } from './xref/resolve';
+import { resolveSenders, type WorkspaceMethodRef, type XrefSources } from './xref/resolve';
 import { definitionLinks, definitionLocations, referenceLocations } from './providers/references';
+import {
+  incomingCalls,
+  outgoingCalls,
+  prepareCallHierarchy,
+  resolveCallTarget,
+  type CallItemData,
+} from './providers/callHierarchy';
 import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
 import { hoverAt, type HoverContext, type HoverImplementor } from './providers/hover';
 import {
@@ -110,6 +123,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       // Cross-reference union: senders/implementors of a selector across the
       // workspace + the bundled cartridge, offline (US-423).
       referencesProvider: true,
+      // Call hierarchy over the same engine: incoming = senders, outgoing =
+      // sends within a method (US-423 AC4).
+      callHierarchyProvider: true,
       foldingRangeProvider: true,
       documentHighlightProvider: true,
       // Hover over selectors/classes/variables/numeric literals (US-415).
@@ -220,6 +236,37 @@ function buildXrefSources(selector: string): XrefSources {
     isKnownClass: (name) => workspaceClasses.has(name) || kernelService.hasClass(name),
   };
 }
+
+connection.languages.callHierarchy.onPrepare((params: CallHierarchyPrepareParams): CallHierarchyItem[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return [];
+  }
+  const target = resolveCallTarget(getAst(doc), getTokens(doc), doc.offsetAt(params.position));
+  return prepareCallHierarchy(target, doc.uri);
+});
+
+connection.languages.callHierarchy.onIncomingCalls(
+  (params: CallHierarchyIncomingCallsParams): CallHierarchyIncomingCall[] => {
+    const data = params.item.data as CallItemData | undefined;
+    if (!data) {
+      return [];
+    }
+    // Incoming = everyone who sends this selector (the lexical union, AC4).
+    return incomingCalls(resolveSenders(buildXrefSources(data.selector), data.selector));
+  },
+);
+
+connection.languages.callHierarchy.onOutgoingCalls(
+  (params: CallHierarchyOutgoingCallsParams): CallHierarchyOutgoingCall[] => {
+    const data = params.item.data as CallItemData | undefined;
+    // Outgoing = the sends inside this method's body (workspace tier only).
+    if (!data || data.side === undefined) {
+      return [];
+    }
+    return outgoingCalls(workspaceXref.sendsFrom(data.uri, data.className, data.side, data.selector));
+  },
+);
 
 connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
   const doc = documents.get(params.textDocument.uri);

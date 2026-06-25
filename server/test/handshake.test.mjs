@@ -108,6 +108,7 @@ assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
 assert.equal(caps.referencesProvider, true, 'expected referencesProvider (US-423)');
+assert.equal(caps.callHierarchyProvider, true, 'expected callHierarchyProvider (US-423)');
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
@@ -229,6 +230,49 @@ send({
 });
 const xrefDef = (await receiveId(320)).result ?? [];
 assert.ok(xrefDef.length >= 2, `definition on a send is plural — both implementors (got ${xrefDef.length})`);
+
+// --- call hierarchy (US-423 AC4) — prepare on Speaker>>greet, then incoming/outgoing ---
+const greetDefLine = 1; // `  greet [ ^self ]` inside Speaker
+const greetDefChar = xrefText.split('\n')[greetDefLine].indexOf('greet');
+let prepItems = [];
+for (let i = 0; i < 25 && prepItems.length === 0; i++) {
+  send({
+    jsonrpc: '2.0',
+    id: 340 + i,
+    method: 'textDocument/prepareCallHierarchy',
+    params: { textDocument: { uri: xrefUri }, position: { line: greetDefLine, character: greetDefChar } },
+  });
+  prepItems = (await receiveId(340 + i)).result ?? [];
+  if (prepItems.length === 0) await sleep(100);
+}
+assert.ok(prepItems.length >= 1, 'prepareCallHierarchy yields an item on the method definition');
+assert.equal(prepItems[0].name, 'Speaker>>greet', 'the prepared item names the method');
+
+send({ jsonrpc: '2.0', id: 360, method: 'callHierarchy/incomingCalls', params: { item: prepItems[0] } });
+const incoming = (await receiveId(360)).result ?? [];
+assert.ok(incoming.length >= 1, 'incoming calls = senders of greet (Stage>>run:)');
+assert.ok(
+  incoming.some((c) => c.from.name.includes('run:')),
+  'Stage>>run: is an incoming caller of greet',
+);
+
+// Outgoing of Stage>>run: — prepare on the method, then ask for its sends.
+const runDefLine = 7; // `  run: who [ ^who greet ]`
+const runDefChar = xrefText.split('\n')[runDefLine].indexOf('run:');
+send({
+  jsonrpc: '2.0',
+  id: 380,
+  method: 'textDocument/prepareCallHierarchy',
+  params: { textDocument: { uri: xrefUri }, position: { line: runDefLine, character: runDefChar } },
+});
+const runItems = (await receiveId(380)).result ?? [];
+assert.ok(runItems.length >= 1 && runItems[0].name.includes('run:'), 'prepared Stage>>run:');
+send({ jsonrpc: '2.0', id: 381, method: 'callHierarchy/outgoingCalls', params: { item: runItems[0] } });
+const outgoing = (await receiveId(381)).result ?? [];
+assert.ok(
+  outgoing.some((c) => c.to.name === 'greet'),
+  'outgoing calls of run: include the send of greet',
+);
 
 // --- textDocument/foldingRange (US-417 slice A) ---
 const foldUri = 'file:///folding-test.st';
@@ -426,6 +470,6 @@ await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, callHierarchy, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
