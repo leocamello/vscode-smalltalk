@@ -186,7 +186,7 @@
 ## EPIC-006: Multi-Dialect Expansion
 
 * **ID:** EPIC-006
-* **Status:** Planned (milestone **1.5** — "The Second Dialect")
+* **Status:** Planned (milestones **~1.0 → 1.5**) — a **read-only Tonel wedge lands early at ~1.0** (US-424), the **full second dialect (Pharo)** at **1.5**
 * **Priority:** High *(this is where the Console & Cartridges vision becomes real)*
 * **Phase:** Phase 3
 * **Date Proposed:** 2026-06-22
@@ -196,6 +196,12 @@
 > Turn the single-dialect engine into a genuinely **multi-dialect** one by adding a *second* dialect (Pharo) — the moment the EPIC-005 architecture pays off. Every offline feature (completion, hover, diagnostics, references, semantic tokens, System Browser) must light up for the new dialect **without a feature rewrite**, proving that adding a dialect is *additive data* (a new Cartridge + adapter), not a fork of the core. This is the differentiator no image-bound competitor can follow: **multi-dialect, zero-runtime by default**.
 
 **Scope & Description:**
+* **Read-only Tonel wedge (US-424, pulled forward to ~1.0 — the "Trojan Horse"):** before any cartridge,
+  ship best-in-class **read-only** Tonel support — TextMate grammar for the `Class { … }` header form,
+  method folding, and a document outline — in **Stream A**, with *no* cartridge and *no* `ContainerFormat`
+  seam. Tonel is the flat-file Git format the Pharo/GemStone/VA community already uses, and current
+  highlighters mangle its headers; fixing that is cheap and wins that audience long before the Pharo
+  cartridge exists. This read-only grammar becomes the grammar layer under the full dialect below.
 * **Second cartridge — Pharo:** build it via an **image reflective export** adapter (run the Pharo VM headless against its image, dump `allSubclasses`/selectors/arity/traits/package-tags to the `DialectCartridge` schema), or ship that export as a `bundled` cartridge. Pharo is MIT, so prose (class/method comments) may be carried (`carriesProse: true`). Per [ADR-0003](../decisions/0003-cartridge-resolution.md), the reflective export runs **opt-in on the user's machine, generated-and-cached** (Tier-1), with a **rich frozen floor** generated in CI from a pinned image for the zero-install case.
 * **Container-format seam (US-418):** finally build the deferred `ContainerFormat` pluggability so Tonel (Pharo/Cuis) parses alongside GST brace/chunk without touching the parser core. **This epic is the trigger for US-418.**
 * **Dialect axis:** a `smalltalk.dialect` setting with **auto-detection** (file extension, Tonel markers, workspace cues) selecting which cartridge(s) load; `kernelLibrary` stays the orthogonal *sourcing* axis (ADR-0002 §5).
@@ -205,12 +211,14 @@
 * Pharo developers using a file-based workflow in VS Code (and, downstream, Squeak/Cuis/GemStone users as further cartridges land in 2.0).
 
 **Related User Stories:**
-* US-418 (#58): Container-Format Seam (Dialect Door) — *trigger fires here*
+* US-424: Tonel read-only editing experience (grammar + folding + outline) — *the wedge, ships ~1.0, Stream A*
+* US-418 (#58): Container-Format Seam (Dialect Door) — *trigger fires here (1.5)*
 * US-601 (#70): Pharo cartridge via image reflective export (adapter)
-* US-602 (#71): `smalltalk.dialect` axis + auto-detection
+* US-602 (#71): `smalltalk.dialect` axis + auto-detection **+ status-bar override picker** (do both)
 * US-603 (#72): Multi-cartridge Console loader (load/rank across active dialects)
 
 **Success Metrics (Optional):**
+* US-424 lands a polished read-only Tonel experience **before** any Pharo cartridge (the early audience grab).
 * Adding Pharo requires a **new cartridge + adapter only** — no change to the Console or feature providers (the architecture test).
 * All EPIC-004/005 features work on a Pharo workspace with no Pharo VM present (offline), VM optional for the live tier.
 
@@ -233,6 +241,9 @@
 * **Inspect-it:** a structured object inspector. **DoR gate:** justify any webview vs. a native tree view against Constitution I (*avoid webviews unless strictly necessary*).
 * **SUnit Test Explorer:** static detection of `TestCase` subclasses + `test*` methods (offline, via the Console) surfaced in the VS Code Testing API + CodeLens; **run/debug via the optional runtime**.
 * **Playground / REPL:** a scratch evaluation surface backed by the optional runtime.
+* **Live-image Virtual FileSystem (US-706):** a `registerFileSystemProvider` (`smalltalk-image://`) that
+  surfaces a connected image's classes as virtual files; `Ctrl+S` compiles back into the image rather
+  than writing disk. The *writable, live* counterpart to the offline System Browser (EPIC-008 / US-801).
 
 **Target Users:**
 * Developers who *do* have a runtime/image installed and want the live loop — without the offline users ever paying for it.
@@ -242,6 +253,8 @@
 * US-702 (#74): SUnit Test Explorer (static detect; optional run/debug)
 * US-703 (#75): Inspect-it (structured inspector)
 * US-704 (#76): Playground / REPL
+* US-705: Runtime compile/semantic diagnostics (deferred from US-414)
+* US-706: Live-image Virtual FileSystem (writable `smalltalk-image://`)
 
 **Success Metrics (Optional):**
 * With no runtime present, the extension behaves **exactly** as the offline build (features silently absent, no errors).
@@ -262,7 +275,7 @@
 > Deliver the *browsing soul* of Smalltalk — the System Browser muscle memory — over the offline Knowledge Graph, with **no running image**. Where EPIC-007 captures the *execution* soul (and needs a runtime), this captures the *navigation/cross-reference* soul (and does not). This is the unique "omniscient cross-reference, instantly, offline" experience that image-bound tools can only offer against a live VM.
 
 **Scope & Description:**
-* **System Browser view:** a VS Code-native tree (packages/namespaces → classes → protocols → methods) over the workspace + cartridge index, with senders/implementors/references panes — the file-based equivalent of the classic multi-pane System Browser.
+* **System Browser view:** a VS Code-native tree (packages/namespaces → classes → protocols → methods) over the workspace + cartridge index, with senders/implementors/references panes — the file-based equivalent of the classic multi-pane System Browser. **Primitive decision (US-801 AC3):** `TreeView` for the offline browser vs a Virtual FileSystem (`registerFileSystemProvider`, `smalltalk-image://`); the VFS is the more native primitive but earns its keep with the *writable* live-image bridge (US-706 / EPIC-007), so the offline view defaults to a tree.
 * **Full-text method search** across workspace + cartridge (extends `workspace/symbol`).
 * **Class-hierarchy view** (super/subclasses, including kernel chains from the cartridge).
 * **Refactorings:** scope-aware rename first (US-426, lands 1.0), then extract method / extract temp and other AST-driven rewrites; selector rename across the system treated with extreme caution (dynamic dispatch).
