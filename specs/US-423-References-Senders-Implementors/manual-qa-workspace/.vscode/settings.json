@@ -1,0 +1,4 @@
+{
+  "// US-423 manual QA": "Default cartridge resolution. With no gst installed, `auto` falls back to the bundled reference (GST 3.2.5) — the cross-reference union still works offline (AC7). Set to `off` to confirm the workspace tier alone still answers senders/implementors.",
+  "smalltalk.completion.kernelLibrary": "auto"
+}

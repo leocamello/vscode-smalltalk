@@ -30,6 +30,6 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T041 Unit (`server/test/callHierarchy.test.ts`, 8: resolve method/send/class-side, prepare+data, incoming grouping incl. top-level, outgoing grouping) + `test:server` prepare→incoming/outgoing over the real server; e2e stub covers AC4.
 
 ## Phase 3 — Verify
-- [ ] T900 `evals/datasets/references/` added + green (`npm run eval`).
-- [ ] T901 `verification.md` gate passed (no `gst`; provenance + union header; dev-box de-dup).
-- [ ] T902 CI green on Linux/macOS/Windows.
+- [x] T900 `evals/datasets/references/` added + green — 5/5 cases (union, provenance, ranking, AC6 never-filter), wired into `npm run eval` (now 5 datasets, all green).
+- [~] T901 `verification.md` filled; AC→test mapping + code-quality + constitutional all checked. Manual-QA workspace prepared + offline pre-verified (0 diagnostics; engine outputs match the matrix). **Hands-on Extension Host pass + PO sign-off pending** (release gate).
+- [ ] T902 CI green on Linux/macOS/Windows (on push/PR).

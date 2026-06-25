@@ -211,7 +211,8 @@
         "eval:diagnostics": "tsx evals/datasets/diagnostics/run.ts",
         "eval:hover": "tsx evals/datasets/hover/run.ts",
         "eval:semantic-tokens": "tsx evals/datasets/semantic-tokens/run.ts",
-        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens",
+        "eval:references": "tsx evals/datasets/references/run.ts",
+        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references",
         "new-story": "bash scripts/new-story.sh"
     }
 }
