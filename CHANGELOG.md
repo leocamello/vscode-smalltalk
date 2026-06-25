@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-25
+
+### Added
+
+-   **Cartridge-aware semantic tokens** for GNU Smalltalk, powered by the bundled language engine — **no `gst` required** (US-422):
+    -   **Role-accurate highlighting** from the parser + symbol table — instance variable, class variable, temporary, method/block parameter, message selector, and pseudo-variable (`self super nil true false thisContext`) each get a distinct semantic token type.
+    -   **Known classes light up offline** — a capitalized name is colored as a **class** only when it resolves in your workspace **or** the bundled kernel cartridge (e.g. `OrderedCollection`, `Object`); an unknown capitalized name is treated as a global variable. This is the first user-facing consumer of the Console & Cartridges foundation (US-430).
+    -   **Degrades cleanly** — with the kernel library set to `off`, a capitalized name falls back to a class by convention; the provider never errors and adds nothing the theme can't map.
+    -   Honors your theme: the extension only *classifies* tokens (`full` + `range`); your color theme decides the colors. Enable with `editor.semanticHighlighting.enabled` if your theme defaults it off.
+
 ## [0.7.0] - 2026-06-24
 
 ### Added

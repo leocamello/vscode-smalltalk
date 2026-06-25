@@ -147,7 +147,7 @@
 ## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
 
 * **ID:** EPIC-005
-* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; next consumers US-422/423)
+* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; next consumer US-423)
 * **Priority:** High
 * **Phase:** Phase 2 (extends EPIC-004)
 * **Date Proposed:** 2026-06-21
@@ -167,7 +167,7 @@
 
 **Related User Stories:**
 * [US-430: Dialect Cartridge Schema + GST Cartridge #01 (reflective exporter)]
-* [US-422: Semantic Tokens (Cartridge-aware)]
+* [US-422: Semantic Tokens (Cartridge-aware)] — **Done (v0.8.0, closes #65)**
 * [US-423: References + Senders/Implementors (Two-Tier Engine)]
 * [US-425: Signature Help]
 * [US-426: Scope-aware Rename]

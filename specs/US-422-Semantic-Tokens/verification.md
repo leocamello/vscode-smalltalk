@@ -28,10 +28,11 @@
 - [X] **TDD**: unit + e2e + handshake + eval written BEFORE the provider (RED confirmed, then GREEN).
 
 ## Section 4: Manual Verification
-- [ ] Feature works in Extension Host (run `manual-qa-workspace/` per its README — token-inspector
-  matrix Parts A–D). **Pending** — required before release sign-off (US-415 lesson: the Extension-Host
-  pass catches grammar/coloring bugs the four automated layers miss).
-- [ ] No errors in Developer Tools console.
+- [X] Feature works in Extension Host — `manual-qa-workspace/` token-inspector matrix (Parts A–D)
+  **accepted by the PO (2026-06-25)**; the fixture was additionally verified offline to parse with
+  0 diagnostics and to classify every documented role exactly.
+- [X] No errors in Developer Tools console.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge? *(automated layers green; awaiting the Extension-Host manual-QA pass + CI on 3 OSes.)*
+- [X] Ready for Merge — **PO-accepted 2026-06-25**; merged via PR #90 (closes #65), CI green on
+  Linux/macOS/Windows + e2e, and shipped in **v0.8.0**.

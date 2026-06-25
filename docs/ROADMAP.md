@@ -84,7 +84,7 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | 0.5 🟢 | Completion + kernel index | 004 | completion; GST kernel (installed-first/bundled) | A+B | core IntelliSense |
 | 0.6 🟢 | Diagnostics | 004 | live parser squiggles + insert-closer/close-string quick fixes (runtime compile errors → EPIC-007) | A ⚖️ | error-checking |
 | 0.7 🟢 | Hover | 004 | selectors/classes/vars/literals + provenance-gated comment prose | A+B | hover |
-| **0.8** 🟣 | **Console & Cartridge foundation** 🏰 | 005 | cartridge canonical + loader + **semantic tokens** (US-422/430) | **B** | semantic highlighting (image-IDE parity) |
+| **0.8** 🟢 | **Console & Cartridge foundation** 🏰 | 005 | cartridge canonical + loader (US-430) + **semantic tokens** (US-422) — **shipped** | **B** | semantic highlighting (image-IDE parity) |
 | **0.9** 🟣 | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** + signature help; unknown-selector spike (SPIKE-01) | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
 | **0.10** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
 | **1.0** 🔵 | **Complete Offline GST IDE** | 416/902 | formatting + scope-rename; product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
@@ -124,7 +124,7 @@ not a launcher for other servers) is the moat; an external live server stays an 
 | Outline / symbols / go-to-def | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Diagnostics | — | ✅0.6 | ✅ | ✅ (image) | ✅ (image) |
 | Hover | — | ✅0.7 | ✅ | ✅ | ✅ |
-| Semantic tokens | — | ⏳0.8 | ✅ | — | ✅ |
+| Semantic tokens | — | ✅0.8 | ✅ | — | ✅ |
 | References / **Senders / Implementors** | — | ⏳0.9 | ✅ | partial | ✅ (image) |
 | Call hierarchy | — | ⏳0.9 | ✅ | — | ✅ |
 | Formatting | — | ⏳1.0 | ✅ | ✅ | ✅ |
@@ -148,14 +148,15 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **0.7.0 / US-415 — hover — shipped; next: 0.8 / EPIC-005 (US-422 semantic tokens) or US-416 (formatting).**
+   (semantic errors) needs a runtime. **0.8.0 / US-422 — cartridge-aware semantic tokens — shipped (the first user-facing cartridge consumer); next: 0.9 / EPIC-005 US-423 (references/senders) or US-416 (formatting).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
    4746 signatures, `contentHash`-stamped) now **drive completion** via the runtime Console loader
    (`cartridgeLoader.ts`); the installed adapter emits cartridge shape (Tier-1 installed / Tier-2 frozen
-   floor, ADR-0003) and the old `kernel-index.json` is **retired**. Next EPIC-005 consumers: **US-422**
-   (cartridge-aware semantic tokens) and **US-423** (references/senders via the `crossReference` tier).
+   floor, ADR-0003) and the old `kernel-index.json` is **retired**. **US-422 (cartridge-aware semantic
+   tokens) shipped v0.8.0** — the first user-facing cartridge consumer. Next EPIC-005 consumer: **US-423**
+   (references/senders via the `crossReference` tier).
 3. **Optional v0.5.1** — the two near-term reconciliation fixes: **US-420** (#60, completion
    pseudo-variables) + **US-421** (#61, CI kernel fixtures). Both `size:S`.
 

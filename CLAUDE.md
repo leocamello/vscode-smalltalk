@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-24)
+## Current status (2026-06-25)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,14 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.8.0 — cartridge-aware semantic tokens (US-422, EPIC-005)** — the **first user-facing
+  consumer of the Console & Cartridges foundation**. `textDocument/semanticTokens` (full + range,
+  `providers/semanticTokens.ts`) classifies by role off the US-411 AST + symbol scopes: ivar→`property`,
+  classvar→`property`+`static`, temp→`variable`, args→`parameter`, selectors→`method`, pseudo-vars→`keyword`.
+  The differentiator (AC2) is offline + cartridge-driven: a capitalized name is `class` **iff** it resolves
+  in workspace ∪ the active cartridge (kernel classes carry `defaultLibrary`), else a global `variable`;
+  with no cartridge it falls back to "capitalized ⇒ class" (AC4). New `evals/datasets/semantic-tokens/`
+  output eval + a `specs/US-422-*/manual-qa-workspace/` (token-inspector matrix). Closes #65.
 - **Shipped:** **v0.7.0 — hover (US-415, EPIC-004)** — selectors (signature + implementor list), classes
   (superclass chain), variables (kind + declaration site), numeric literals (radix/scaled-decimal decode),
   Markdown with code fences. **Comment prose gated by provenance** (`providers/hover.ts`, `parser/comments.ts`):
@@ -51,7 +59,8 @@ Marketplace as `leocamello.vscode-smalltalk`.
 - **Source:** parser/symbols in `server/src/parser/` (`lexer.ts`, `parser.ts`, `ast.ts`, `symbols.ts`,
   `walk.ts`; GST containers/chunk live in `parser.ts`). LSP providers in `server/src/providers/`
   (`documentSymbol`, `workspaceSymbol` + `workspaceIndex`, `definition`, `foldingRange`,
-  `documentHighlight`, `completion`, `diagnostics`, `codeAction`); `server/src/documents/parseCache.ts`
+  `documentHighlight`, `completion`, `diagnostics`, `codeAction`, `hover`, `semanticTokens`);
+  `server/src/documents/parseCache.ts`
   memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
   `server/src/server.ts`.
 - **Diagnostics (US-414 → 0.6.0, parser-only):** `providers/diagnostics.ts` maps the parser's
