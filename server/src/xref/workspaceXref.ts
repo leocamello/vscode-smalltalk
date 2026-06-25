@@ -54,6 +54,7 @@ interface WalkContext {
   /** `true` inside a `Foo class [ … ]` scope, so short-form methods are class-side. */
   readonly classScope: boolean;
   readonly inSelector?: string;
+  readonly methodStartLine?: number;
 }
 
 /** The first keyword part of a selector: `at:put:` -> `at:`; unary/binary -> itself. */
@@ -151,25 +152,22 @@ function methodClassName(node: MethodDefinitionNode, ctx: WalkContext): string |
   return ctx.className;
 }
 
-function recordSend(out: WorkspaceSendSite[], uri: string, node: MessageNode, tokens: readonly Token[], ctx: WalkContext): void {
-  if (node.selector === '') {
-    return;
-  }
-  const range = messageSelectorRange(node, tokens);
-  out.push({
-    uri,
-    selector: node.selector,
-    range,
-    ...(ctx.className !== undefined ? { inClass: ctx.className } : {}),
-    ...(ctx.className !== undefined ? { side: ctx.side } : {}),
-    ...(ctx.inSelector !== undefined ? { inSelector: ctx.inSelector } : {}),
-    receiverHint: receiverHintOf(node.receiver),
-  });
+/** A message send discovered in source, with its enclosing-method context. The
+ *  low-level fact that both the live workspace xref and the installed cartridge
+ *  adapter (US-423) build their tier-specific shapes from — one walk, no drift. */
+export interface RawSend {
+  readonly node: MessageNode;
+  readonly className?: string;
+  readonly side: MethodSide;
+  readonly inSelector?: string;
+  /** Start line of the enclosing method, for a within-method line offset. */
+  readonly methodStartLine?: number;
+  readonly receiverHint: ReceiverHint;
 }
 
-/** Collect every send site in `ast`, tracking enclosing-method context. */
-function collectSends(uri: string, ast: ProgramNode, tokens: readonly Token[]): WorkspaceSendSite[] {
-  const out: WorkspaceSendSite[] = [];
+/** Visit every message send in `ast`, tracking the enclosing class/side/method
+ *  (incl. `Foo class >> sel` and `Foo class [ … ]` scopes). */
+export function forEachSend(ast: ProgramNode, visit: (send: RawSend) => void): void {
   const walk = (node: Node, ctx: WalkContext): void => {
     switch (node.kind) {
       case NodeKind.Definition: {
@@ -186,14 +184,29 @@ function collectSends(uri: string, ast: ProgramNode, tokens: readonly Token[]): 
       case NodeKind.MethodDefinition: {
         const className = methodClassName(node, ctx);
         const side: MethodSide = node.classSide || ctx.classScope ? 'class' : 'instance';
-        const methodCtx: WalkContext = { className, side, classScope: false, inSelector: node.selector };
+        const methodCtx: WalkContext = {
+          className,
+          side,
+          classScope: false,
+          inSelector: node.selector,
+          methodStartLine: node.startPos.line,
+        };
         for (const stmt of node.statements) {
           walk(stmt, methodCtx);
         }
         return;
       }
       case NodeKind.Message: {
-        recordSend(out, uri, node, tokens, ctx);
+        if (node.selector !== '') {
+          visit({
+            node,
+            ...(ctx.className !== undefined ? { className: ctx.className } : {}),
+            side: ctx.side,
+            ...(ctx.inSelector !== undefined ? { inSelector: ctx.inSelector } : {}),
+            ...(ctx.methodStartLine !== undefined ? { methodStartLine: ctx.methodStartLine } : {}),
+            receiverHint: receiverHintOf(node.receiver),
+          });
+        }
         walk(node.receiver, ctx);
         for (const arg of node.arguments) {
           walk(arg, ctx);
@@ -207,6 +220,21 @@ function collectSends(uri: string, ast: ProgramNode, tokens: readonly Token[]): 
     }
   };
   walk(ast, { side: 'instance', classScope: false });
+}
+
+/** Collect every send site in `ast` as `WorkspaceSendSite`s (with token ranges). */
+function collectSends(uri: string, ast: ProgramNode, tokens: readonly Token[]): WorkspaceSendSite[] {
+  const out: WorkspaceSendSite[] = [];
+  forEachSend(ast, (s) => {
+    out.push({
+      uri,
+      selector: s.node.selector,
+      range: messageSelectorRange(s.node, tokens),
+      ...(s.className !== undefined ? { inClass: s.className, side: s.side } : {}),
+      ...(s.inSelector !== undefined ? { inSelector: s.inSelector } : {}),
+      receiverHint: s.receiverHint,
+    });
+  });
   return out;
 }
 

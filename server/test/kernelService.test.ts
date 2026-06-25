@@ -127,7 +127,7 @@ const TEST_CARTRIDGE_HEADER: CartridgeHeader = {
   source: 'gst-source',
   sourceLicense: 'LGPL-2.1-only',
   carriesProse: false,
-  tiers: ['classes'],
+  tiers: ['classes', 'crossReference'],
   builtAt: '2026-06-22T00:00:00+00:00',
   contentHash: 'unstamped',
 };
@@ -137,7 +137,12 @@ test('installed adapter (indexKernelDirectoryToCartridge) emits cartridge shape'
   const cart = indexKernelDirectoryToCartridge(dir, TEST_CARTRIDGE_HEADER);
   assert.equal(cart.header.schema, 1);
   assert.equal(cart.header.carriesProse, false);
-  assert.equal(cart.crossReference, undefined); // classes tier only
+  // The installed adapter now ships a crossReference tier (US-423): implementors
+  // from the class tables; senders scanned from method bodies (none here).
+  assert.ok(cart.crossReference, 'installed adapter emits a crossReference tier');
+  assert.deepEqual(cart.crossReference?.implementors['baz:'], [{ inClass: 'Sprocket', side: 'instance' }]);
+  assert.deepEqual(cart.crossReference?.implementors['bar'], [{ inClass: 'Sprocket', side: 'instance' }]);
+  assert.equal(Object.keys(cart.crossReference?.senders ?? {}).length, 0, 'Sprocket sends nothing → no senders');
   const fact = cart.classes['Sprocket'];
   assert.ok(fact, 'expected the fixture class as a ClassFact');
   assert.equal(fact?.id, 'Sprocket'); // flat dialect: id === name
@@ -148,6 +153,27 @@ test('installed adapter (indexKernelDirectoryToCartridge) emits cartridge shape'
   assert.deepEqual(baz, { selector: 'baz:', arity: 1, keywords: ['baz:'] });
   // Facts-only: no prose anywhere on the emitted facts.
   assert.equal(fact?.documentation, undefined);
+});
+
+test('installed adapter scans method bodies into crossReference senders (US-423)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'st-senders-'));
+  fs.writeFileSync(
+    path.join(dir, 'Gadget.st'),
+    'Object subclass: Gadget [\n  run [ ^self spin ]\n  spin [ ^42 ]\n]\n',
+    'utf8',
+  );
+  const cart = indexKernelDirectoryToCartridge(dir, TEST_CARTRIDGE_HEADER);
+  const spinSenders = cart.crossReference?.senders['spin'];
+  assert.ok(spinSenders && spinSenders.length === 1, 'the self-send of #spin is recorded as a sender');
+  assert.deepEqual(spinSenders?.[0], {
+    inClass: 'Gadget',
+    side: 'instance',
+    inSelector: 'run',
+    line: 0,
+    receiverHint: 'self',
+  });
+  // And implementors of #spin point back at Gadget.
+  assert.deepEqual(cart.crossReference?.implementors['spin'], [{ inClass: 'Gadget', side: 'instance' }]);
 });
 
 /** A throwaway kernel dir whose class + method carry comments (US-415 slice B). */

@@ -28,13 +28,12 @@ Put the cursor on the token, run the command, read the **panel tree**.
 | **A2** | `do:` in `cast do: [ … ]` | Implementors of… | **22 rows**, all badged with the kernel source identity (same as the status bar — **`reference (gst 3.2.5)`** bundled, or **`installed (gst)`**) — the offline kernel union. |
 | **A3** | `new` in `OrderedCollection new` | Implementors of… | **~42 rows**; the FIRST is **`Stage class`** badged **`workspace`** (class-side, ranked above the cartridge), then the kernel `… class` rows. |
 
-## Part B — Senders (the live workspace half, AC1/AC6)
+## Part B — Senders (the live workspace half + the kernel, AC1/AC6)
 
-> **Kernel senders need the bundled reference.** The senders graph (the `crossReference`
-> tier) ships only in the **bundled** cartridge. The **installed** adapter emits classes
-> only, so under `auto`-resolved-to-`installed` the kernel contributes **implementors but no
-> senders** — B2's cartridge rows appear only with `kernelLibrary: "bundled"` (or no gst).
-> This is a known limitation, not a bug; see spec §7.
+> **Kernel senders work in both tiers.** The senders graph (the `crossReference` tier) ships
+> in the **bundled** reference *and* is scanned by the **installed** adapter, so B2's cartridge
+> sender rows appear whether `auto` resolves to `installed (gst)` or falls back to
+> `reference (gst 3.2.5)` — the badge tells you which.
 
 | Row | Where (cursor) | Command | Expect |
 |---|---|---|---|

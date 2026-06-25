@@ -64,7 +64,7 @@ function installedCartridgeHeader(): CartridgeHeader {
     source: 'gst-source',
     sourceLicense: 'LGPL-2.1-only',
     carriesProse: true,
-    tiers: ['classes', 'documentation'],
+    tiers: ['classes', 'documentation', 'crossReference'],
     builtAt: new Date().toISOString(),
     contentHash: 'unstamped', // US-603 keys the generate-and-cache chain on this.
   };

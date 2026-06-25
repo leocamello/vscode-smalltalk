@@ -103,13 +103,12 @@ hits with provenance + the union header; dev-box overlap de-dups correctly; go-t
 multiple targets; call hierarchy expands incoming/outgoing; all with no `gst`. Matrix in `verification.md`.
 
 ## 7. Risks & Limitations
-- **Installed tier has no senders (asymmetry).** The `crossReference` tier ships only in the **bundled**
-  reference cartridge; the **installed** source adapter (`indexer.ts`) emits the `classes` tier only. So
-  when `auto` resolves to an installed gst, the kernel contributes **implementors (derived) but no
-  senders** — ironically thinner than the bundled floor for "Senders of". Per-row provenance + the
-  status-bar identity make the active source explicit. **Follow-up:** give the installed adapter a
-  send-scan so it builds its own `crossReference` (reuse `workspaceXref`'s send collection), making
-  installed as rich as bundled, version-correctly.
+- **Both tiers now carry senders (parity).** Originally only the **bundled** reference shipped a
+  `crossReference` tier, so an installed gst answered "Senders of" emptily. Resolved during hands-on QA:
+  the **installed** adapter (`indexer.ts`) now scans method bodies into its own `crossReference` tier
+  (senders via the shared `workspaceXref.forEachSend`, implementors from the class tables), so installed
+  is as rich as bundled, version-correctly (e.g. against the dev box's 3.2.5 kernel: 1623 sender
+  selectors). Per-row provenance + the status-bar identity still make the active source explicit.
 - **Provenance vocabulary unified with the status bar** (post-spec, from hands-on QA): the per-row badge
   shows the kernel source's **identity label** (`reference (gst 3.2.5)` / `installed (gst)`) — the SAME
   term the status bar uses — rather than the internal `cartridge:<dialect>@<version>` form AC2 first
