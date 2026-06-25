@@ -50,11 +50,12 @@ Put the cursor on the token, run the command, read the **panel tree**.
 | **C3** | Right-click `greet` (its def in `Speaker`) → **Show Call Hierarchy**, expand **incoming** | `Stage » run:` and `Stage » announceAll` (the senders). |
 | **C4** | On `Stage>>run:`, **Show Call Hierarchy**, switch to **outgoing** | `greet` (the send inside the method). |
 
-## Part D — Cartridge virtual document (AC2 honest framing)
+## Part D — Cartridge navigation (real source when installed; honest stub otherwise)
 
 | Row | Do | Expect |
 |---|---|---|
-| **D1** | In an **Implementors of #do:** result, click a cartridge row (e.g. `Dictionary`) | A **read-only** editor opens (`smalltalk-cartridge:` scheme) stating the fact: *"…cartridge (facts-only). The method source body is not bundled offline…"* — **no error**, no fake source. |
+| **D1-installed** | With `kernelLibrary: auto` and gst installed, in an **Implementors of #do:** result click a kernel row (e.g. `Dictionary`) | The **real installed file** opens (`…/kernel/HashedColl.st` or similar) with the cursor on the method's line — actual source navigation. |
+| **D1-bundled** | Set `kernelLibrary: "bundled"`, reload, repeat | A **read-only** `smalltalk-cartridge:` editor opens stating the fact (*"…bundled reference (facts only). The method body is not shipped…"*) — **no error**, no fake source (the reference ships no body). |
 | **D2** | Read the **header row tooltip** of any result | The union/uncertainty disclaimer — *lexical union; dynamic dispatch can't be narrowed to one runtime target; likely first, none hidden*. This is the contract (AC2). |
 
 ## Part E — robustness, no-gst, shipped artifact (AC7)

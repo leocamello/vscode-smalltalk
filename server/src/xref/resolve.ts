@@ -113,11 +113,26 @@ function workspaceImplementorRef(m: WorkspaceMethodRef): ResolvedRef {
   };
 }
 
+/** A cartridge fact's navigation target: the REAL local file when the cartridge
+ *  carries source coordinates (the installed adapter), else a synthetic read-only
+ *  virtual document (the bundled reference, which ships no source). */
+function cartridgeTarget(
+  c: CartridgeId,
+  loc: { sourceUri?: string; sourceLine?: number },
+  classId: string,
+  side: MethodSide,
+  selector: string,
+): { uri: string; range: XrefRange } {
+  if (loc.sourceUri !== undefined) {
+    return { uri: loc.sourceUri, range: lineRange(loc.sourceLine ?? 0) };
+  }
+  return { uri: cartridgeUri(c, classId, side, selector), range: lineRange(0) };
+}
+
 function cartridgeSenderRef(s: SendSite, c: CartridgeId): ResolvedRef {
   return {
     kind: 'sender',
-    uri: cartridgeUri(c, s.inClass, s.side, s.inSelector),
-    range: lineRange(s.line),
+    ...cartridgeTarget(c, s, s.inClass, s.side, s.inSelector),
     provenance: cartridgeProvenance(c),
     className: simpleName(s.inClass),
     side: s.side,
@@ -129,8 +144,7 @@ function cartridgeSenderRef(s: SendSite, c: CartridgeId): ResolvedRef {
 function cartridgeImplementorRef(r: ImplementorRef, selector: string, c: CartridgeId): ResolvedRef {
   return {
     kind: 'implementor',
-    uri: cartridgeUri(c, r.inClass, r.side, selector),
-    range: lineRange(0),
+    ...cartridgeTarget(c, r, r.inClass, r.side, selector),
     provenance: cartridgeProvenance(c),
     className: simpleName(r.inClass),
     side: r.side,

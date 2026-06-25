@@ -138,10 +138,15 @@ test('installed adapter (indexKernelDirectoryToCartridge) emits cartridge shape'
   assert.equal(cart.header.schema, 1);
   assert.equal(cart.header.carriesProse, false);
   // The installed adapter now ships a crossReference tier (US-423): implementors
-  // from the class tables; senders scanned from method bodies (none here).
+  // from the class tables; senders scanned from method bodies (none here). Each
+  // implementor carries the real def location so navigation opens the file.
   assert.ok(cart.crossReference, 'installed adapter emits a crossReference tier');
-  assert.deepEqual(cart.crossReference?.implementors['baz:'], [{ inClass: 'Sprocket', side: 'instance' }]);
-  assert.deepEqual(cart.crossReference?.implementors['bar'], [{ inClass: 'Sprocket', side: 'instance' }]);
+  const bazImpl = cart.crossReference?.implementors['baz:']?.[0];
+  assert.equal(bazImpl?.inClass, 'Sprocket');
+  assert.equal(bazImpl?.side, 'instance');
+  assert.match(bazImpl?.sourceUri ?? '', /Sprocket\.st$/, 'implementor points at the real file');
+  assert.equal(typeof bazImpl?.sourceLine, 'number');
+  assert.ok(cart.crossReference?.implementors['bar'], 'bar is an implementor too');
   assert.equal(Object.keys(cart.crossReference?.senders ?? {}).length, 0, 'Sprocket sends nothing → no senders');
   const fact = cart.classes['Sprocket'];
   assert.ok(fact, 'expected the fixture class as a ClassFact');
@@ -163,17 +168,19 @@ test('installed adapter scans method bodies into crossReference senders (US-423)
     'utf8',
   );
   const cart = indexKernelDirectoryToCartridge(dir, TEST_CARTRIDGE_HEADER);
-  const spinSenders = cart.crossReference?.senders['spin'];
-  assert.ok(spinSenders && spinSenders.length === 1, 'the self-send of #spin is recorded as a sender');
-  assert.deepEqual(spinSenders?.[0], {
-    inClass: 'Gadget',
-    side: 'instance',
-    inSelector: 'run',
-    line: 0,
-    receiverHint: 'self',
-  });
-  // And implementors of #spin point back at Gadget.
-  assert.deepEqual(cart.crossReference?.implementors['spin'], [{ inClass: 'Gadget', side: 'instance' }]);
+  const spin = cart.crossReference?.senders['spin']?.[0];
+  assert.ok(cart.crossReference?.senders['spin']?.length === 1, 'the self-send of #spin is recorded as a sender');
+  assert.equal(spin?.inClass, 'Gadget');
+  assert.equal(spin?.side, 'instance');
+  assert.equal(spin?.inSelector, 'run');
+  assert.equal(spin?.receiverHint, 'self');
+  // The sender carries the real send location (file + absolute line) to jump to.
+  assert.match(spin?.sourceUri ?? '', /Gadget\.st$/);
+  assert.equal(spin?.sourceLine, 1, '`^self spin` is on line 1 (0-based)');
+  // And implementors of #spin point back at Gadget, with the def location.
+  const spinImpl = cart.crossReference?.implementors['spin']?.[0];
+  assert.equal(spinImpl?.inClass, 'Gadget');
+  assert.equal(spinImpl?.sourceLine, 2, '`spin [ ^42 ]` is defined on line 2 (0-based)');
 });
 
 /** A throwaway kernel dir whose class + method carry comments (US-415 slice B). */

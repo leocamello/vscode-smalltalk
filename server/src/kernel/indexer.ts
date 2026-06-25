@@ -15,6 +15,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { extractComments, type FileComments } from '../parser/comments';
 import { tokenize } from '../parser/lexer';
 import { parse } from '../parser/parser';
@@ -36,6 +37,10 @@ const ST_FILE = /\.st$/i;
 interface SelectorAcc {
   readonly arity: number;
   comment?: string;
+  /** Real source coordinates of the method's definition (installed adapter), so
+   *  "Implementors of" can open the actual file rather than a virtual stub. */
+  sourceUri?: string;
+  sourceLine?: number;
 }
 
 interface ClassAcc {
@@ -57,8 +62,14 @@ function accFor(classes: Map<string, ClassAcc>, name: string): ClassAcc {
 }
 
 /** Walk the symbol tree, merging class facts (and `comments`, when present) across
- *  files/chunks into `classes`. */
-function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>, comments: FileComments | undefined): void {
+ *  files/chunks into `classes`. `fileUri` records each method's def location so
+ *  installed implementors navigate to the real file. */
+function collect(
+  nodes: SymbolNode[],
+  classes: Map<string, ClassAcc>,
+  comments: FileComments | undefined,
+  fileUri: string,
+): void {
   for (const node of nodes) {
     if (node.kind === SymbolKind.Class) {
       const acc = accFor(classes, node.name);
@@ -76,13 +87,15 @@ function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>, comments: 
             into.set(child.selector, {
               arity: child.arity ?? 0,
               comment: comments?.methodComment(node.name, classSide, child.selector),
+              sourceUri: fileUri,
+              sourceLine: child.selectionRange.startPos.line,
             });
           }
         }
       }
-      collect(node.children, classes, comments); // nested classes
+      collect(node.children, classes, comments, fileUri); // nested classes
     } else if (node.kind === SymbolKind.Namespace) {
-      collect(node.children, classes, comments);
+      collect(node.children, classes, comments, fileUri);
     }
   }
 }
@@ -109,8 +122,9 @@ function recordSend(senders: Map<string, SendSite[]>, raw: ReturnType<typeof raw
 
 /** Project a low-level `RawSend` to a cartridge `SendSite`, or `undefined` when it
  *  lacks the enclosing-method coordinates a cross-reference fact needs (e.g. a
- *  top-level send — none exist in kernel source, which is all class bodies). */
-function rawSendOf(s: RawSend): { selector: string; site: SendSite } | undefined {
+ *  top-level send — none exist in kernel source, which is all class bodies).
+ *  `fileUri` + the send's absolute line let "Senders of" open the real file. */
+function rawSendOf(s: RawSend, fileUri: string): { selector: string; site: SendSite } | undefined {
   if (s.className === undefined || s.inSelector === undefined) {
     return undefined;
   }
@@ -122,6 +136,8 @@ function rawSendOf(s: RawSend): { selector: string; site: SendSite } | undefined
       side: s.side,
       inSelector: s.inSelector,
       line,
+      sourceUri: fileUri,
+      sourceLine: s.node.startPos.line,
       ...(s.receiverHint != null ? { receiverHint: s.receiverHint } : {}),
     },
   };
@@ -153,12 +169,14 @@ function collectKernelDirectory(
       continue;
     }
     try {
+      const fileUri = pathToFileURL(path.join(dir, file)).href;
       const ast = parse(text).ast;
       const comments = carriesProse ? extractComments(ast, tokenize(text).tokens) : undefined;
-      collect(buildSymbolTable(ast), classes, comments);
+      collect(buildSymbolTable(ast), classes, comments, fileUri);
       // Build the installed `crossReference` senders tier from the same parse, so
-      // an installed kernel answers "Senders of" as richly as the bundled floor.
-      forEachSend(ast, (s) => recordSend(senders, rawSendOf(s)));
+      // an installed kernel answers "Senders of" as richly as the bundled floor —
+      // and, because the source is local, with REAL file coordinates to jump to.
+      forEachSend(ast, (s) => recordSend(senders, rawSendOf(s, fileUri)));
     } catch {
       // Never throw from indexing — skip a pathological file.
     }
@@ -171,6 +189,15 @@ function collectKernelDirectory(
 
 function docOf(text: string | undefined): Documentation | undefined {
   return text && text.trim() !== '' ? { text } : undefined;
+}
+
+/** An `ImplementorRef` carrying the method's real def location, when known. */
+function locatedImplementor(name: string, side: 'instance' | 'class', sel: SelectorAcc): ImplementorRef {
+  return {
+    inClass: name,
+    side,
+    ...(sel.sourceUri !== undefined ? { sourceUri: sel.sourceUri, sourceLine: sel.sourceLine } : {}),
+  };
 }
 
 function toSignatures(m: Map<string, SelectorAcc>): SelectorSignature[] {
@@ -234,11 +261,13 @@ export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHe
       taxonomy: {},
       ...(documentation ? { documentation } : {}),
     };
-    for (const m of instanceMethods) {
-      addImplementor(m.selector, { inClass: name, side: 'instance' });
+    // Implementors carry the method's real def location (from the accumulator) so
+    // "Implementors of" opens the actual installed file, not a virtual stub.
+    for (const [selector, sel] of acc.instance) {
+      addImplementor(selector, locatedImplementor(name, 'instance', sel));
     }
-    for (const m of classMethods) {
-      addImplementor(m.selector, { inClass: name, side: 'class' });
+    for (const [selector, sel] of acc.klass) {
+      addImplementor(selector, locatedImplementor(name, 'class', sel));
     }
   }
 

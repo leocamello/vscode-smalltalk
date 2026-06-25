@@ -51,6 +51,19 @@ test('AC2 header is structurally valid (schema 1, tiers, facts provenance)', () 
   assert.ok(typeof h.sourceLicense === 'string' && h.sourceLicense.length > 0);
 });
 
+test('the SHIPPED cartridge carries no machine-specific source paths (US-423)', () => {
+  // `sourceUri`/`sourceLine` are a LOCAL-only convenience of the installed adapter
+  // (real-file navigation). A committed/redistributed cartridge must never ship
+  // them — they are this-machine paths and there is no portable source to point at.
+  const cr = bundledCartridge.crossReference;
+  const sites = [...Object.values(cr?.senders ?? {}), ...Object.values(cr?.implementors ?? {})].flat();
+  assert.ok(sites.length > 0, 'the bundled reference ships a crossReference tier to check');
+  assert.ok(
+    sites.every((s) => (s as { sourceUri?: string }).sourceUri === undefined),
+    'no shipped cross-reference fact may carry a sourceUri',
+  );
+});
+
 test('AC2 every class fact has the required resolved-facts shape', () => {
   for (const [id, c] of Object.entries(bundledCartridge.classes)) {
     assert.equal(c.id, id, 'class record key must equal its id');

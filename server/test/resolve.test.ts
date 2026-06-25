@@ -53,7 +53,35 @@ test('implementors are the union of workspace + cartridge, each tagged with prov
   assert.equal(refs[0].provenance.kind, 'workspace', 'workspace ranks first');
   assert.equal(refs[1].provenance.label, 'reference (gst 3.2.5)', 'per-row cartridge provenance (status-bar identity)');
   assert.equal(refs[1].className, 'OrderedCollection');
-  assert.ok(refs[1].uri.startsWith('smalltalk-cartridge:/'), 'cartridge hit gets a virtual URI');
+  assert.ok(refs[1].uri.startsWith('smalltalk-cartridge:/'), 'a cartridge hit with no source gets a virtual URI');
+});
+
+test('a located cartridge ref (installed source) navigates to the REAL file, not a stub', () => {
+  const refs = resolveImplementors(
+    sources({
+      cartridgeImplementors: [
+        { inClass: 'Array', side: 'instance', sourceUri: 'file:///usr/local/share/smalltalk/kernel/Array.st', sourceLine: 59 },
+      ],
+    }),
+    'printOn:',
+  );
+  assert.equal(refs.length, 1);
+  assert.equal(refs[0].uri, 'file:///usr/local/share/smalltalk/kernel/Array.st', 'opens the real installed file');
+  assert.equal(refs[0].range.start.line, 59, 'jumps to the def line');
+  assert.equal(refs[0].provenance.kind, 'cartridge', 'still tagged as a kernel/cartridge row');
+});
+
+test('a located cartridge SENDER navigates to the real send line', () => {
+  const refs = resolveSenders(
+    sources({
+      cartridgeSenders: [
+        { inClass: 'Autoload', side: 'instance', inSelector: 'loadedClass_', line: 14, sourceUri: 'file:///k/Autoload.st', sourceLine: 132 },
+      ],
+    }),
+    'error:',
+  );
+  assert.equal(refs[0].uri, 'file:///k/Autoload.st');
+  assert.equal(refs[0].range.start.line, 132, 'jumps to the real send line, not the within-method offset');
 });
 
 test('dev-box overlap: a live workspace implementor shadows the frozen cartridge one', () => {
