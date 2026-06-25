@@ -16,9 +16,9 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T013 Unit tests (`server/test/workspaceXref.test.ts`, 8): build, context, ranges, hints, keyword/binary, top-level, incremental patch, cross-file union, `sendsFrom`.
 
 ### Slice B — merge engine + references
-- [ ] T020 `server/src/xref/resolve.ts`: normalize → dedup (key `(uri,line,selector)`, dev-box overlap) → precedence `Workspace ≻ Cartridge` → stable multi-key sort. (AC1/AC5/AC6)
-- [ ] T021 `providers/references.ts` + advertise `referencesProvider`; plural go-to-definition. (AC3)
-- [ ] T022 Unit (merge/dedup/ranking) + `test:server` references + e2e.
+- [x] T020 `server/src/xref/resolve.ts`: normalize both tiers → dedup (dev-box overlap by logical class+side / enclosing-method key) → precedence `Workspace ≻ Cartridge` → stable multi-key sort (provenance, hint confidence, class, line). Synthetic `smalltalk-cartridge:` URIs. (AC1/AC5/AC6)
+- [x] T021 `providers/references.ts` (pure converters) + advertise `referencesProvider`; `onReferences`; plural go-to-definition (`Location[]`, or `LocationLink[]` when the client declares `linkSupport`). Cartridge cross-ref exposed via `KernelIndexService.crossReferenceSenders/Implementors`/`cartridgeId`. Single shared `walkStFiles` feeds both indexes; xref kept in lockstep on open/change/close/rebuild. (AC3)
+- [x] T022 Unit (`server/test/resolve.test.ts`, 7: union/dev-box dedup/ranking/no-cartridge) + `test:server` references + plural definition; e2e stub covers AC1/AC3.
 
 ### Slice C — Senders/Implementors commands + virtual docs
 - [ ] T030 Commands `smalltalk.sendersOf` / `smalltalk.implementorsOf`: tree + header node (union contract) + per-row provenance. (AC2)

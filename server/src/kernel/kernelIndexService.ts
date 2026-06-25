@@ -9,8 +9,8 @@
 // The resolved identity drives the status bar (slice D). Pure logic + Node `fs`;
 // no `vscode`. Re-`configure()` on `didChangeConfiguration`.
 
-import type { CartridgeHeader, DialectCartridge } from '../types/knowledge-base';
-import { bundledCartridge, cartridgeToKernelIndex } from './cartridgeLoader';
+import type { CartridgeHeader, DialectCartridge, ImplementorRef, SendSite } from '../types/knowledge-base';
+import { bundledCartridge, cartridgeToKernelIndex, loadCartridge } from './cartridgeLoader';
 import { DEFAULT_COMMON_LOCATIONS, discoverKernelDir } from './discovery';
 import { indexKernelDirectoryToCartridge } from './indexer';
 import { Provenance, type KernelIndexData } from './model';
@@ -250,6 +250,31 @@ export class KernelIndexService {
       }
     }
     return out;
+  }
+
+  /** The active cartridge's identity (dialect + version), for cross-reference
+   *  provenance + synthetic URIs (US-423). Undefined when no kernel is active. */
+  get cartridgeId(): { dialect: string; version: string } | undefined {
+    const h = this.activeCartridge?.header;
+    return h ? { dialect: h.dialect, version: h.version } : undefined;
+  }
+
+  /** Cartridge send sites of `selector` — the frozen kernel half of "Senders of"
+   *  (US-423). Reads the precomputed `crossReference` tier; `[]` when absent. */
+  crossReferenceSenders(selector: string): readonly SendSite[] {
+    if (!this.activeCartridge) {
+      return [];
+    }
+    return loadCartridge(this.activeCartridge).sendersOf(selector);
+  }
+
+  /** Cartridge implementors of `selector` — the frozen kernel half of
+   *  "Implementors of" (US-423). O(1) off the precomputed tier (derived if absent). */
+  crossReferenceImplementors(selector: string): readonly ImplementorRef[] {
+    if (!this.activeCartridge) {
+      return [];
+    }
+    return loadCartridge(this.activeCartridge).implementorsOf(selector);
   }
 
   /** Class comment for `name`, only when the active source carries prose (else

@@ -107,6 +107,7 @@ assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2
 assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
+assert.equal(caps.referencesProvider, true, 'expected referencesProvider (US-423)');
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
@@ -182,6 +183,52 @@ for (let i = 0; i < 25 && defResult.length === 0; i++) {
 assert.ok(defResult.length >= 1, 'definition must resolve the `greet` send');
 assert.equal(defResult[0].uri, defUri, 'definition resolves within the same file');
 assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
+
+// --- textDocument/references + plural definition (US-423) ---
+// Two classes implement `greet`; a third method sends it. references is the
+// union (2 defs + 1 send); definition on the send is plural (both impls).
+const xrefUri = 'file:///xref-test.st';
+const xrefText = [
+  'Object subclass: Speaker [',
+  '  greet [ ^self ]',
+  ']',
+  'Object subclass: Robot [',
+  '  greet [ ^self ]',
+  ']',
+  'Object subclass: Stage [',
+  '  run: who [ ^who greet ]',
+  ']',
+].join('\n');
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: xrefUri, languageId: 'smalltalk', version: 1, text: xrefText } },
+});
+// Cursor on the `greet` send inside Stage>>run: (line 7). Poll for the debounced index.
+const sendLine = 7;
+const sendChar = xrefText.split('\n')[sendLine].indexOf('greet');
+let refResult = [];
+for (let i = 0; i < 25 && refResult.length < 3; i++) {
+  send({
+    jsonrpc: '2.0',
+    id: 300 + i,
+    method: 'textDocument/references',
+    params: { textDocument: { uri: xrefUri }, position: { line: sendLine, character: sendChar }, context: { includeDeclaration: true } },
+  });
+  refResult = (await receiveId(300 + i)).result ?? [];
+  if (refResult.length < 3) await sleep(100);
+}
+assert.ok(refResult.length >= 3, `references returns the union of both implementors + the send (got ${refResult.length})`);
+
+// Plural go-to-definition on the same send: both implementors, never collapsed (AC3).
+send({
+  jsonrpc: '2.0',
+  id: 320,
+  method: 'textDocument/definition',
+  params: { textDocument: { uri: xrefUri }, position: { line: sendLine, character: sendChar } },
+});
+const xrefDef = (await receiveId(320)).result ?? [];
+assert.ok(xrefDef.length >= 2, `definition on a send is plural — both implementors (got ${xrefDef.length})`);
 
 // --- textDocument/foldingRange (US-417 slice A) ---
 const foldUri = 'file:///folding-test.st';
@@ -379,6 +426,6 @@ await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
