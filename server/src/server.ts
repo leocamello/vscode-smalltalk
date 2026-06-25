@@ -24,6 +24,9 @@ import {
   type InitializeParams,
   type InitializeResult,
   type Location,
+  type SemanticTokens,
+  type SemanticTokensParams,
+  type SemanticTokensRangeParams,
   type WorkspaceSymbol,
   type WorkspaceSymbolParams,
 } from 'vscode-languageserver/node';
@@ -39,6 +42,13 @@ import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
 import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
 import { hoverAt, type HoverContext, type HoverImplementor } from './providers/hover';
+import {
+  semanticTokensFull,
+  semanticTokensRange,
+  SEMANTIC_TOKEN_TYPES,
+  SEMANTIC_TOKEN_MODIFIERS,
+  type SemanticTokenContext,
+} from './providers/semanticTokens';
 import { KernelIndexService, type KernelLibrarySetting } from './kernel/kernelIndexService';
 import { Provenance } from './kernel/model';
 import { SymbolKind } from './parser/symbols';
@@ -82,6 +92,16 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       documentHighlightProvider: true,
       // Hover over selectors/classes/variables/numeric literals (US-415).
       hoverProvider: true,
+      // Cartridge-aware semantic highlighting (US-422): role-accurate token
+      // classification, incl. the known-class vs unknown-global distinction.
+      semanticTokensProvider: {
+        legend: {
+          tokenTypes: [...SEMANTIC_TOKEN_TYPES],
+          tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
+        },
+        full: true,
+        range: true,
+      },
       // Trivial quick fixes (US-414 AC4): insert a missing closer (`]`/`)`/`}`/`>`)
       // or close an unterminated string.
       codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
@@ -219,6 +239,39 @@ connection.onHover((params: HoverParams): Hover | null => {
     },
   };
   return hoverAt(doc.offsetAt(params.position), doc.getText(), getTokens(doc), getAst(doc), getSymbols(doc), ctx);
+});
+
+/** Build the semantic-token context (US-422): a class is `class` iff known in
+ *  workspace ∪ the active cartridge, with the source recorded so a cartridge
+ *  (kernel) class can carry the `defaultLibrary` modifier; otherwise a global. */
+function semanticContext(): SemanticTokenContext {
+  const workspaceClasses = new Set(
+    index
+      .all()
+      .filter((e) => e.kind === SymbolKind.Class || e.kind === SymbolKind.Namespace)
+      .map((e) => e.name),
+  );
+  return {
+    hasCartridge: kernelService.isEnabled,
+    classOrigin: (name) =>
+      workspaceClasses.has(name) ? 'workspace' : kernelService.hasClass(name) ? 'cartridge' : undefined,
+  };
+}
+
+connection.languages.semanticTokens.on((params: SemanticTokensParams): SemanticTokens => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return { data: [] };
+  }
+  return { data: semanticTokensFull(getAst(doc), getSymbols(doc), getTokens(doc), semanticContext()) };
+});
+
+connection.languages.semanticTokens.onRange((params: SemanticTokensRangeParams): SemanticTokens => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return { data: [] };
+  }
+  return { data: semanticTokensRange(getAst(doc), getSymbols(doc), getTokens(doc), semanticContext(), params.range) };
 });
 
 // Keep the workspace index fresh, debounced so rapid typing does not reparse on

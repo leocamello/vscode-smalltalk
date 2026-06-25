@@ -1,0 +1,17 @@
+{
+  // US-422 manual QA — the kernel-sourcing knob drives the AC2/AC4 cartridge rows.
+  // After changing it, RELOAD the Extension Dev Host window (Ctrl+R / Cmd+R) so the
+  // server re-resolves the kernel source, then re-inspect the tokens.
+  //
+  // DEFAULT below = "auto". This box has gst, so auto resolves to an INSTALLED
+  // cartridge (status bar: "installed (gst)") — a cartridge IS loaded.
+  //
+  // Swap the value for the AC2/AC4 matrix (README rows C1–C3):
+  //   C1 "auto"     cartridge present → Zork is `variable` (unknown global); kernel classes `class`+defaultLibrary
+  //   C2 "bundled"  cartridge present → same classification as auto (reference floor)
+  //   C3 "off"      NO cartridge → AC4 fallback: Zork (any capitalized) becomes `class`
+  //
+  // Turn ON semantic highlighting so these tokens actually paint (some themes default it off):
+  "editor.semanticHighlighting.enabled": true,
+  "smalltalk.completion.kernelLibrary": "auto"
+}
