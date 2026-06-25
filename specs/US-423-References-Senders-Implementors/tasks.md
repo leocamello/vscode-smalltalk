@@ -5,15 +5,15 @@
 Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possible.
 
 ## Phase 1 — Spec & Setup
-- [ ] T001 Spec reviewed; `requirements-validation.md` gate passed.
-- [ ] T002 Confirm US-430 Slice B merged (cartridge loader + `crossReference` views available).
+- [x] T001 Spec reviewed; `requirements-validation.md` gate passed.
+- [x] T002 Confirm US-430 Slice B merged (cartridge loader + `crossReference` views available — committed cartridge ships 1585 senders / 2459 implementors; `cartridgeLoader.sendersOf`/`implementorsOf` live).
 
 ## Phase 2 — Implementation
 ### Slice A — workspace cross-reference index
-- [ ] T010 `server/src/xref/workspaceXref.ts`: `selector → SendSite[]` from message-send nodes (US-411 AST).
-- [ ] T011 `selector → ImplementorRef[]` from method defs (incl. class-side).
-- [ ] T012 Incremental patch on `didChange` via `parseCache`; lazy build + file-size cap.
-- [ ] T013 Unit tests: build + incremental patch correctness.
+- [x] T010 `server/src/xref/workspaceXref.ts`: `selector → WorkspaceSendSite[]` from message-send nodes (US-411 AST), with enclosing-method context + `receiverHint`.
+- [x] T011 Workspace implementors are **not** duplicated here — they already live in `WorkspaceIndex` as method symbols (name/containerName/classSide/selectionRange); the resolve layer reads them from there (DRY). `sendsFrom()` added for call-hierarchy outgoing.
+- [x] T012 Incremental patch via per-URI slices + global selector map (`setFile`/`removeFile`); O(1) `sendersOf`. Wiring into `server.ts` `didChange` lands with Slice B.
+- [x] T013 Unit tests (`server/test/workspaceXref.test.ts`, 8): build, context, ranges, hints, keyword/binary, top-level, incremental patch, cross-file union, `sendsFrom`.
 
 ### Slice B — merge engine + references
 - [ ] T020 `server/src/xref/resolve.ts`: normalize → dedup (key `(uri,line,selector)`, dev-box overlap) → precedence `Workspace ≻ Cartridge` → stable multi-key sort. (AC1/AC5/AC6)
