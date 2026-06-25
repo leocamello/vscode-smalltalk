@@ -178,7 +178,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 | Epic | Theme | Stream | Status |
 |---|---|---|---|
 | EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | In progress (→1.0) |
-| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (foundation landed — US-430; next US-422/423) |
+| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (US-430 foundation + US-422 semantic tokens shipped; next US-423) |
 | EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | A+B | Planned (read-only Tonel wedge US-424 ~1.0; full second dialect 1.5) |
 | EPIC-007 | The Live Bridge (optional runtime delegation) | C | Planned (1.6+) |
 | EPIC-008 | Image-Grade Workbench (System Browser, refactorings, search) | A+B | Planned (1.1–1.4) |
@@ -199,8 +199,9 @@ squiggles + insert-closer/close-string quick fixes; new `evals/datasets/diagnost
 opt-in `gst`/runtime compile-diagnostics tier was built then **deferred to EPIC-007** (Live Bridge) —
 redundant with the parser for syntax, real value (semantic errors) needs a runtime; shipped **v0.6.0**.
 **EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
-convergence) merged (#82) — completion runs off GST Cartridge #01. **US-415 hover shipped (v0.7.0).** Next EPIC-005
-consumers: US-422 (semantic tokens) / US-423 (references/senders). **2026-06-24 strategy review folded in:**
+convergence) merged (#82) — completion runs off GST Cartridge #01. **US-415 hover shipped (v0.7.0); US-422
+cartridge-aware semantic tokens shipped (v0.8.0)** — the first user-facing cartridge consumer. Next EPIC-005
+consumer: US-423 (references/senders). **2026-06-24 strategy review folded in:**
 US-424 (read-only Tonel "Trojan Horse" — resequenced to ~1.0, Stream A), US-706 (writable `smalltalk-image://`
 VFS under the Live Bridge), and a status-bar dialect picker on US-602; the external-LSP-client framing was
 considered and declined in favor of the Console & Cartridges moat._
