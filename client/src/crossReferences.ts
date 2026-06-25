@@ -108,9 +108,13 @@ class CrossReferenceTree implements TreeDataProvider<TreeNode> {
   }
 }
 
-/** Read-only virtual document for a cartridge cross-reference fact. The frozen
- *  cartridge is facts-only (no bodies), so the document states the fact rather
- *  than pretending to show source — honest, and it makes the row openable. */
+const DIALECT_LABELS: Record<string, string> = { 'gnu-smalltalk': 'GNU Smalltalk' };
+
+/** Read-only virtual document for a kernel cross-reference fact. The cross-reference
+ *  view records only coordinates (no method body), so the document states the fact
+ *  honestly — and accurately per source: the bundled *reference* ships facts only
+ *  (the LGPL body is not redistributed), whereas an *installed* index is built from
+ *  the user's own gst source on disk (which they can open to read the body). */
 const cartridgeContentProvider: TextDocumentContentProvider = {
   provideTextDocumentContent(uri: Uri): string {
     // Path shape: /<dialect>/<version>/<ClassId>/<side>/<selector> (encoded segments).
@@ -118,14 +122,23 @@ const cartridgeContentProvider: TextDocumentContentProvider = {
       .split('/')
       .filter((s) => s.length > 0)
       .map((s) => decodeURIComponent(s));
+    const dialectLabel = DIALECT_LABELS[dialect ?? ''] ?? dialect ?? '?';
     const sideWord = side === 'class' ? ' class' : '';
-    return [
-      `"${classId ?? '?'}${sideWord} >> ${selector ?? '?'}"`,
-      '',
-      `Cross-reference fact from the ${dialect ?? '?'} ${version ?? ''} cartridge (facts-only).`,
-      'The method source body is not bundled offline, so only the coordinates are shown.',
-      'Install the dialect or open its source in your workspace to read the implementation.',
-    ].join('\n');
+    const header = `"${classId ?? '?'}${sideWord} >> ${selector ?? '?'}"`;
+    // `installed` is the version stamp the live source adapter uses (ADR-0003 Tier-1).
+    const isInstalled = version === 'installed';
+    const body = isInstalled
+      ? [
+          `Cross-reference fact indexed from your installed ${dialectLabel} source.`,
+          'This offline view records only the coordinates — open the installed source',
+          'to read the method body. Class and method comments surface on hover.',
+        ]
+      : [
+          `Cross-reference fact from the bundled ${dialectLabel} ${version ?? ''} reference (facts only).`,
+          'The method body is not shipped (the reference carries coordinates, not licensed',
+          `source). Install ${dialectLabel} or open its source in your workspace to read it.`,
+        ];
+    return [header, '', ...body].join('\n');
   },
 };
 

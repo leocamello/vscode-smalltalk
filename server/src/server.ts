@@ -233,7 +233,11 @@ function buildXrefSources(selector: string): XrefSources {
     workspaceSenders: workspaceXref.sendersOf(selector),
     cartridgeSenders: kernelService.crossReferenceSenders(selector),
     cartridgeImplementors: kernelService.crossReferenceImplementors(selector),
-    ...(kernelService.cartridgeId ? { cartridge: kernelService.cartridgeId } : {}),
+    // Label the cartridge tier with the SAME identity the status bar shows, so
+    // the panel's per-row provenance and the status bar agree (terminology parity).
+    ...(kernelService.cartridgeId
+      ? { cartridge: { ...kernelService.cartridgeId, label: kernelService.identity.label } }
+      : {}),
     isKnownClass: (name) => workspaceClasses.has(name) || kernelService.hasClass(name),
   };
 }

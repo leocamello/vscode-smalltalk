@@ -25,10 +25,16 @@ Put the cursor on the token, run the command, read the **panel tree**.
 | Row | Where (cursor) | Command | Expect |
 |---|---|---|---|
 | **A1** | `greet` send in `run: who [ ^who greet ]` | Implementors of… | **2 rows**: `Robot`, `Speaker`, both badged **`workspace`**. Header reads *Implementors of #greet — 2* with the union/uncertainty tooltip. |
-| **A2** | `do:` in `cast do: [ … ]` | Implementors of… | **22 rows**, all badged **`cartridge:gnu-smalltalk@3.2.5`** (Bag, Dictionary, Interval, …) — the offline kernel union. |
+| **A2** | `do:` in `cast do: [ … ]` | Implementors of… | **22 rows**, all badged with the kernel source identity (same as the status bar — **`reference (gst 3.2.5)`** bundled, or **`installed (gst)`**) — the offline kernel union. |
 | **A3** | `new` in `OrderedCollection new` | Implementors of… | **~42 rows**; the FIRST is **`Stage class`** badged **`workspace`** (class-side, ranked above the cartridge), then the kernel `… class` rows. |
 
 ## Part B — Senders (the live workspace half, AC1/AC6)
+
+> **Kernel senders need the bundled reference.** The senders graph (the `crossReference`
+> tier) ships only in the **bundled** cartridge. The **installed** adapter emits classes
+> only, so under `auto`-resolved-to-`installed` the kernel contributes **implementors but no
+> senders** — B2's cartridge rows appear only with `kernelLibrary: "bundled"` (or no gst).
+> This is a known limitation, not a bug; see spec §7.
 
 | Row | Where (cursor) | Command | Expect |
 |---|---|---|---|

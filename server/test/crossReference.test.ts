@@ -14,7 +14,7 @@ function test(name: string, fn: () => void): void {
 
 const r = (line: number) => ({ start: { line, character: 0 }, end: { line, character: 4 } });
 const WS = { kind: 'workspace' as const, label: 'workspace' };
-const CART = { kind: 'cartridge' as const, label: 'cartridge:gnu-smalltalk@3.2.5' };
+const CART = { kind: 'cartridge' as const, label: 'reference (gst 3.2.5)' };
 
 test('senders result carries the union/uncertainty disclaimer + a count', () => {
   const refs: ResolvedRef[] = [
@@ -58,7 +58,7 @@ test('implementors rows carry per-row provenance incl. the cartridge label', () 
   assert.equal(result.title, 'Implementors of #do:');
   assert.equal(result.rows[0].label, 'MyList');
   assert.equal(result.rows[0].provenance, 'workspace');
-  assert.equal(result.rows[1].provenance, 'cartridge:gnu-smalltalk@3.2.5');
+  assert.equal(result.rows[1].provenance, 'reference (gst 3.2.5)');
   assert.match(result.disclaimer, /receiver's class/i, 'implementors disclaimer frames runtime dispatch');
 });
 

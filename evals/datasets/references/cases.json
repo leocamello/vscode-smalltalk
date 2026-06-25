@@ -1,14 +1,14 @@
 {
-  "description": "US-423 references output eval — golden cases over the bundled gst-3.2.5 cartridge (no gst, no VS Code). Drives the real two-tier cross-reference engine (workspaceXref + WorkspaceIndex ∪ the bundled crossReference tier) exactly as server.ts assembles it, then packages the result with buildCrossReference. The `▮` marks the selector under the cursor; per case we assert the union count, the per-row provenance (workspace / cartridge:<dialect>@<version>), key labels, the Workspace ≻ Cartridge ranking, and that the long tail is ranked — never filtered (AC6). Every result must also carry the honest union/uncertainty disclaimer (AC2).",
+  "description": "US-423 references output eval — golden cases over the bundled gst-3.2.5 cartridge (no gst, no VS Code). Drives the real two-tier cross-reference engine (workspaceXref + WorkspaceIndex ∪ the bundled crossReference tier) exactly as server.ts assembles it, then packages the result with buildCrossReference. The `▮` marks the selector under the cursor; per case we assert the union count, the per-row provenance (workspace / the kernel source's status-bar identity, e.g. `reference (gst 3.2.5)`), key labels, the Workspace ≻ Cartridge ranking, and that the long tail is ranked — never filtered (AC6). Every result must also carry the honest union/uncertainty disclaimer (AC2).",
   "cases": [
     {
       "name": "AC1 implementors of a kernel selector are the cartridge union (printString → Object, Integer)",
       "text": "x print▮String",
       "direction": "implementors",
       "expectMinCount": 2,
-      "expectProvenances": ["cartridge:gnu-smalltalk@3.2.5"],
+      "expectProvenances": ["reference (gst 3.2.5)"],
       "expectLabelsInclude": ["Object"],
-      "expectFirstProvenance": "cartridge:gnu-smalltalk@3.2.5",
+      "expectFirstProvenance": "reference (gst 3.2.5)",
       "expectTitleMatches": "Implementors of #printString"
     },
     {
@@ -16,7 +16,7 @@
       "text": "Object subclass: MyColl [\n  do▮: aBlock [ ^self ]\n]",
       "direction": "implementors",
       "expectMinCount": 5,
-      "expectProvenances": ["workspace", "cartridge:gnu-smalltalk@3.2.5"],
+      "expectProvenances": ["workspace", "reference (gst 3.2.5)"],
       "expectLabelsInclude": ["MyColl", "Dictionary"],
       "expectFirstProvenance": "workspace"
     },
@@ -34,7 +34,7 @@
       "text": "Object subclass: Stage [\n  go [ ^items d▮o: [:e | e ] ]\n]",
       "direction": "senders",
       "expectMinCount": 10,
-      "expectProvenances": ["workspace", "cartridge:gnu-smalltalk@3.2.5"],
+      "expectProvenances": ["workspace", "reference (gst 3.2.5)"],
       "expectLabelsInclude": ["Stage » go"],
       "expectFirstProvenance": "workspace"
     },

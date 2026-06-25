@@ -65,7 +65,7 @@ function buildSources(index: WorkspaceIndex, xref: WorkspaceXref, selector: stri
     workspaceSenders: xref.sendersOf(selector),
     cartridgeSenders: kernel.crossReferenceSenders(selector),
     cartridgeImplementors: kernel.crossReferenceImplementors(selector),
-    ...(kernel.cartridgeId ? { cartridge: kernel.cartridgeId } : {}),
+    ...(kernel.cartridgeId ? { cartridge: { ...kernel.cartridgeId, label: kernel.identity.label } } : {}),
     isKnownClass: (name) => workspaceClasses.has(name) || kernel.hasClass(name),
   };
 }

@@ -18,7 +18,7 @@ function test(name: string, fn: () => void): void {
   console.log(`  ok - ${name}`);
 }
 
-const GST = { dialect: 'gnu-smalltalk', version: '3.2.5' };
+const GST = { dialect: 'gnu-smalltalk', version: '3.2.5', label: 'reference (gst 3.2.5)' };
 const r = (line: number) => ({ start: { line, character: 0 }, end: { line, character: 4 } });
 
 function sources(partial: Partial<XrefSources>): XrefSources {
@@ -51,7 +51,7 @@ test('implementors are the union of workspace + cartridge, each tagged with prov
   );
   assert.equal(refs.length, 2, 'both implementors present');
   assert.equal(refs[0].provenance.kind, 'workspace', 'workspace ranks first');
-  assert.equal(refs[1].provenance.label, 'cartridge:gnu-smalltalk@3.2.5', 'per-row cartridge provenance');
+  assert.equal(refs[1].provenance.label, 'reference (gst 3.2.5)', 'per-row cartridge provenance (status-bar identity)');
   assert.equal(refs[1].className, 'OrderedCollection');
   assert.ok(refs[1].uri.startsWith('smalltalk-cartridge:/'), 'cartridge hit gets a virtual URI');
 });

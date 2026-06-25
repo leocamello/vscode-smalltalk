@@ -103,6 +103,18 @@ hits with provenance + the union header; dev-box overlap de-dups correctly; go-t
 multiple targets; call hierarchy expands incoming/outgoing; all with no `gst`. Matrix in `verification.md`.
 
 ## 7. Risks & Limitations
+- **Installed tier has no senders (asymmetry).** The `crossReference` tier ships only in the **bundled**
+  reference cartridge; the **installed** source adapter (`indexer.ts`) emits the `classes` tier only. So
+  when `auto` resolves to an installed gst, the kernel contributes **implementors (derived) but no
+  senders** — ironically thinner than the bundled floor for "Senders of". Per-row provenance + the
+  status-bar identity make the active source explicit. **Follow-up:** give the installed adapter a
+  send-scan so it builds its own `crossReference` (reuse `workspaceXref`'s send collection), making
+  installed as rich as bundled, version-correctly.
+- **Provenance vocabulary unified with the status bar** (post-spec, from hands-on QA): the per-row badge
+  shows the kernel source's **identity label** (`reference (gst 3.2.5)` / `installed (gst)`) — the SAME
+  term the status bar uses — rather than the internal `cartridge:<dialect>@<version>` form AC2 first
+  sketched. The cartridge virtual-document copy is likewise tier-accurate (installed = your local source;
+  reference = facts-only, body not redistributed).
 - **Cartridge senders under-count** (US-430 §5: special-selector bytecodes missing from the literal
   scan) — senders of `+`, `at:put:`, `do:` (when inlined) may be incomplete from the cartridge tier.
   Honest framing in the header node; workspace tier is complete; bytecode-disassembly refinement later.

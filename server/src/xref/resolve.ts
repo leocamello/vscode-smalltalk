@@ -13,14 +13,19 @@ import type { ReceiverHint, WorkspaceSendSite, XrefRange } from './workspaceXref
 /** Where a resolved reference came from — drives the per-row provenance badge. */
 export interface RefProvenance {
   readonly kind: 'workspace' | 'cartridge';
-  /** `workspace` or `cartridge:<dialect>@<version>`. */
+  /** `workspace`, or the kernel source's identity label (the SAME vocabulary the
+   *  status bar uses, e.g. `reference (gst 3.2.5)` / `installed (gst)`) so the
+   *  panel and the status bar agree on what each source is called. */
   readonly label: string;
 }
 
 export const WORKSPACE_PROVENANCE: RefProvenance = { kind: 'workspace', label: 'workspace' };
 
-export function cartridgeProvenance(dialect: string, version: string): RefProvenance {
-  return { kind: 'cartridge', label: `cartridge:${dialect}@${version}` };
+/** Provenance for a cartridge (kernel) row — labelled with the source's identity
+ *  (`cartridge.label`, the status-bar vocabulary), falling back to a plain
+ *  `<dialect> <version>` when no label is supplied (tests). */
+export function cartridgeProvenance(c: CartridgeId): RefProvenance {
+  return { kind: 'cartridge', label: c.label ?? `${c.dialect} ${c.version}` };
 }
 
 export type RefKind = 'sender' | 'implementor';
@@ -51,6 +56,9 @@ export interface WorkspaceMethodRef {
 export interface CartridgeId {
   readonly dialect: string;
   readonly version: string;
+  /** The source's status-bar identity label, e.g. `reference (gst 3.2.5)` /
+   *  `installed (gst)`. Drives the per-row provenance badge (terminology parity). */
+  readonly label?: string;
 }
 
 /** Everything the engine needs for one selector, read upstream (O(1) per tier). */
@@ -110,7 +118,7 @@ function cartridgeSenderRef(s: SendSite, c: CartridgeId): ResolvedRef {
     kind: 'sender',
     uri: cartridgeUri(c, s.inClass, s.side, s.inSelector),
     range: lineRange(s.line),
-    provenance: cartridgeProvenance(c.dialect, c.version),
+    provenance: cartridgeProvenance(c),
     className: simpleName(s.inClass),
     side: s.side,
     inSelector: s.inSelector,
@@ -123,7 +131,7 @@ function cartridgeImplementorRef(r: ImplementorRef, selector: string, c: Cartrid
     kind: 'implementor',
     uri: cartridgeUri(c, r.inClass, r.side, selector),
     range: lineRange(0),
-    provenance: cartridgeProvenance(c.dialect, c.version),
+    provenance: cartridgeProvenance(c),
     className: simpleName(r.inClass),
     side: r.side,
   };
