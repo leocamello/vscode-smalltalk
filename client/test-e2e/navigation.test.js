@@ -128,6 +128,9 @@ suite('US-412 navigation (e2e)', () => {
       (r) => Array.isArray(r) && r.length > 0,
     );
     assert.ok((locations || []).length >= 1, 'expected at least one definition for greet');
-    assert.equal(locations[0].uri.fsPath, sampleUri.fsPath, 'greet resolves within the same file');
+    // US-423 evolves selector go-to-definition to a plural LocationLink[] (the
+    // implementor union) when the client supports it; accept either shape.
+    const target = locations[0].targetUri ?? locations[0].uri;
+    assert.equal(target.fsPath, sampleUri.fsPath, 'greet resolves within the same file');
   });
 });

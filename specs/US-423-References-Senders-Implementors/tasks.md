@@ -21,9 +21,9 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 - [x] T022 Unit (`server/test/resolve.test.ts`, 7: union/dev-box dedup/ranking/no-cartridge) + `test:server` references + plural definition; e2e stub covers AC1/AC3.
 
 ### Slice C — Senders/Implementors commands + virtual docs
-- [ ] T030 Commands `smalltalk.sendersOf` / `smalltalk.implementorsOf`: tree + header node (union contract) + per-row provenance. (AC2)
-- [ ] T031 Client `TextDocumentContentProvider` for `smalltalk-cartridge:` (read-only peek/jump targets).
-- [ ] T032 E2e on the command tree + cartridge jump.
+- [x] T030 Commands `smalltalk.sendersOf` / `smalltalk.implementorsOf`: a TreeView (new "Smalltalk References" panel) whose header carries title/count + the union/uncertainty disclaimer (tooltip) and whose rows carry per-row provenance + a receiver-hint badge. Server `smalltalk/crossReference` request builds the result (`providers/crossReference.ts`, pure + 5 unit tests); palette + editor-context menus. (AC2)
+- [x] T031 Client `TextDocumentContentProvider` for `smalltalk-cartridge:` — a read-only virtual doc that states the cartridge fact (facts-only, no bundled body) so cartridge rows peek/open honestly instead of erroring.
+- [x] T032 E2e (`US-423.acceptance.test.js`) asserts the command's structured result (title + disclaimer + per-row provenance); full e2e suite green (27 passing) incl. AC1/AC3/AC4. Updated US-412 nav e2e for the evolved plural `LocationLink[]` definition shape.
 
 ### Slice D — call hierarchy
 - [x] T040 `providers/callHierarchy.ts` (incoming = senders via the merge engine, outgoing = the method's body sends via `workspaceXref.sendsFrom`) reusing the engine; `resolveCallTarget` does method-definition + send position resolution (incl. class-side) for `prepareCallHierarchy`; identity round-trips on `CallHierarchyItem.data`. Capability advertised + 3 handlers wired in `server.ts`. (AC4)
