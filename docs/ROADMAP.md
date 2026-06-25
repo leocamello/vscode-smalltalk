@@ -167,7 +167,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 
 | Story | What | When to do it | Issue |
 |---|---|---|---|
-| US-424 | Tonel **read-only** wedge (grammar + folding + outline) | **Pull forward to ~1.0** (Stream A, no cartridge/seam — EPIC-006) | TBD |
+| US-424 | Tonel **read-only** wedge (grammar + folding + outline) | **Pull forward to ~1.0** (Stream A, no cartridge/seam — EPIC-006) | #93 |
 | US-418 | Container-format seam (dialect door) — *full* Tonel parsing | **Trigger fires at 1.5** (Pharo/Tonel — EPIC-006) | #58 |
 | US-419 | Kernel-index method categories | Ride with **US-415 hover** (needs the grouping) | #59 |
 | US-420 | Completion pseudo-variables | Near-term — v0.5.1 or front of US-414 | #60 |

@@ -1404,7 +1404,7 @@ Scenario: User follows Quick Start guide
 ## US-424: Tonel Read-Only Editing Experience (the "Trojan Horse")
 
 * **ID:** US-424
-* **Status:** Backlog (vision — pulled forward to **~1.0**, ahead of the rest of EPIC-006) — issue TBD
+* **Status:** Backlog (vision — pulled forward to **~1.0**, ahead of the rest of EPIC-006) — #93
 * **Epic:** EPIC-006 *(but ships as a Stream-A wedge, decoupled from the cartridge/seam work)*
 * **Priority:** High *(cheap go-to-market wedge: wins the Pharo/GemStone/VA crowd before any cartridge exists)*
 * **Estimate:** M
@@ -1766,7 +1766,7 @@ Scenario: User follows Quick Start guide
 ## US-706: Live-Image Virtual FileSystem (writable `smalltalk-image://`)
 
 * **ID:** US-706
-* **Status:** Backlog (vision — milestone 1.6+) — issue TBD
+* **Status:** Backlog (vision — milestone 1.6+) — #94
 * **Epic:** EPIC-007
 * **Priority:** Low *(the most ambitious live feature; ships after the higher-value live items)*
 * **Estimate:** L
