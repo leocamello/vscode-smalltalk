@@ -1,0 +1,59 @@
+==============================================================================
+SPIKE-01 — Unknown-Selector Heuristic — corpus report
+==============================================================================
+cartridge: GNU Smalltalk 3.2.5 (249 classes)
+workspace classes parsed: 255
+files: 124  (clean: 124)
+
+── corpus: kernel ────────────────────────────────
+  total sends:            21711
+    emit                 12
+    understood           5872
+    unknown-receiver     15383
+    escape-incomplete    11
+    escape-dnu           155
+    escape-proxy         16
+    escape-allowlist     258
+    escape-perform       4
+  closed-world coverage:  6328/21711 = 29.1%  (receiver resolved)
+  table-consulted:        5884/21711 = 27.1%  (definite understood/emit)
+  EMITS (candidate FPs):  12
+
+── corpus: learning ────────────────────────────────
+  total sends:            54
+    understood           2
+    unknown-receiver     48
+    escape-incomplete    4
+  closed-world coverage:  6/54 = 11.1%  (receiver resolved)
+  table-consulted:        2/54 = 3.7%  (definite understood/emit)
+  EMITS (candidate FPs):  0
+
+── TOTAL ────────────────────────────────
+  sends: 21765  resolved: 6334 (29.1%)  table-consulted: 5886 (27.0%)  emits: 12
+
+── EMITS (triage each: false positive vs genuine latent typo) ──
+  [kernel] ../smalltalk-3.2.5/kernel/ContextPart.st:510  SecurityError(class) ⊬ #for:   in ContextPart»doSecurityCheckForName:actions:target:
+       SecurityError for: perm
+  [kernel] ../smalltalk-3.2.5/kernel/ObjDumper.st:513  ObjectDumper(instance) ⊬ #nextSignByte   in ObjectDumper»loadFromVersion:fixedSize:index:
+       self nextSignByte
+  [kernel] ../smalltalk-3.2.5/kernel/ObjDumper.st:523  ObjectDumper(instance) ⊬ #nextInt64   in ObjectDumper»loadFromVersion:fixedSize:index:
+       self nextInt64
+  [kernel] ../smalltalk-3.2.5/kernel/ObjDumper.st:555  ObjectDumper(instance) ⊬ #nextSignByte   in ObjectDumper»primLoad:
+       self nextSignByte
+  [kernel] ../smalltalk-3.2.5/kernel/ObjDumper.st:560  ObjectDumper(instance) ⊬ #nextInt64   in ObjectDumper»primLoad:
+       self nextInt64
+  [kernel] ../smalltalk-3.2.5/kernel/Object.st:846  Object(instance) ⊬ #primtiveFailed   in Object»checkIndexableBounds:put:
+       self primtiveFailed
+  [kernel] ../smalltalk-3.2.5/kernel/PkgLoader.st:1980  PackageLoader(class) ⊬ #extractDependenciesFor:ifMissing:   in PackageLoader»canLoad:
+       self extractDependenciesFor: {package} ifMissing: [:name | ^
+  [kernel] ../smalltalk-3.2.5/kernel/URL.st:557  URL(instance) ⊬ #file   in URL»decodedFile
+       self file
+  [kernel] ../smalltalk-3.2.5/kernel/VFS.st:561  ArchiveFile(instance) ⊬ #primUnlink:   in ArchiveFile»release
+       self primUnlink: each
+  [kernel] ../smalltalk-3.2.5/kernel/WeakObjects.st:347  WeakKeyDictionary(class) ⊬ #primSize   in WeakKeyDictionary»postLoad
+       self primSize
+  [kernel] ../smalltalk-3.2.5/kernel/WeakObjects.st:348  WeakKeyDictionary(class) ⊬ #primAt:   in WeakKeyDictionary»postLoad
+       self primAt: i
+  [kernel] ../smalltalk-3.2.5/kernel/WeakObjects.st:348  WeakKeyDictionary(class) ⊬ #primAt:   in WeakKeyDictionary»postLoad
+       self primAt: i
+

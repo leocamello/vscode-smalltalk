@@ -1369,7 +1369,7 @@ Scenario: User follows Quick Start guide
 ## SPIKE-01: Unknown-Selector Heuristic — False-Positive Validation
 
 * **ID:** SPIKE-01
-* **Status:** Ready — #67 *(time-boxed research; gates any feature story)*
+* **Status:** Done — **SHELVE** (#67); memo in `specs/SPIKE-01-*/verification.md`. Naive 58 FPs → 12 after the `self` subclass-union (Template Method) fix; zero-FP bar unmet (~7-8 cartridge-gap FPs on the GST kernel) + low closed-world coverage (~27%). Gate code parked (flagged off, tree-shaken). Reconsider only after cartridge completeness (capture primitive + class-side methods) + scope restriction. Found a real kernel typo (`Object>>checkIndexableBounds:put:` `primtiveFailed`) to report upstream.
 * **Epic:** EPIC-005
 * **Priority:** Medium
 * **Estimate:** S *(time-box: 2–3 days)*

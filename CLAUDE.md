@@ -70,10 +70,16 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** **SPIKE-01** (unknown-selector heuristic, gates any linter feature) and the **selector-surface
-  coverage audit** (snippets ∪ completion ∪ signature-help division of labour, raised in 0.9.1 QA); then
-  **US-416** (formatting, EPIC-004, → ~1.0). EPIC-005 consumers now span completion (0.5), semantic tokens
-  (0.8), cross-reference (0.9), and signature help (0.9.1) on one Console.
+- **Next:** the **selector-surface coverage audit** (snippets ∪ completion ∪ signature-help division of
+  labour, raised in 0.9.1 QA); then **US-416** (formatting, EPIC-004, → ~1.0). EPIC-005 consumers now span
+  completion (0.5), semantic tokens (0.8), cross-reference (0.9), and signature help (0.9.1) on one Console.
+- **Spike done (SPIKE-01, SHELVE):** the unknown-selector heuristic was built behind a flag + measured on
+  the GST kernel (21.7k sends): naive 58 false positives → **12** after the `self` subclass-union (Template
+  Method) insight; zero-FP bar **unmet** (~7-8 residual cartridge-gap FPs) + low closed-world coverage
+  (~27%) → **shelved**. Gate code parked (`server/src/diagnostics/unknownSelectorGate.ts` +
+  `cartridgeClassWorld.ts`, tree-shaken, unit-tested); harness `scripts/spike-unknown-selector.ts`; memo +
+  `corpus-report.txt` in `specs/SPIKE-01-*/`. Reconsider only after cartridge completeness + scope
+  restriction. (It also surfaced a real kernel typo — `primtiveFailed` — to report upstream.)
 - **Foundation:** **EPIC-005 foundation landed**
   (US-430, 0.8/0.9): the Dialect Cartridge schema (`server/src/types/knowledge-base.ts`) + GST
   **Cartridge #01** (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`,
