@@ -1,0 +1,4 @@
+{
+  "// US-412 manual QA": "Self-contained navigation QA workspace (US-412 outline/symbols/go-to-def + US-417 folding/highlight). All features run offline with no gst; the kernel setting only affects whether OrderedCollection/Transcript resolve as known classes, not the navigation surface under test.",
+  "smalltalk.completion.kernelLibrary": "auto"
+}
