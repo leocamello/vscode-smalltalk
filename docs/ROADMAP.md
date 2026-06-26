@@ -148,7 +148,7 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped; next: US-416 (formatting, ~1.0) and US-425 (signature help).**
+   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). Next: US-427 (selector-surface coverage audit, #102) then US-416 (formatting, ~1.0).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
@@ -156,8 +156,9 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    (`cartridgeLoader.ts`); the installed adapter emits cartridge shape (Tier-1 installed / Tier-2 frozen
    floor, ADR-0003) and the old `kernel-index.json` is **retired**. **US-422 (cartridge-aware semantic
    tokens) shipped v0.8.0** — the first user-facing cartridge consumer; **US-423 (cross-reference
-   intelligence via the `crossReference` tier) shipped v0.9.0**. Next EPIC-005 consumer: **US-425**
-   (signature help).
+   intelligence via the `crossReference` tier) shipped v0.9.0**; **US-425 (keyword-message signature
+   help) shipped v0.9.1**. **SPIKE-01** (unknown-selector heuristic) was built + measured and **shelved**
+   (zero-FP bar unmet; gate parked). Next EPIC-005 consumer: **US-427** (selector-surface coverage audit).
 3. **Optional v0.5.1** — the two near-term reconciliation fixes: **US-420** (#60, completion
    pseudo-variables) + **US-421** (#61, CI kernel fixtures). Both `size:S`.
 
@@ -179,7 +180,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 | Epic | Theme | Stream | Status |
 |---|---|---|---|
 | EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | In progress (→1.0) |
-| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (US-430 foundation + US-422 semantic tokens + US-423 cross-reference shipped; next US-425 signature help, SPIKE-01) |
+| EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (US-430 foundation + US-422 semantic tokens + US-423 cross-reference + US-425 signature help shipped; SPIKE-01 shelved; next US-427 selector-surface audit) |
 | EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | A+B | Planned (read-only Tonel wedge US-424 ~1.0; full second dialect 1.5) |
 | EPIC-007 | The Live Bridge (optional runtime delegation) | C | Planned (1.6+) |
 | EPIC-008 | Image-Grade Workbench (System Browser, refactorings, search) | A+B | Planned (1.1–1.4) |
@@ -195,14 +196,15 @@ output-eval dataset** in `evals/datasets/<feature>/` (use `completion/` as the t
 corpus + clean VSIX) → bump version + CHANGELOG → **check the `MARKETPLACE` PAT** → cut the `vX.Y.Z`
 Release (CI publishes). Full detail in [`CLAUDE.md`](../CLAUDE.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
-_Last updated: 2026-06-24 — **0.6.0 / US-414 (diagnostics) implemented, parser-only**: always-on parser
+_Last updated: 2026-06-27 — **0.9.1 / US-425 (keyword-message signature help) shipped** (closes #68); **SPIKE-01 (unknown-selector heuristic) done — shelved** (#67: zero-FP bar unmet + low closed-world coverage; gate parked, reconsider after cartridge completeness — it did surface a real kernel typo, `primtiveFailed`, reported upstream); **US-427 (selector-surface coverage audit) filed** (#102). Earlier: **0.6.0 / US-414 (diagnostics) implemented, parser-only**: always-on parser
 squiggles + insert-closer/close-string quick fixes; new `evals/datasets/diagnostics/` output eval. The
 opt-in `gst`/runtime compile-diagnostics tier was built then **deferred to EPIC-007** (Live Bridge) —
 redundant with the parser for syntax, real value (semantic errors) needs a runtime; shipped **v0.6.0**.
 **EPIC-005 foundation landed** earlier: US-430 (Console loader + cartridge
 convergence) merged (#82) — completion runs off GST Cartridge #01. **US-415 hover shipped (v0.7.0); US-422
-cartridge-aware semantic tokens shipped (v0.8.0); US-423 cross-reference intelligence shipped (v0.9.0)** —
-the offline knowledge graph's most visible navigation win. Next EPIC-005 consumer: US-425 (signature help). **2026-06-24 strategy review folded in:**
+cartridge-aware semantic tokens shipped (v0.8.0); US-423 cross-reference intelligence shipped (v0.9.0);
+US-425 signature help shipped (v0.9.1)** — the offline knowledge graph's most visible navigation wins.
+SPIKE-01 (unknown-selector heuristic) shelved. Next EPIC-005 consumer: US-427 (selector-surface audit). **2026-06-24 strategy review folded in:**
 US-424 (read-only Tonel "Trojan Horse" — resequenced to ~1.0, Stream A), US-706 (writable `smalltalk-image://`
 VFS under the Live Bridge), and a status-bar dialect picker on US-602; the external-LSP-client framing was
 considered and declined in favor of the Console & Cartridges moat._
