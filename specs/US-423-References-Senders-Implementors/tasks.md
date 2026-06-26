@@ -31,5 +31,5 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 
 ## Phase 3 — Verify
 - [x] T900 `evals/datasets/references/` added + green — 5/5 cases (union, provenance, ranking, AC6 never-filter), wired into `npm run eval` (now 5 datasets, all green).
-- [~] T901 `verification.md` filled; AC→test mapping + code-quality + constitutional all checked. Manual-QA workspace prepared + offline pre-verified (0 diagnostics; engine outputs match the matrix). **Hands-on Extension Host pass + PO sign-off pending** (release gate).
-- [ ] T902 CI green on Linux/macOS/Windows (on push/PR).
+- [x] T901 `verification.md` filled + **PO-accepted 2026-06-26**; the hands-on Extension Host pass caught 5 real issues (all fixed pre-release).
+- [x] T902 CI green on Linux/macOS/Windows + e2e (PR #97); shipped v0.9.0.

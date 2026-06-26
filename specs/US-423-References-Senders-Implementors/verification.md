@@ -2,7 +2,7 @@
 
 **Purpose**: Verify implementation correctness AFTER coding  
 **Type**: Implementation Verification  
-**US**: US-423 — References + Senders/Implementors (Two-Tier Engine) · **Updated**: 2026-06-25
+**US**: US-423 — References + Senders/Implementors (Two-Tier Engine) · **Updated**: 2026-06-26 · **Shipped**: v0.9.0
 
 ---
 
@@ -56,12 +56,16 @@
   checked to match every expected value in the matrix (Implementors/Senders of `#greet`/`#do:`/`#new`,
   the `(top level)` sender label, the class-side `Stage class` implementor ranked first, and the
   receiver-hint badges).
-- [ ] **Hands-on Extension Host pass + PO sign-off — PENDING.** The §-A–E click-through (peek, the
-  command tree + header tooltip, plural F12, call hierarchy, the `smalltalk-cartridge:` virtual doc,
-  and the clean-VSIX `npm run package` spot-check) must be run in the Extension Development Host before
-  release, per the `manual-qa-before-release` discipline.
-- [ ] No errors in the Developer Tools console (to confirm during the hands-on pass).
+- [X] **Hands-on Extension Host pass + PO sign-off — DONE (2026-06-26).** The §A–E click-through was run
+  in the Extension Development Host. It caught **five** real issues the automated layers missed, all fixed
+  before release: (1) provenance vocabulary leaked the internal `cartridge:…` term — unified with the
+  status-bar identity; (2) the cartridge virtual-doc copy mislabeled the installed tier — made
+  tier-accurate; (3) the installed tier had no senders — gained its own `crossReference` tier (parity with
+  bundled); (4) installed rows opened a stub instead of the real source — now carry a `SourceLocation` and
+  open the actual `.st`; (5) a kernel file opened to *view* was indexed as `workspace` and shadowed the
+  cartridge — open docs are now indexed only when under a workspace folder.
+- [X] No errors in the Developer Tools console during the pass.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge — **pending** the hands-on manual-QA pass (§4), PO acceptance, and CI green on
-  Linux/macOS/Windows (`test:e2e` is local; CI runs `test:parser` + `test:server` + `eval`).
+- [X] **Ready for Merge — PO-accepted 2026-06-26**; merged via PR #97 (closes #66), CI green on
+  Linux/macOS/Windows + e2e, and **shipped in v0.9.0** (published to the Marketplace).

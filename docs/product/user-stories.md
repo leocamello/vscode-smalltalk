@@ -1359,7 +1359,7 @@ Scenario: User follows Quick Start guide
 * [X] **Language Server:** unit tests (merge/dedup/precedence, union packaging, dev-box overlap, ranking) — `workspaceXref`/`resolve`/`callHierarchy`/`crossReference` suites + `test:server`.
 * [X] **End-to-End:** peek references + plural definition + call hierarchy + command-result assertions (`US-423.acceptance.test.js`, 27-test suite green).
 * [X] Output eval `evals/datasets/references/` (5/5); no-`gst` verified.
-* [ ] PO accepts the story (hands-on manual-QA pass pending; see `verification.md` §4/§5).
+* [X] PO accepts the story — **accepted 2026-06-26**, shipped **v0.9.0** (see `verification.md` §4/§5).
 
 **Notes / Questions / Assumptions:**
 * Graded honestly as a **Transient Lead** — copyable, and a static shadow of the image's whole-world query — but the highest-value navigation win and the most visible proof of the offline knowledge graph. **Sequencing (resolved):** lands at **0.9.0** (Cross-Reference Intelligence) in the evolved ladder; formatting (US-416) moves to 1.0.
