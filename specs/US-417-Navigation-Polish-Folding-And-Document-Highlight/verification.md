@@ -25,6 +25,9 @@
 Launch with **F5**, then open **[`spot-check.st`](./spot-check.st)** (in this folder) — a single
 self-contained file with the exact S1/S2/S3 examples and inline instructions. It parses with **0
 diagnostics**, so any odd behaviour is the feature under test, not a parse error.
+
+> Folding + scope-aware highlight are also exercised (Part E) in the consolidated navigation QA
+> workspace `../US-412-*/manual-qa-workspace/` (back-filled 2026-06-26).
 Tip: to see *only* this extension's output in the console, launch with installed extensions disabled:
 `code --extensionDevelopmentPath="$PWD" --disable-extensions <folder>`.
 

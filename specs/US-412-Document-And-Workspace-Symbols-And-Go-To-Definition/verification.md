@@ -30,6 +30,12 @@
 - [x] **TDD**: provider unit + real-server LSP + Electron e2e tests authored with the change.
 
 ## Section 4: Manual Verification — Extension Host matrix (the 0.4.0 gate)
+
+> **Reproducible workspace (back-filled 2026-06-26):** the original matrix below used the external
+> GST 3.2.5 kernel corpus. A **self-contained** `manual-qa-workspace/` (`Navigation.st` + matrix Parts
+> A–E) now reproduces this offline with no corpus and no `gst` — and folds in US-417 folding/highlight.
+> Prefer it for re-runs; the corpus matrix is kept as the original 0.4.0 acceptance record.
+
 Launch with **F5** (Extension Development Host). Record **Pass/Fail + a note** per row; attach a
 screenshot for the headline rows (M1, M2, M4). Keep the Developer Tools console open (Help → Toggle
 Developer Tools) and confirm **no errors/exceptions** throughout.
