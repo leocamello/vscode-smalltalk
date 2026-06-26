@@ -1511,6 +1511,57 @@ Scenario: User follows Quick Start guide
 
 ---
 
+## US-427: Selector-Surface Coverage Audit (snippets ∪ completion ∪ signature help)
+
+* **ID:** US-427
+* **Status:** Ready — #102 *(raised during US-425 / v0.9.1 manual QA)*
+* **Epic:** EPIC-005
+* **Priority:** Low
+* **Estimate:** S
+* **Date Proposed:** 2026-06-26
+* **Owner:** Leonardo Nascimento
+
+**User Story:**
+> As a **Smalltalk developer**, I want the three surfaces that offer selectors — **static snippets**,
+> **dynamic completion**, and **signature help** — to tell **one coherent story**, so that I'm not
+> confused by a keyword selector appearing in one surface but missing from another, and the idiomatic
+> block-bearing selectors I reach for are actually templated.
+
+**Context / Why now:**
+> US-425 QA surfaced the confusion: as you type a keyword part, completion *and* signature help can both
+> pop, and a selector signature help knows about isn't always offered by completion at that cursor (it's a
+> **position** effect — completion offers keyword selectors up front in *selector* context, then switches
+> to *head* context once you're in the argument). Meanwhile the **static** `snippets/snippets.json` is a
+> small curated set (21 templates) missing several high-value block idioms. The three surfaces have never
+> been audited together.
+
+**Acceptance Criteria (AC):**
+* AC1: **Inventory** the three surfaces — `snippets/snippets.json` (prefixes, collisions, discoverability),
+  dynamic completion's keyword-selector behaviour by cursor context (the selector→head switch), and
+  signature help's prefix union — benchmarked against the common GST idiom list (kernel corpus +
+  `docs/research/gst-syntax/`).
+* AC2: **Division-of-labour doc** (a short ADR/note) pinning the contract: static snippets = idiomatic
+  **block-bearing** templates with tab-stops; dynamic completion = the full selector catalogue; signature
+  help = mid-message active parameter. No surface duplicates or contradicts another.
+* AC3: **Fill the gaps** — add the missing block idioms to `snippets.json` (`whileTrue:`, `whileFalse:`,
+  `on:do:`, `ensure:`, `ifNil:ifNotNil:`, `at:ifAbsent:`, `keysAndValuesDo:`, `inject:into:`,
+  `withIndexDo:`, `detect:ifNone:`, …); grammar-snapshot/eval guard; no regressions to existing prefixes.
+* AC4: Works with no `gst`; existing completion/signature-help behaviour unchanged (doc-only + additive snippets).
+
+**Definition of Ready (DoR) Checklist:**
+* [X] Decoupled — additive snippets + a doc; no provider rewrite.
+* [X] Estimated/sized (S).
+
+**Definition of Done (DoD) Checklist:**
+* [ ] Inventory + division-of-labour doc; expanded `snippets.json` with eval guard; PO accepts.
+
+**Notes / Questions / Assumptions:**
+* The completion-vs-signature-help double-popup is **standard VS Code behaviour** (TypeScript does the
+  same) — out of scope to "fix"; the audit just makes the division of labour intentional. Related:
+  US-419 (kernel categories), US-420 (completion pseudo-variables).
+
+---
+
 > **EPIC-006 — Multi-Dialect Expansion (milestone 1.5).** The second dialect (Pharo) — when the
 > Console & Cartridges architecture pays off and the US-418 container seam is finally built. See
 > [`epics.md`](epics.md) EPIC-006.
