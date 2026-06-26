@@ -100,4 +100,6 @@ Until then the gate stays parked (this branch / git history), flagged off, ships
 - [x] **AC3** — corpus report: precision (triaged), closed-world coverage (`corpus-report.txt`).
 - [x] **AC4** — written go/no-go recommendation (this memo): **SHELVE, reconsider after cartridge hardening**.
 - [x] `npm run lint` / `check-types` / `test:parser` (incl. 16 gate tests) green; bundle unaffected.
-- [x] PO sign-off: _pending review of this memo._
+- [x] PO sign-off: **accepted — SHELVE (2026-06-26).** The unknown-selector linter is not pursued now;
+  the gate code is parked (flagged off, tree-shaken). Reconsider only after cartridge completeness + scope
+  restriction. The `primtiveFailed` typo is reported upstream (`upstream-bug-primtiveFailed.md`).
