@@ -54,7 +54,7 @@ Put the cursor on the token, run the command, read the **panel tree**.
 
 | Row | Do | Expect |
 |---|---|---|
-| **D1-installed** | With `kernelLibrary: auto` and gst installed, in an **Implementors of #do:** result click a kernel row (e.g. `Dictionary`) | The **real installed file** opens (`…/kernel/HashedColl.st` or similar) with the cursor on the method's line — actual source navigation. |
+| **D1-installed** | With `kernelLibrary: auto` and gst installed, in an **Implementors of #do:** result click a kernel row (e.g. `Dictionary`) | The **real installed file** opens (`…/kernel/HashedColl.st` or similar) with the cursor on the method's line — actual source navigation. **Re-running the query keeps that class badged `installed (gst)`** — opening a kernel file to view it does NOT reclassify it as `workspace` (it is outside your workspace folder). |
 | **D1-bundled** | Set `kernelLibrary: "bundled"`, reload, repeat | A **read-only** `smalltalk-cartridge:` editor opens stating the fact (*"…bundled reference (facts only). The method body is not shipped…"*) — **no error**, no fake source (the reference ships no body). |
 | **D2** | Read the **header row tooltip** of any result | The union/uncertainty disclaimer — *lexical union; dynamic dispatch can't be narrowed to one runtime target; likely first, none hidden*. This is the contract (AC2). |
 

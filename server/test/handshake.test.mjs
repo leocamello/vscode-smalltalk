@@ -156,7 +156,10 @@ assert.equal(mySimple.kind, 5, 'MySimpleClass must be a Class (5)');
 assert.match(mySimple.location.uri, /11_/, 'MySimpleClass must resolve to fixture 11');
 
 // --- textDocument/definition (US-412 slice C) — open a doc with a def + a use ---
-const defUri = 'file:///definition-test.st';
+// In-workspace URI (under the fixture folder): index-backed features only index
+// documents that live under a workspace folder (a file opened from outside, e.g.
+// a kernel source, must not pollute the workspace tier — US-423).
+const defUri = pathToFileURL(path.join(fixtureDir, 'definition-test.st')).href;
 send({
   jsonrpc: '2.0',
   method: 'textDocument/didOpen',
@@ -188,7 +191,7 @@ assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
 // --- textDocument/references + plural definition (US-423) ---
 // Two classes implement `greet`; a third method sends it. references is the
 // union (2 defs + 1 send); definition on the send is plural (both impls).
-const xrefUri = 'file:///xref-test.st';
+const xrefUri = pathToFileURL(path.join(fixtureDir, 'xref-test.st')).href;
 const xrefText = [
   'Object subclass: Speaker [',
   '  greet [ ^self ]',
@@ -273,6 +276,25 @@ assert.ok(
   outgoing.some((c) => c.to.name === 'greet'),
   'outgoing calls of run: include the send of greet',
 );
+
+// --- a document opened from OUTSIDE the workspace must NOT be indexed (US-423) ---
+// (Regression: clicking a kernel cross-reference row opens that file; it must not
+// then mislabel the kernel's classes as `workspace` and shadow the cartridge.)
+const outsideUri = 'file:///tmp/outside-workspace-xyz.st'; // not under the fixture folder
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: { uri: outsideUri, languageId: 'smalltalk', version: 1, text: 'Object subclass: OutsiderZZZ [ widgetize [ ^1 ] ]' },
+  },
+});
+let outsideHits = [];
+for (let i = 0; i < 8; i++) {
+  await sleep(120); // let the debounced index settle
+  send({ jsonrpc: '2.0', id: 400 + i, method: 'workspace/symbol', params: { query: 'OutsiderZZZ' } });
+  outsideHits = (await receiveId(400 + i)).result ?? [];
+}
+assert.equal(outsideHits.length, 0, 'a class from a file opened outside the workspace is not indexed as workspace');
 
 // --- textDocument/foldingRange (US-417 slice A) ---
 const foldUri = 'file:///folding-test.st';

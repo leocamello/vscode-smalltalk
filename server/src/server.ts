@@ -554,10 +554,29 @@ function scheduleIndex(uri: string, text: string): void {
   );
 }
 
-/** Index a document (symbols + cross-reference) unless `files.exclude` excludes it. */
+/** Whether an open document belongs to the user's project — i.e. lives under a
+ *  workspace folder. A file opened for *viewing* from outside (e.g. a kernel
+ *  source file reached by clicking a cartridge cross-reference row) is NOT
+ *  workspace source and must not be indexed as such, or its kernel classes would
+ *  mislabel as `workspace` and shadow the cartridge tier. With no folder open
+ *  (single-file mode), or a non-file URI (an `untitled:` buffer), the active
+ *  document IS the context, so index it. */
+function isInWorkspace(uri: string): boolean {
+  if (workspaceFolders.length === 0) {
+    return true;
+  }
+  const fsPath = uriToPath(uri);
+  if (fsPath === undefined) {
+    return true; // untitled / virtual document — the active editing context
+  }
+  return workspaceFolders.some((folder) => fsPath === folder || fsPath.startsWith(folder + path.sep));
+}
+
+/** Index a document (symbols + cross-reference) unless it is outside the
+ *  workspace or excluded by `files.exclude`. */
 function indexDoc(uri: string, text: string): void {
   const fsPath = uriToPath(uri);
-  if (fsPath !== undefined && currentExclude(fsPath, path.basename(fsPath), false)) {
+  if (!isInWorkspace(uri) || (fsPath !== undefined && currentExclude(fsPath, path.basename(fsPath), false))) {
     index.removeFile(uri);
     workspaceXref.removeFile(uri);
     return;
