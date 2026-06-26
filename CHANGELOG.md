@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-26
+
+### Added
+
+-   **Keyword-message signature help** for GNU Smalltalk — **offline, no `gst` required** (US-425). As you type a keyword send (`aDictionary at: key put: …`), VS Code's signature popup shows the matching keyword selector(s) and **tracks the active parameter** — the keyword whose argument the cursor is currently filling.
+    -   **Two-tier union, honestly framed** — signatures are drawn from your **workspace ∪ the GNU Smalltalk kernel cartridge**; a typed keyword *prefix* matches every selector that starts with it (`at:` → `at:`, `at:put:`, `at:ifAbsent:`…), cycled with VS Code's "N of M". Each signature carries its **provenance** (`workspace` / `kernel (installed)` / `kernel (reference)`).
+    -   **Keyword-only by design** — unary and binary sends carry no parameter sequence, so they (and non-keyword cursors) show no popup. Because the kernel cartridge is facts-only, the highlighted parameter is the **keyword part** itself (`put:`), not a synthesized argument name.
+    -   Complements completion: completion helps you *pick* the selector up front; signature help confirms *where you are* once you're inside the arguments (especially with long or nested argument expressions).
+    -   New `evals/datasets/signature-help/` output eval; a `specs/US-425-*/manual-qa-workspace/`.
+
 ## [0.9.0] - 2026-06-26
 
 ### Added
