@@ -107,6 +107,8 @@ assert.equal(caps.textDocumentSync, 2, 'expected incremental textDocumentSync (2
 assert.equal(caps.documentSymbolProvider, true, 'expected documentSymbolProvider (US-412)');
 assert.equal(caps.workspaceSymbolProvider, true, 'expected workspaceSymbolProvider (US-412)');
 assert.equal(caps.definitionProvider, true, 'expected definitionProvider (US-412)');
+assert.equal(caps.referencesProvider, true, 'expected referencesProvider (US-423)');
+assert.equal(caps.callHierarchyProvider, true, 'expected callHierarchyProvider (US-423)');
 assert.equal(caps.foldingRangeProvider, true, 'expected foldingRangeProvider (US-417)');
 assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightProvider (US-417)');
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
@@ -154,7 +156,10 @@ assert.equal(mySimple.kind, 5, 'MySimpleClass must be a Class (5)');
 assert.match(mySimple.location.uri, /11_/, 'MySimpleClass must resolve to fixture 11');
 
 // --- textDocument/definition (US-412 slice C) — open a doc with a def + a use ---
-const defUri = 'file:///definition-test.st';
+// In-workspace URI (under the fixture folder): index-backed features only index
+// documents that live under a workspace folder (a file opened from outside, e.g.
+// a kernel source, must not pollute the workspace tier — US-423).
+const defUri = pathToFileURL(path.join(fixtureDir, 'definition-test.st')).href;
 send({
   jsonrpc: '2.0',
   method: 'textDocument/didOpen',
@@ -182,6 +187,117 @@ for (let i = 0; i < 25 && defResult.length === 0; i++) {
 assert.ok(defResult.length >= 1, 'definition must resolve the `greet` send');
 assert.equal(defResult[0].uri, defUri, 'definition resolves within the same file');
 assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
+
+// --- textDocument/references + plural definition (US-423) ---
+// Two classes implement `greet`; a third method sends it. references is the
+// union (2 defs + 1 send); definition on the send is plural (both impls).
+const xrefUri = pathToFileURL(path.join(fixtureDir, 'xref-test.st')).href;
+const xrefText = [
+  'Object subclass: Speaker [',
+  '  greet [ ^self ]',
+  ']',
+  'Object subclass: Robot [',
+  '  greet [ ^self ]',
+  ']',
+  'Object subclass: Stage [',
+  '  run: who [ ^who greet ]',
+  ']',
+].join('\n');
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: xrefUri, languageId: 'smalltalk', version: 1, text: xrefText } },
+});
+// Cursor on the `greet` send inside Stage>>run: (line 7). Poll for the debounced index.
+const sendLine = 7;
+const sendChar = xrefText.split('\n')[sendLine].indexOf('greet');
+let refResult = [];
+for (let i = 0; i < 25 && refResult.length < 3; i++) {
+  send({
+    jsonrpc: '2.0',
+    id: 300 + i,
+    method: 'textDocument/references',
+    params: { textDocument: { uri: xrefUri }, position: { line: sendLine, character: sendChar }, context: { includeDeclaration: true } },
+  });
+  refResult = (await receiveId(300 + i)).result ?? [];
+  if (refResult.length < 3) await sleep(100);
+}
+assert.ok(refResult.length >= 3, `references returns the union of both implementors + the send (got ${refResult.length})`);
+
+// Plural go-to-definition on the same send: both implementors, never collapsed (AC3).
+send({
+  jsonrpc: '2.0',
+  id: 320,
+  method: 'textDocument/definition',
+  params: { textDocument: { uri: xrefUri }, position: { line: sendLine, character: sendChar } },
+});
+const xrefDef = (await receiveId(320)).result ?? [];
+assert.ok(xrefDef.length >= 2, `definition on a send is plural — both implementors (got ${xrefDef.length})`);
+
+// --- call hierarchy (US-423 AC4) — prepare on Speaker>>greet, then incoming/outgoing ---
+const greetDefLine = 1; // `  greet [ ^self ]` inside Speaker
+const greetDefChar = xrefText.split('\n')[greetDefLine].indexOf('greet');
+let prepItems = [];
+for (let i = 0; i < 25 && prepItems.length === 0; i++) {
+  send({
+    jsonrpc: '2.0',
+    id: 340 + i,
+    method: 'textDocument/prepareCallHierarchy',
+    params: { textDocument: { uri: xrefUri }, position: { line: greetDefLine, character: greetDefChar } },
+  });
+  prepItems = (await receiveId(340 + i)).result ?? [];
+  if (prepItems.length === 0) await sleep(100);
+}
+assert.ok(prepItems.length >= 1, 'prepareCallHierarchy yields an item on the method definition');
+assert.equal(prepItems[0].name, 'Speaker>>greet', 'the prepared item names the method');
+
+send({ jsonrpc: '2.0', id: 360, method: 'callHierarchy/incomingCalls', params: { item: prepItems[0] } });
+const incoming = (await receiveId(360)).result ?? [];
+assert.ok(incoming.length >= 1, 'incoming calls = senders of greet (Stage>>run:)');
+assert.ok(
+  incoming.some((c) => c.from.name.includes('run:')),
+  'Stage>>run: is an incoming caller of greet',
+);
+
+// Outgoing of Stage>>run: — prepare on the method, then ask for its sends.
+const runDefLine = 7; // `  run: who [ ^who greet ]`
+const runDefChar = xrefText.split('\n')[runDefLine].indexOf('run:');
+send({
+  jsonrpc: '2.0',
+  id: 380,
+  method: 'textDocument/prepareCallHierarchy',
+  params: { textDocument: { uri: xrefUri }, position: { line: runDefLine, character: runDefChar } },
+});
+const runItems = (await receiveId(380)).result ?? [];
+assert.ok(runItems.length >= 1 && runItems[0].name.includes('run:'), 'prepared Stage>>run:');
+send({ jsonrpc: '2.0', id: 381, method: 'callHierarchy/outgoingCalls', params: { item: runItems[0] } });
+const outgoing = (await receiveId(381)).result ?? [];
+assert.ok(
+  outgoing.some((c) => c.to.name === 'greet'),
+  'outgoing calls of run: include the send of greet',
+);
+
+// --- a document opened from OUTSIDE the workspace must NOT be indexed (US-423) ---
+// (Regression: clicking a kernel cross-reference row opens that file; it must not
+// then mislabel the kernel's classes as `workspace` and shadow the cartridge.)
+// A valid absolute path on every OS that is NOT under the workspace folder
+// (the repo root sits above the fixture folder). A literal `file:///tmp/…` would
+// be a non-absolute path on Windows and get misread as an untitled buffer.
+const outsideUri = pathToFileURL(path.join(root, 'outside-workspace-xyz.st')).href;
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: {
+    textDocument: { uri: outsideUri, languageId: 'smalltalk', version: 1, text: 'Object subclass: OutsiderZZZ [ widgetize [ ^1 ] ]' },
+  },
+});
+let outsideHits = [];
+for (let i = 0; i < 8; i++) {
+  await sleep(120); // let the debounced index settle
+  send({ jsonrpc: '2.0', id: 400 + i, method: 'workspace/symbol', params: { query: 'OutsiderZZZ' } });
+  outsideHits = (await receiveId(400 + i)).result ?? [];
+}
+assert.equal(outsideHits.length, 0, 'a class from a file opened outside the workspace is not indexed as workspace');
 
 // --- textDocument/foldingRange (US-417 slice A) ---
 const foldUri = 'file:///folding-test.st';
@@ -379,6 +495,6 @@ await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, callHierarchy, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);

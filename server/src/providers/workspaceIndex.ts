@@ -67,6 +67,44 @@ function toRange(r: { startPos: Position; endPos: Position }): IndexRange {
   return { start: r.startPos, end: r.endPos };
 }
 
+/** Recursively visit every non-excluded `.st`/`.gst` file under `root`, reading
+ *  its text. Shared by the symbol index and the workspace cross-reference index
+ *  (US-423) so a workspace is walked from disk exactly once. Never throws. */
+export function walkStFiles(
+  root: string,
+  exclude: ExcludePredicate,
+  visit: (uri: string, text: string) => void,
+): void {
+  let count = 0;
+  const walk = (dir: string): void => {
+    let dirents: fs.Dirent[];
+    try {
+      dirents = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const dirent of dirents) {
+      const full = path.join(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        if (!exclude(full, dirent.name, true)) {
+          walk(full);
+        }
+      } else if (dirent.isFile() && ST_FILE.test(dirent.name) && count < MAX_FILES) {
+        if (exclude(full, dirent.name, false)) {
+          continue;
+        }
+        count += 1;
+        try {
+          visit(pathToFileURL(full).href, fs.readFileSync(full, 'utf8'));
+        } catch {
+          // Unreadable file — skip it; never throw from indexing.
+        }
+      }
+    }
+  };
+  walk(root);
+}
+
 function flatten(
   uri: string,
   nodes: SymbolNode[],
@@ -125,34 +163,7 @@ export class WorkspaceIndex {
 
   /** Recursively index `.st`/`.gst` files under `root`, skipping `exclude` paths. */
   indexFolder(root: string, exclude: ExcludePredicate = defaultExclude): void {
-    let count = 0;
-    const walk = (dir: string): void => {
-      let dirents: fs.Dirent[];
-      try {
-        dirents = fs.readdirSync(dir, { withFileTypes: true });
-      } catch {
-        return;
-      }
-      for (const dirent of dirents) {
-        const full = path.join(dir, dirent.name);
-        if (dirent.isDirectory()) {
-          if (!exclude(full, dirent.name, true)) {
-            walk(full);
-          }
-        } else if (dirent.isFile() && ST_FILE.test(dirent.name) && count < MAX_FILES) {
-          if (exclude(full, dirent.name, false)) {
-            continue;
-          }
-          count += 1;
-          try {
-            this.setFile(pathToFileURL(full).href, fs.readFileSync(full, 'utf8'));
-          } catch {
-            // Unreadable file — skip it; never throw from indexing.
-          }
-        }
-      }
-    };
-    walk(root);
+    walkStFiles(root, exclude, (uri, text) => this.setFile(uri, text));
   }
 
   /** Entries whose name contains `query` (case-insensitive); empty query → all. */

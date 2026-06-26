@@ -15,16 +15,21 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { extractComments, type FileComments } from '../parser/comments';
 import { tokenize } from '../parser/lexer';
 import { parse } from '../parser/parser';
 import { buildSymbolTable, SymbolKind, type SymbolNode } from '../parser/symbols';
+import { forEachSend, type RawSend } from '../xref/workspaceXref';
 import type {
   CartridgeHeader,
   ClassFact,
+  CrossReference,
   DialectCartridge,
   Documentation,
+  ImplementorRef,
   SelectorSignature,
+  SendSite,
 } from '../types/knowledge-base';
 
 const ST_FILE = /\.st$/i;
@@ -32,6 +37,10 @@ const ST_FILE = /\.st$/i;
 interface SelectorAcc {
   readonly arity: number;
   comment?: string;
+  /** Real source coordinates of the method's definition (installed adapter), so
+   *  "Implementors of" can open the actual file rather than a virtual stub. */
+  sourceUri?: string;
+  sourceLine?: number;
 }
 
 interface ClassAcc {
@@ -53,8 +62,14 @@ function accFor(classes: Map<string, ClassAcc>, name: string): ClassAcc {
 }
 
 /** Walk the symbol tree, merging class facts (and `comments`, when present) across
- *  files/chunks into `classes`. */
-function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>, comments: FileComments | undefined): void {
+ *  files/chunks into `classes`. `fileUri` records each method's def location so
+ *  installed implementors navigate to the real file. */
+function collect(
+  nodes: SymbolNode[],
+  classes: Map<string, ClassAcc>,
+  comments: FileComments | undefined,
+  fileUri: string,
+): void {
   for (const node of nodes) {
     if (node.kind === SymbolKind.Class) {
       const acc = accFor(classes, node.name);
@@ -72,13 +87,15 @@ function collect(nodes: SymbolNode[], classes: Map<string, ClassAcc>, comments: 
             into.set(child.selector, {
               arity: child.arity ?? 0,
               comment: comments?.methodComment(node.name, classSide, child.selector),
+              sourceUri: fileUri,
+              sourceLine: child.selectionRange.startPos.line,
             });
           }
         }
       }
-      collect(node.children, classes, comments); // nested classes
+      collect(node.children, classes, comments, fileUri); // nested classes
     } else if (node.kind === SymbolKind.Namespace) {
-      collect(node.children, classes, comments);
+      collect(node.children, classes, comments, fileUri);
     }
   }
 }
@@ -88,14 +105,54 @@ function keywordsOf(selector: string): string[] {
   return selector.match(/[^:]+:/g) ?? [selector];
 }
 
-/** Parse every `.st` in `dir` and collect class facts; returns the raw accumulator
- *  plus the sorted list of REAL class names (synthetic placeholders dropped).
- *  When `carriesProse`, class/method comments are recovered too. Never throws. */
+/** Record a send into the `selector -> SendSite[]` accumulator. `line` is the
+ *  0-based offset within the enclosing method's source (matching the bundled
+ *  reflective exporter's semantic), so installed senders read like-for-like. */
+function recordSend(senders: Map<string, SendSite[]>, raw: ReturnType<typeof rawSendOf>): void {
+  if (raw === undefined) {
+    return;
+  }
+  const bucket = senders.get(raw.selector);
+  if (bucket) {
+    bucket.push(raw.site);
+  } else {
+    senders.set(raw.selector, [raw.site]);
+  }
+}
+
+/** Project a low-level `RawSend` to a cartridge `SendSite`, or `undefined` when it
+ *  lacks the enclosing-method coordinates a cross-reference fact needs (e.g. a
+ *  top-level send — none exist in kernel source, which is all class bodies).
+ *  `fileUri` + the send's absolute line let "Senders of" open the real file. */
+function rawSendOf(s: RawSend, fileUri: string): { selector: string; site: SendSite } | undefined {
+  if (s.className === undefined || s.inSelector === undefined) {
+    return undefined;
+  }
+  const line = s.methodStartLine !== undefined ? Math.max(0, s.node.startPos.line - s.methodStartLine) : s.node.startPos.line;
+  return {
+    selector: s.node.selector,
+    site: {
+      inClass: s.className,
+      side: s.side,
+      inSelector: s.inSelector,
+      line,
+      sourceUri: fileUri,
+      sourceLine: s.node.startPos.line,
+      ...(s.receiverHint != null ? { receiverHint: s.receiverHint } : {}),
+    },
+  };
+}
+
+/** Parse every `.st` in `dir` and collect class facts + the send graph; returns
+ *  the raw accumulator, the sorted list of REAL class names (synthetic
+ *  placeholders dropped), and `selector -> senders`. When `carriesProse`,
+ *  class/method comments are recovered too. Never throws. */
 function collectKernelDirectory(
   dir: string,
   carriesProse: boolean,
-): { classes: Map<string, ClassAcc>; names: string[] } {
+): { classes: Map<string, ClassAcc>; names: string[]; senders: Map<string, SendSite[]> } {
   const classes = new Map<string, ClassAcc>();
+  const senders = new Map<string, SendSite[]>();
 
   let files: string[] = [];
   try {
@@ -112,9 +169,14 @@ function collectKernelDirectory(
       continue;
     }
     try {
+      const fileUri = pathToFileURL(path.join(dir, file)).href;
       const ast = parse(text).ast;
       const comments = carriesProse ? extractComments(ast, tokenize(text).tokens) : undefined;
-      collect(buildSymbolTable(ast), classes, comments);
+      collect(buildSymbolTable(ast), classes, comments, fileUri);
+      // Build the installed `crossReference` senders tier from the same parse, so
+      // an installed kernel answers "Senders of" as richly as the bundled floor —
+      // and, because the source is local, with REAL file coordinates to jump to.
+      forEachSend(ast, (s) => recordSend(senders, rawSendOf(s, fileUri)));
     } catch {
       // Never throw from indexing — skip a pathological file.
     }
@@ -122,11 +184,20 @@ function collectKernelDirectory(
 
   // Drop synthetic placeholders (`<anonymous>`, `<methods>`) — not real classes.
   const names = [...classes.keys()].filter((n) => n && !n.startsWith('<')).sort();
-  return { classes, names };
+  return { classes, names, senders };
 }
 
 function docOf(text: string | undefined): Documentation | undefined {
   return text && text.trim() !== '' ? { text } : undefined;
+}
+
+/** An `ImplementorRef` carrying the method's real def location, when known. */
+function locatedImplementor(name: string, side: 'instance' | 'class', sel: SelectorAcc): ImplementorRef {
+  return {
+    inClass: name,
+    side,
+    ...(sel.sourceUri !== undefined ? { sourceUri: sel.sourceUri, sourceLine: sel.sourceLine } : {}),
+  };
 }
 
 function toSignatures(m: Map<string, SelectorAcc>): SelectorSignature[] {
@@ -145,9 +216,11 @@ function toSignatures(m: Map<string, SelectorAcc>): SelectorSignature[] {
 /** Index every `.st` file in `dir` into a DialectCartridge (ADR-0003 Tier-1
  *  installed adapter). Still NO runtime `gst` — a static parse of the source dir,
  *  emitting the canonical cartridge shape so the resolution chain compares
- *  installed and floor like-for-like. Emits the `classes` tier only;
- *  `crossReference` is left to the reflective exporter. Comments are populated
- *  only when `header.carriesProse` is true.
+ *  installed and floor like-for-like. Emits the `classes` tier AND a
+ *  `crossReference` tier (US-423: senders scanned from method bodies,
+ *  implementors from the class tables) so an installed kernel answers
+ *  senders/implementors as richly as the bundled reference. Comments are
+ *  populated only when `header.carriesProse` is true.
  *
  *  Flat-id dialect: a class's `id` IS its simple name (GST source carries no
  *  namespace qualifier here). Instance/class variables are not recovered by the
@@ -155,15 +228,26 @@ function toSignatures(m: Map<string, SelectorAcc>): SelectorSignature[] {
  *  the tier this adapter guarantees. */
 export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHeader): DialectCartridge {
   const carriesProse = header.carriesProse === true;
-  const { classes, names } = collectKernelDirectory(dir, carriesProse);
+  const { classes, names, senders } = collectKernelDirectory(dir, carriesProse);
 
   const out: Record<string, ClassFact> = {};
+  const implementors: Record<string, ImplementorRef[]> = {};
+  const addImplementor = (selector: string, ref: ImplementorRef): void => {
+    const bucket = implementors[selector];
+    if (bucket) {
+      bucket.push(ref);
+    } else {
+      implementors[selector] = [ref];
+    }
+  };
   for (const name of names) {
     const acc = classes.get(name);
     if (!acc) {
       continue;
     }
     const documentation = docOf(acc.comment);
+    const instanceMethods = toSignatures(acc.instance);
+    const classMethods = toSignatures(acc.klass);
     out[name] = {
       id: name,
       name,
@@ -172,12 +256,24 @@ export function indexKernelDirectoryToCartridge(dir: string, header: CartridgeHe
       instanceVariables: [],
       classVariables: [],
       classInstanceVariables: [],
-      instanceMethods: toSignatures(acc.instance),
-      classMethods: toSignatures(acc.klass),
+      instanceMethods,
+      classMethods,
       taxonomy: {},
       ...(documentation ? { documentation } : {}),
     };
+    // Implementors carry the method's real def location (from the accumulator) so
+    // "Implementors of" opens the actual installed file, not a virtual stub.
+    for (const [selector, sel] of acc.instance) {
+      addImplementor(selector, locatedImplementor(name, 'instance', sel));
+    }
+    for (const [selector, sel] of acc.klass) {
+      addImplementor(selector, locatedImplementor(name, 'class', sel));
+    }
   }
 
-  return { header, classes: out };
+  // The installed adapter now ships a real `crossReference` tier (senders scanned
+  // from the source, implementors from the class tables) — so an installed kernel
+  // answers "Senders of" / "Implementors of" as richly as the bundled reference.
+  const crossReference: CrossReference = { implementors, senders: Object.fromEntries(senders) };
+  return { header, classes: out, crossReference };
 }

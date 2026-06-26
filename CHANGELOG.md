@@ -6,6 +6,19 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-26
+
+### Added
+
+-   **Cross-Reference Intelligence** for GNU Smalltalk — the System Browser's "Senders of / Implementors of" muscle memory, **offline, no `gst` required** (US-423). Results are a **two-tier union** of your workspace and the GNU Smalltalk kernel cartridge, framed **honestly**: Smalltalk dispatches dynamically, so a query can't be narrowed to one runtime target — likely responders are ranked first, but none are ever hidden.
+    -   **`Smalltalk: Senders of…` / `Implementors of…`** commands (Command Palette + editor right-click) open a **Smalltalk References** panel: a header stating the lexical-union/uncertainty contract, and rows carrying **per-row provenance** (`workspace` / `installed (gst)` / `reference (gst 3.2.5)` — the same identity the status bar shows) plus a static **receiver-hint** badge that ranks likely senders without filtering the long tail.
+    -   **Find All References** (`textDocument/references`) returns the de-duplicated union of send sites + definitions, with `Workspace ≻ Cartridge` precedence (so the dev-box case — the kernel source also open in your workspace — de-dups to the live copy).
+    -   **Go to Definition** on a message send is **plural** — it offers *every* implementor across workspace + cartridge, never silently collapsing to one.
+    -   **Call Hierarchy** reuses the same index — incoming calls are the senders of a method, outgoing calls are the sends inside it.
+    -   **Installed-kernel parity + real-source navigation** — when `auto` resolves to your installed GNU Smalltalk, the kernel is indexed into a full cross-reference graph (as rich as the bundled reference), and clicking a kernel row opens the **real installed `.st` file** at the right line. The bundled reference (which ships no source body, by license) instead opens a read-only fact card.
+    -   **Sub-10 ms queries** — no parsing or I/O at query time; O(1) tier lookups + a small merge.
+    -   New `evals/datasets/references/` output eval; a `specs/US-423-*/manual-qa-workspace/`.
+
 ## [0.8.0] - 2026-06-25
 
 ### Added

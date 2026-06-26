@@ -103,6 +103,22 @@ hits with provenance + the union header; dev-box overlap de-dups correctly; go-t
 multiple targets; call hierarchy expands incoming/outgoing; all with no `gst`. Matrix in `verification.md`.
 
 ## 7. Risks & Limitations
+- **Both tiers now carry senders (parity), and installed navigates to real source.** Originally only the
+  **bundled** reference shipped a `crossReference` tier, so an installed gst answered "Senders of" emptily.
+  Resolved during hands-on QA: the **installed** adapter (`indexer.ts`) now scans method bodies into its
+  own `crossReference` tier (senders via the shared `workspaceXref.forEachSend`, implementors from the
+  class tables), so installed is as rich as bundled, version-correctly (dev box's 3.2.5 kernel: 1623
+  sender selectors). **Because the installed source is local, each fact also carries `sourceUri`/
+  `sourceLine` (a `SourceLocation` on `SendSite`/`ImplementorRef`), so clicking an installed row opens the
+  REAL `.st` file at the right line — not a stub.** The synthetic `smalltalk-cartridge:` virtual document
+  remains only for the **bundled** reference, which ships no source body. A shipped cartridge MUST omit
+  `sourceUri` (machine-specific path); a guard test enforces it. Per-row provenance + the status-bar
+  identity make the active source explicit.
+- **Provenance vocabulary unified with the status bar** (post-spec, from hands-on QA): the per-row badge
+  shows the kernel source's **identity label** (`reference (gst 3.2.5)` / `installed (gst)`) — the SAME
+  term the status bar uses — rather than the internal `cartridge:<dialect>@<version>` form AC2 first
+  sketched. The cartridge virtual-document copy is likewise tier-accurate (installed = your local source;
+  reference = facts-only, body not redistributed).
 - **Cartridge senders under-count** (US-430 §5: special-selector bytecodes missing from the literal
   scan) — senders of `+`, `at:put:`, `do:` (when inlined) may be incomplete from the cartridge tier.
   Honest framing in the header node; workspace tier is complete; bytecode-disassembly refinement later.

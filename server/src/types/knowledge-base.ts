@@ -124,15 +124,26 @@ export interface ClassFact {
   readonly metadata?: Readonly<Record<string, JsonScalar | readonly JsonScalar[]>>;
 }
 
+/** Local source coordinates for a cross-reference fact. Populated ONLY by a
+ *  locally-built cartridge (the installed `.st` adapter), so navigation opens the
+ *  real file. A SHIPPED cartridge (the bundled reference) MUST omit these — they
+ *  are machine-specific paths and there is no portable source to point at. */
+export interface SourceLocation {
+  /** `file://` URI of the source file on this machine. */
+  readonly sourceUri?: string;
+  /** 0-based absolute line of the def / send within `sourceUri`. */
+  readonly sourceLine?: number;
+}
+
 /** A reference to a method definition (the answer to "Implementors of"). */
-export interface ImplementorRef {
+export interface ImplementorRef extends SourceLocation {
   readonly inClass: ClassId;
   readonly side: MethodSide;
 }
 
 /** A single message-send fact (the answer to "Senders of"). No AST — just the
  *  coordinates needed to render a jump target. */
-export interface SendSite {
+export interface SendSite extends SourceLocation {
   readonly inClass: ClassId;
   readonly side: MethodSide;
   readonly inSelector: Selector;

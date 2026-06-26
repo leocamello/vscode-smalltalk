@@ -8,6 +8,12 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
   CodeActionKind,
+  type CallHierarchyIncomingCall,
+  type CallHierarchyItem,
+  type CallHierarchyIncomingCallsParams,
+  type CallHierarchyOutgoingCall,
+  type CallHierarchyOutgoingCallsParams,
+  type CallHierarchyPrepareParams,
   type CodeAction,
   type CodeActionParams,
   type CompletionItem,
@@ -24,6 +30,8 @@ import {
   type InitializeParams,
   type InitializeResult,
   type Location,
+  type LocationLink,
+  type ReferenceParams,
   type SemanticTokens,
   type SemanticTokensParams,
   type SemanticTokensRangeParams,
@@ -37,9 +45,27 @@ import { toCodeActions } from './providers/codeAction';
 import { toDocumentSymbols } from './providers/documentSymbol';
 import { toFoldingRanges } from './providers/foldingRange';
 import { documentHighlightsAt } from './providers/documentHighlight';
-import { WorkspaceIndex, defaultExclude, excludeFromConfig, type ExcludePredicate } from './providers/workspaceIndex';
+import {
+  WorkspaceIndex,
+  defaultExclude,
+  excludeFromConfig,
+  walkStFiles,
+  type ExcludePredicate,
+  type IndexEntry,
+} from './providers/workspaceIndex';
 import { toWorkspaceSymbols } from './providers/workspaceSymbol';
 import { findDefinitions, resolveDefinitionQuery } from './providers/definition';
+import { WorkspaceXref } from './xref/workspaceXref';
+import { resolveImplementors, resolveSenders, type WorkspaceMethodRef, type XrefSources } from './xref/resolve';
+import { buildCrossReference, type CrossReferenceResult, type XrefDirection } from './providers/crossReference';
+import { definitionLinks, definitionLocations, referenceLocations } from './providers/references';
+import {
+  incomingCalls,
+  outgoingCalls,
+  prepareCallHierarchy,
+  resolveCallTarget,
+  type CallItemData,
+} from './providers/callHierarchy';
 import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
 import { hoverAt, type HoverContext, type HoverImplementor } from './providers/hover';
 import {
@@ -56,6 +82,9 @@ import { SymbolKind } from './parser/symbols';
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const index = new WorkspaceIndex();
+// Live workspace cross-reference index (US-423): selector → send sites, kept in
+// lockstep with `index` so "Senders of" / references query both tiers offline.
+const workspaceXref = new WorkspaceXref();
 const kernelService = new KernelIndexService();
 
 /** Custom notification: the resolved kernel-completion source (for the status bar). */
@@ -69,6 +98,9 @@ const indexTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const DIAGNOSTIC_DEBOUNCE_MS = 250;
 const diagnosticTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let workspaceFolders: string[] = [];
+// Whether the client accepts `LocationLink[]` from go-to-definition (US-423 AC3).
+// Real VS Code does; a minimal client may not, so we fall back to `Location[]`.
+let definitionLinkSupport = false;
 // The exclude predicate in force; refreshed from `files.exclude` on init and on
 // configuration change so the index honors it consistently.
 let currentExclude: ExcludePredicate = defaultExclude;
@@ -80,6 +112,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
   workspaceFolders = (params.workspaceFolders ?? [])
     .map((folder) => uriToPath(folder.uri))
     .filter((p): p is string => p !== undefined);
+  definitionLinkSupport = params.capabilities.textDocument?.definition?.linkSupport === true;
   // Have a usable kernel immediately (refined from config in onInitialized).
   kernelService.configure({ kernelLibrary: 'auto' });
   return {
@@ -88,6 +121,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       documentSymbolProvider: true,
       workspaceSymbolProvider: true,
       definitionProvider: true,
+      // Cross-reference union: senders/implementors of a selector across the
+      // workspace + the bundled cartridge, offline (US-423).
+      referencesProvider: true,
+      // Call hierarchy over the same engine: incoming = senders, outgoing =
+      // sends within a method (US-423 AC4).
+      callHierarchyProvider: true,
       foldingRangeProvider: true,
       documentHighlightProvider: true,
       // Hover over selectors/classes/variables/numeric literals (US-415).
@@ -140,14 +179,126 @@ connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): WorkspaceSymbol[] 
   toWorkspaceSymbols(index.query(params.query)),
 );
 
-connection.onDefinition((params: DefinitionParams): Location[] => {
+connection.onDefinition((params: DefinitionParams): Location[] | LocationLink[] => {
   const doc = documents.get(params.textDocument.uri);
   if (!doc) {
     return [];
   }
   const query = resolveDefinitionQuery(doc.getText(), doc.offsetAt(params.position));
-  return query ? findDefinitions(index, query, doc.uri) : [];
+  if (!query) {
+    return [];
+  }
+  // A message send resolves to the plural union of ALL implementors across the
+  // workspace + cartridge — never collapsed to one target (US-423 AC3). A class
+  // reference keeps the workspace symbol jump (US-412).
+  if (query.target === 'selector') {
+    const sources = buildXrefSources(query.name);
+    return definitionLinkSupport
+      ? definitionLinks(sources, query.name)
+      : definitionLocations(sources, query.name);
+  }
+  return findDefinitions(index, query, doc.uri);
 });
+
+connection.onReferences((params: ReferenceParams): Location[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return [];
+  }
+  const query = resolveDefinitionQuery(doc.getText(), doc.offsetAt(params.position));
+  if (!query || query.target !== 'selector') {
+    return [];
+  }
+  return referenceLocations(buildXrefSources(query.name), query.name);
+});
+
+/** Assemble the two-tier facts for one selector: workspace implementors (from the
+ *  symbol index), workspace senders (from the live xref), and the cartridge
+ *  cross-reference half, plus the known-class predicate for hint ranking (AC6). */
+function buildXrefSources(selector: string): XrefSources {
+  const entries = index.all();
+  const workspaceImplementors: WorkspaceMethodRef[] = entries
+    .filter((e: IndexEntry) => e.kind === SymbolKind.Method && e.name === selector)
+    .map((e) => ({
+      uri: e.uri,
+      side: e.classSide ? 'class' : 'instance',
+      range: e.selectionRange,
+      ...(e.containerName !== undefined ? { className: e.containerName } : {}),
+    }));
+  const workspaceClasses = new Set(
+    entries.filter((e) => e.kind === SymbolKind.Class || e.kind === SymbolKind.Namespace).map((e) => e.name),
+  );
+  return {
+    workspaceImplementors,
+    workspaceSenders: workspaceXref.sendersOf(selector),
+    cartridgeSenders: kernelService.crossReferenceSenders(selector),
+    cartridgeImplementors: kernelService.crossReferenceImplementors(selector),
+    // Label the cartridge tier with the SAME identity the status bar shows, so
+    // the panel's per-row provenance and the status bar agree (terminology parity).
+    ...(kernelService.cartridgeId
+      ? { cartridge: { ...kernelService.cartridgeId, label: kernelService.identity.label } }
+      : {}),
+    isKnownClass: (name) => workspaceClasses.has(name) || kernelService.hasClass(name),
+  };
+}
+
+/** Custom request backing the branded `Smalltalk: Senders of…` / `Implementors
+ *  of…` commands (US-423 AC2). Resolves the selector under the cursor (method
+ *  def or send), then returns the honest union + per-row provenance the client
+ *  renders as a tree. Returns null when the cursor is not on a selector. */
+const CROSS_REFERENCE_REQUEST = 'smalltalk/crossReference';
+interface CrossReferenceParams {
+  readonly textDocument: { readonly uri: string };
+  readonly position: { readonly line: number; readonly character: number };
+  readonly direction: XrefDirection;
+}
+connection.onRequest(CROSS_REFERENCE_REQUEST, (params: CrossReferenceParams): CrossReferenceResult | null => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return null;
+  }
+  const target = resolveCallTarget(getAst(doc), getTokens(doc), doc.offsetAt(params.position));
+  if (!target) {
+    return null;
+  }
+  const sources = buildXrefSources(target.selector);
+  const refs =
+    params.direction === 'senders'
+      ? resolveSenders(sources, target.selector)
+      : resolveImplementors(sources, target.selector);
+  return buildCrossReference(params.direction, target.selector, refs);
+});
+
+connection.languages.callHierarchy.onPrepare((params: CallHierarchyPrepareParams): CallHierarchyItem[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return [];
+  }
+  const target = resolveCallTarget(getAst(doc), getTokens(doc), doc.offsetAt(params.position));
+  return prepareCallHierarchy(target, doc.uri);
+});
+
+connection.languages.callHierarchy.onIncomingCalls(
+  (params: CallHierarchyIncomingCallsParams): CallHierarchyIncomingCall[] => {
+    const data = params.item.data as CallItemData | undefined;
+    if (!data) {
+      return [];
+    }
+    // Incoming = everyone who sends this selector (the lexical union, AC4).
+    return incomingCalls(resolveSenders(buildXrefSources(data.selector), data.selector));
+  },
+);
+
+connection.languages.callHierarchy.onOutgoingCalls(
+  (params: CallHierarchyOutgoingCallsParams): CallHierarchyOutgoingCall[] => {
+    const data = params.item.data as CallItemData | undefined;
+    // Outgoing = the sends inside this method's body (workspace tier only).
+    if (!data || data.side === undefined) {
+      return [];
+    }
+    return outgoingCalls(workspaceXref.sendsFrom(data.uri, data.className, data.side, data.selector));
+  },
+);
 
 connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
   const doc = documents.get(params.textDocument.uri);
@@ -309,6 +460,7 @@ documents.onDidClose((e) => {
     }
   }
   index.removeFile(e.document.uri);
+  workspaceXref.removeFile(e.document.uri);
 });
 
 /** Re-pull `files.exclude`, re-scan the folders, then re-apply non-excluded open docs. */
@@ -322,8 +474,13 @@ async function rebuildIndex(): Promise<void> {
     currentExclude = defaultExclude;
   }
   index.clear();
+  workspaceXref.clear();
+  // One disk walk feeds both the symbol index and the cross-reference index.
   for (const folder of workspaceFolders) {
-    index.indexFolder(folder, currentExclude);
+    walkStFiles(folder, currentExclude, (uri, text) => {
+      index.setFile(uri, text);
+      workspaceXref.setFile(uri, text);
+    });
   }
   for (const doc of documents.all()) {
     indexDoc(doc.uri, doc.getText());
@@ -397,14 +554,35 @@ function scheduleIndex(uri: string, text: string): void {
   );
 }
 
-/** Index a document unless `files.exclude` excludes it. */
+/** Whether an open document belongs to the user's project — i.e. lives under a
+ *  workspace folder. A file opened for *viewing* from outside (e.g. a kernel
+ *  source file reached by clicking a cartridge cross-reference row) is NOT
+ *  workspace source and must not be indexed as such, or its kernel classes would
+ *  mislabel as `workspace` and shadow the cartridge tier. With no folder open
+ *  (single-file mode), or a non-file URI (an `untitled:` buffer), the active
+ *  document IS the context, so index it. */
+function isInWorkspace(uri: string): boolean {
+  if (workspaceFolders.length === 0) {
+    return true;
+  }
+  const fsPath = uriToPath(uri);
+  if (fsPath === undefined) {
+    return true; // untitled / virtual document — the active editing context
+  }
+  return workspaceFolders.some((folder) => fsPath === folder || fsPath.startsWith(folder + path.sep));
+}
+
+/** Index a document (symbols + cross-reference) unless it is outside the
+ *  workspace or excluded by `files.exclude`. */
 function indexDoc(uri: string, text: string): void {
   const fsPath = uriToPath(uri);
-  if (fsPath !== undefined && currentExclude(fsPath, path.basename(fsPath), false)) {
+  if (!isInWorkspace(uri) || (fsPath !== undefined && currentExclude(fsPath, path.basename(fsPath), false))) {
     index.removeFile(uri);
+    workspaceXref.removeFile(uri);
     return;
   }
   index.setFile(uri, text);
+  workspaceXref.setFile(uri, text);
 }
 
 function uriToPath(uri: string): string | undefined {

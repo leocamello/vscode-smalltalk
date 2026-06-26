@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-25)
+## Current status (2026-06-26)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,19 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.9.0 — Cross-Reference Intelligence (US-423, EPIC-005)** — the System Browser's
+  **Senders of / Implementors of** over a **two-tier union** (workspace ∪ kernel cartridge), **offline**,
+  framed honestly as a lexical union (dynamic dispatch isn't statically resolvable; rank, never filter).
+  `textDocument/references` (union, `Workspace ≻ Cartridge` dev-box dedup), **plural** go-to-definition,
+  `callHierarchy` (incoming = senders, outgoing = sends), and branded `Smalltalk: Senders of… /
+  Implementors of…` commands → a **Smalltalk References** panel (header disclaimer + per-row provenance
+  using the status-bar identity + receiver-hint badge). Engine: `server/src/xref/` (`workspaceXref.ts`
+  live send index + `forEachSend`; `resolve.ts` merge/dedup/rank), `providers/references.ts`,
+  `callHierarchy.ts`, `crossReference.ts`; client `crossReferences.ts` (tree + `smalltalk-cartridge:`
+  virtual doc). The **installed** kernel now builds its own `crossReference` tier (senders scanned from
+  source), and its rows carry real `SourceLocation` so they open the actual installed `.st` file; the
+  bundled reference (no shipped body) opens a read-only fact card. Open docs are indexed only when under a
+  workspace folder. New `evals/datasets/references/` + `specs/US-423-*/manual-qa-workspace/`. Closes #66.
 - **Shipped:** **v0.8.0 — cartridge-aware semantic tokens (US-422, EPIC-005)** — the **first user-facing
   consumer of the Console & Cartridges foundation**. `textDocument/semanticTokens` (full + range,
   `providers/semanticTokens.ts`) classifies by role off the US-411 AST + symbol scopes: ivar→`property`,
@@ -47,8 +60,11 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** **EPIC-005 foundation landed**
-  (US-430, lands 0.8/0.9): the Dialect Cartridge schema (`server/src/types/knowledge-base.ts`) + GST
+- **Next:** **US-416** (formatting, EPIC-004, → ~1.0) and **US-425** (signature help, small, EPIC-005);
+  **SPIKE-01** (unknown-selector heuristic, gates any linter feature). EPIC-005 consumers now span
+  completion (0.5), semantic tokens (0.8), and cross-reference (0.9) on one Console.
+- **Foundation:** **EPIC-005 foundation landed**
+  (US-430, 0.8/0.9): the Dialect Cartridge schema (`server/src/types/knowledge-base.ts`) + GST
   **Cartridge #01** (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`,
   249 classes / 4746 signatures, `contentHash`-stamped) now **drive completion**: the runtime Console
   loader (`cartridgeLoader.ts`) projects the cartridge to the completion model, the installed adapter
@@ -59,10 +75,21 @@ Marketplace as `leocamello.vscode-smalltalk`.
 - **Source:** parser/symbols in `server/src/parser/` (`lexer.ts`, `parser.ts`, `ast.ts`, `symbols.ts`,
   `walk.ts`; GST containers/chunk live in `parser.ts`). LSP providers in `server/src/providers/`
   (`documentSymbol`, `workspaceSymbol` + `workspaceIndex`, `definition`, `foldingRange`,
-  `documentHighlight`, `completion`, `diagnostics`, `codeAction`, `hover`, `semanticTokens`);
-  `server/src/documents/parseCache.ts`
+  `documentHighlight`, `completion`, `diagnostics`, `codeAction`, `hover`, `semanticTokens`,
+  `references`, `callHierarchy`, `crossReference`); the cross-reference engine in `server/src/xref/`
+  (`workspaceXref`, `resolve`); `server/src/documents/parseCache.ts`
   memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
   `server/src/server.ts`.
+- **Cross-reference / Senders-Implementors (US-423 → 0.9.0):** `server/src/xref/workspaceXref.ts` is the
+  live `selector → send-site` index (off the US-411 AST; `forEachSend` is the shared send-walk reused by
+  the installed cartridge adapter); `xref/resolve.ts` merges the workspace tier with the cartridge
+  `crossReference` tier into a deduped, honestly-ranked union (`Workspace ≻ Cartridge` dev-box dedup; rank
+  by `receiverHint`, never filter). `providers/references.ts` (union + plural `LocationLink[]` definition),
+  `callHierarchy.ts` (incoming = senders, outgoing = sends), `crossReference.ts` (the branded-command
+  result: header disclaimer + per-row provenance). Client `client/src/crossReferences.ts` renders the
+  **Smalltalk References** tree + a read-only `smalltalk-cartridge:` virtual doc; installed-kernel rows
+  carry a real `SourceLocation` and open the actual `.st`. Output eval: `evals/datasets/references/`.
+  Only docs **under a workspace folder** are indexed (a kernel file opened to view isn't workspace source).
 - **Diagnostics (US-414 → 0.6.0, parser-only):** `providers/diagnostics.ts` maps the parser's
   `LexDiagnostic`s to LSP `Diagnostic`s (always-on, badge `smalltalk(parse)`); `server.ts` publishes
   them debounced (own 250 ms timer) on open/change, clears on close. `providers/codeAction.ts` offers

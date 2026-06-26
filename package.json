@@ -8,7 +8,7 @@
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "preview": true,
     "icon": "icon.png",
     "main": "./dist/extension.js",
@@ -70,12 +70,47 @@
                 "command": "smalltalk.runCurrentFile",
                 "title": "Run Current File",
                 "category": "Smalltalk"
+            },
+            {
+                "command": "smalltalk.sendersOf",
+                "title": "Senders of…",
+                "category": "Smalltalk"
+            },
+            {
+                "command": "smalltalk.implementorsOf",
+                "title": "Implementors of…",
+                "category": "Smalltalk"
             }
         ],
+        "viewsContainers": {
+            "panel": [
+                {
+                    "id": "smalltalkReferences",
+                    "title": "Smalltalk References",
+                    "icon": "media/references.svg"
+                }
+            ]
+        },
+        "views": {
+            "smalltalkReferences": [
+                {
+                    "id": "smalltalkCrossReferences",
+                    "name": "Senders / Implementors"
+                }
+            ]
+        },
         "menus": {
             "commandPalette": [
                 {
                     "command": "smalltalk.runCurrentFile",
+                    "when": "editorLangId == smalltalk"
+                },
+                {
+                    "command": "smalltalk.sendersOf",
+                    "when": "editorLangId == smalltalk"
+                },
+                {
+                    "command": "smalltalk.implementorsOf",
                     "when": "editorLangId == smalltalk"
                 }
             ],
@@ -84,6 +119,16 @@
                     "command": "smalltalk.runCurrentFile",
                     "when": "editorLangId == smalltalk",
                     "group": "navigation"
+                },
+                {
+                    "command": "smalltalk.implementorsOf",
+                    "when": "editorLangId == smalltalk",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "smalltalk.sendersOf",
+                    "when": "editorLangId == smalltalk",
+                    "group": "navigation@3"
                 }
             ]
         },
@@ -166,7 +211,8 @@
         "eval:diagnostics": "tsx evals/datasets/diagnostics/run.ts",
         "eval:hover": "tsx evals/datasets/hover/run.ts",
         "eval:semantic-tokens": "tsx evals/datasets/semantic-tokens/run.ts",
-        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens",
+        "eval:references": "tsx evals/datasets/references/run.ts",
+        "eval": "npm run build:grammar && npm run test:grammar && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references",
         "new-story": "bash scripts/new-story.sh"
     }
 }
