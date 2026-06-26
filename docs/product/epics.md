@@ -147,7 +147,7 @@
 ## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
 
 * **ID:** EPIC-005
-* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; next consumer US-425 signature help, SPIKE-01)
+* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; **US-425 keyword-message signature help shipped v0.9.1**; **SPIKE-01 unknown-selector heuristic done — shelved** (zero-FP bar unmet, gate parked); next consumer US-427 selector-surface audit)
 * **Priority:** High
 * **Phase:** Phase 2 (extends EPIC-004)
 * **Date Proposed:** 2026-06-21

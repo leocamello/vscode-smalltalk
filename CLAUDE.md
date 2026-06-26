@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-26)
+## Current status (2026-06-27)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
