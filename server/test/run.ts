@@ -14,6 +14,7 @@ import './codeAction.test.ts';
 import './comments.test.ts';
 import './hover.test.ts';
 import './semanticTokens.test.ts';
+import './signatureHelp.test.ts';
 import './workspaceXref.test.ts';
 import './resolve.test.ts';
 import './callHierarchy.test.ts';

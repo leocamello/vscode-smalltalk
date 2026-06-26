@@ -114,6 +114,11 @@ assert.equal(caps.documentHighlightProvider, true, 'expected documentHighlightPr
 assert.ok(caps.completionProvider, 'expected completionProvider (US-413)');
 assert.ok(caps.codeActionProvider, 'expected codeActionProvider (US-414)');
 assert.equal(caps.hoverProvider, true, 'expected hoverProvider (US-415)');
+assert.ok(caps.signatureHelpProvider, 'expected signatureHelpProvider (US-425)');
+assert.ok(
+  caps.signatureHelpProvider.triggerCharacters?.includes(':'),
+  'signature help triggers on `:` (US-425)',
+);
 assert.ok(caps.semanticTokensProvider, 'expected semanticTokensProvider (US-422)');
 const stLegend = caps.semanticTokensProvider.legend;
 assert.ok(Array.isArray(stLegend?.tokenTypes) && stLegend.tokenTypes.length > 0, 'semantic tokens legend advertises token types');
@@ -389,6 +394,51 @@ assert.ok(
   'expected the kernel class Object in head-context completion',
 );
 
+// --- textDocument/signatureHelp (US-425) ---
+// At a keyword-send cursor, the bundled kernel supplies the matching keyword
+// selector(s) with the active parameter tracked — no gst, no workspace file.
+const sigUri = 'file:///signature-test.st';
+const sigText = 'x at: 1 put: ';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: sigUri, languageId: 'smalltalk', version: 1, text: sigText } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 11,
+  method: 'textDocument/signatureHelp',
+  params: { textDocument: { uri: sigUri }, position: { line: 0, character: sigText.length } },
+});
+const sigResult = (await receiveId(11)).result;
+assert.ok(sigResult?.signatures?.length > 0, 'signature help returns keyword signatures at a keyword send');
+assert.equal(sigResult.activeParameter, 1, 'the second keyword (put:) is the active parameter');
+assert.ok(
+  sigResult.signatures.some((s) => s.selector === 'at:put:'),
+  'expected the kernel selector at:put: among the signatures',
+);
+const atPut = sigResult.signatures.find((s) => s.selector === 'at:put:');
+assert.equal(atPut.parameters?.length, 2, 'at:put: exposes one parameter per keyword part');
+
+// A non-keyword cursor (unary send) yields no signature help.
+const sigNoUri = 'file:///signature-none-test.st';
+send({
+  jsonrpc: '2.0',
+  method: 'textDocument/didOpen',
+  params: { textDocument: { uri: sigNoUri, languageId: 'smalltalk', version: 1, text: 'x printString ' } },
+});
+send({
+  jsonrpc: '2.0',
+  id: 12,
+  method: 'textDocument/signatureHelp',
+  params: { textDocument: { uri: sigNoUri }, position: { line: 0, character: 14 } },
+});
+const sigNone = (await receiveId(12)).result;
+assert.ok(
+  sigNone === null || (sigNone.signatures ?? []).length === 0,
+  'a unary-send cursor returns no signature help',
+);
+
 // --- textDocument/hover (US-415) ---
 // Selector hover: signature + an implementor (Object implements printString in
 // both the bundled floor and an installed kernel), rendered as Markdown.
@@ -495,6 +545,6 @@ await receiveId(3);
 send({ jsonrpc: '2.0', method: 'exit' });
 
 clearTimeout(timeout);
-console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, callHierarchy, foldingRange, documentHighlight, completion, hover, semanticTokens, diagnostics, shutdown clean.');
+console.log('Server LSP OK: capabilities, documentSymbol, workspace/symbol, definition, references, callHierarchy, foldingRange, documentHighlight, completion, signatureHelp, hover, semanticTokens, diagnostics, shutdown clean.');
 child.on('close', () => process.exit(0));
 setTimeout(() => process.exit(0), 500);
