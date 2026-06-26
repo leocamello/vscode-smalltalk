@@ -280,7 +280,10 @@ assert.ok(
 // --- a document opened from OUTSIDE the workspace must NOT be indexed (US-423) ---
 // (Regression: clicking a kernel cross-reference row opens that file; it must not
 // then mislabel the kernel's classes as `workspace` and shadow the cartridge.)
-const outsideUri = 'file:///tmp/outside-workspace-xyz.st'; // not under the fixture folder
+// A valid absolute path on every OS that is NOT under the workspace folder
+// (the repo root sits above the fixture folder). A literal `file:///tmp/…` would
+// be a non-absolute path on Windows and get misread as an untitled buffer.
+const outsideUri = pathToFileURL(path.join(root, 'outside-workspace-xyz.st')).href;
 send({
   jsonrpc: '2.0',
   method: 'textDocument/didOpen',
