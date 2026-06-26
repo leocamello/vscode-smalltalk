@@ -1454,7 +1454,7 @@ Scenario: User follows Quick Start guide
 ## US-425: Signature Help
 
 * **ID:** US-425
-* **Status:** Ready — #68
+* **Status:** Implemented + manual QA passed — pending release (#68); branch `feature/US-425-signature-help`
 * **Epic:** EPIC-005
 * **Priority:** Low
 * **Estimate:** S
@@ -1473,10 +1473,11 @@ Scenario: User follows Quick Start guide
 * [X] Estimated/sized (S).
 
 **Definition of Done (DoD) Checklist:**
-* [ ] signatureHelp provider; unit test at a keyword-send cursor; PO accepts.
+* [X] signatureHelp provider (`server/src/providers/signatureHelp.ts`); unit test at a keyword-send cursor (`server/test/signatureHelp.test.ts`, 16 cases) + eval (`evals/datasets/signature-help/`, 10 cases) + handshake + e2e (`client/test-e2e/US-425.acceptance.test.js`).
+* [X] Manual QA pass (`specs/US-425-Signature-Help/manual-qa-workspace/`, 2026-06-26) + PO accepts.
 
 **Notes / Questions / Assumptions:**
-* Parity-plus filler graded honestly; small. Lands ~0.9 alongside US-423.
+* Parity-plus filler graded honestly; small. Keyword-only by design (unary/binary carry no parameter sequence). Honest prefix union with provenance (the US-423 posture); the active parameter is the keyword being filled; the highlighted parameter is the **keyword part** (facts-only cartridge has no arg names). Built on the spec package `specs/US-425-Signature-Help/`; ships in the next release (0.9.1/0.10).
 
 ---
 

@@ -1,0 +1,68 @@
+{
+  "description": "US-425 signature-help output eval — golden cases over the bundled gst-3.2.5 cartridge (no gst, no VS Code). Drives the real `signatureHelpAt` provider with the SignatureCandidate set assembled exactly as server.ts does (workspace method selectors ∪ kernel keyword selectors). The `▮` marks the cursor; per case we assert the active parameter (the keyword being filled), the keyword-prefix union (selectors that must / must not appear), the active signature (the fully-typed selector), and the null cases (non-keyword cursors / unknown selectors). Works offline (AC2).",
+  "cases": [
+    {
+      "name": "AC1 first keyword: active parameter 0, the at:-prefix union",
+      "text": "dict at: ▮",
+      "expectActiveParameter": 0,
+      "expectActiveSelector": "at:",
+      "expectSelectorsInclude": ["at:", "at:put:", "at:ifAbsent:"],
+      "expectSelectorsExclude": ["do:separatedBy:"]
+    },
+    {
+      "name": "AC1 second keyword: active parameter 1, prefix narrows to at:put:",
+      "text": "dict at: 1 put: ▮",
+      "expectActiveParameter": 1,
+      "expectSelectorsInclude": ["at:put:"],
+      "expectSelectorsExclude": ["at:ifAbsent:", "at:"]
+    },
+    {
+      "name": "AC1 do: prefix surfaces do: and do:separatedBy:, do: is active",
+      "text": "coll do: ▮",
+      "expectActiveParameter": 0,
+      "expectActiveSelector": "do:",
+      "expectSelectorsInclude": ["do:", "do:separatedBy:"]
+    },
+    {
+      "name": "AC1 inject:into: tracks the second keyword",
+      "text": "coll inject: 0 into: ▮",
+      "expectActiveParameter": 1,
+      "expectActiveSelector": "inject:into:",
+      "expectSelectorsInclude": ["inject:into:"]
+    },
+    {
+      "name": "AC1 nested keyword argument is skipped (do: inside parens is not the outer message)",
+      "text": "dict at: (a do: b) put: ▮",
+      "expectActiveParameter": 1,
+      "expectSelectorsInclude": ["at:put:"],
+      "expectSelectorsExclude": ["do:separatedBy:"]
+    },
+    {
+      "name": "AC1 a workspace keyword method surfaces in its own union",
+      "text": "Object subclass: Foo [\n  greet: x [ ^self ]\n  run [ ^self greet: ▮ ]\n]",
+      "expectActiveParameter": 0,
+      "expectActiveSelector": "greet:",
+      "expectSelectorsInclude": ["greet:"]
+    },
+    {
+      "name": "AC1 unary-send cursor → no signature help",
+      "text": "x printString ▮",
+      "expectNull": true
+    },
+    {
+      "name": "AC1 receiver/head cursor → no signature help",
+      "text": "di▮ct at: 1",
+      "expectNull": true
+    },
+    {
+      "name": "AC1 binary-send cursor → no signature help",
+      "text": "a + ▮",
+      "expectNull": true
+    },
+    {
+      "name": "AC1 unknown keyword selector → no signature help",
+      "text": "dict frobnicateWidget: ▮",
+      "expectNull": true
+    }
+  ]
+}

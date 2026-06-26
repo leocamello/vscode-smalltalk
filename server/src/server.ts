@@ -35,6 +35,8 @@ import {
   type SemanticTokens,
   type SemanticTokensParams,
   type SemanticTokensRangeParams,
+  type SignatureHelp,
+  type SignatureHelpParams,
   type WorkspaceSymbol,
   type WorkspaceSymbolParams,
 } from 'vscode-languageserver/node';
@@ -67,6 +69,7 @@ import {
   type CallItemData,
 } from './providers/callHierarchy';
 import { completionsAt, type ClassCandidate, type SelectorCandidate } from './providers/completion';
+import { signatureHelpAt, type SignatureCandidate } from './providers/signatureHelp';
 import { hoverAt, type HoverContext, type HoverImplementor } from './providers/hover';
 import {
   semanticTokensFull,
@@ -147,6 +150,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       // Space/`:` auto-trigger selector + keyword-part completion; identifier
       // typing triggers via the client's default quick-suggestions.
       completionProvider: { triggerCharacters: [' ', ':'] },
+      // Keyword-message signature help (US-425): `:`/space trigger a new (or
+      // retriggered) signature popup as keyword parts are typed.
+      signatureHelpProvider: { triggerCharacters: [':', ' '], retriggerCharacters: [':'] },
     },
   };
 });
@@ -342,6 +348,28 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     selectors,
     classes,
   );
+});
+
+connection.onSignatureHelp((params: SignatureHelpParams): SignatureHelp | null => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return null;
+  }
+  // Only keyword selectors carry a parameter sequence worth tracking; derive the
+  // keyword parts (`at:put:` → ["at:","put:"]) from the selector text (US-425).
+  const keywordsOf = (selector: string): string[] => selector.match(/[^:]+:/g) ?? [selector];
+  const isKeyword = (selector: string): boolean => selector.includes(':');
+  const signatures: SignatureCandidate[] = [
+    ...index
+      .all()
+      .filter((e) => e.kind === SymbolKind.Method && isKeyword(e.name))
+      .map((e) => ({ selector: e.name, keywords: keywordsOf(e.name), provenance: Provenance.Workspace })),
+    ...kernelService
+      .selectors()
+      .filter((s) => isKeyword(s.selector))
+      .map((s) => ({ selector: s.selector, keywords: keywordsOf(s.selector), provenance: s.provenance })),
+  ];
+  return signatureHelpAt(doc.offsetAt(params.position), doc.getText(), getTokens(doc), signatures);
 });
 
 connection.onHover((params: HoverParams): Hover | null => {
