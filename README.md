@@ -69,7 +69,7 @@ Install the **Smalltalk Language Support** extension from the [Visual Studio Cod
 ### Foundational Editing Features (Declarative)
 
 *   **Syntax Highlighting:** Accurate highlighting for GNU Smalltalk syntax in `.st` files.
-*   **Snippet Completion:** Useful snippets for common Smalltalk constructs.
+*   **Snippet Completion:** Tab-completable templates for common Smalltalk constructs, including idiomatic **block-bearing** idioms with tab-stops — loops (`whileTrue:`, `to:do:`), exception handling (`on:do:`, `ensure:`), nil-guards (`ifNil:ifNotNil:`), collection iteration (`keysAndValuesDo:`, `inject:into:`, `detect:ifNone:`), and class/method scaffolds.
 *   **Bracket Matching & Autoclosing:** Helps with code structure.
 *   **Comment Toggling:** Easily comment/uncomment lines or blocks (`Ctrl+/` or `Cmd+/`).
 *   **Auto Indentation:** Basic indentation support.

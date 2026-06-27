@@ -1,0 +1,35 @@
+[ -> Block
+as -> assert
+atia -> at:ifAbsent:
+atiap -> at:ifAbsentPut:
+cmet -> Class Method
+col -> collect:
+det -> detect:
+detin -> detect:ifNone:
+do -> do:
+dwi -> doWithIndex:
+ens -> ensure:
+eval -> Eval
+ext -> Class Extension
+if -> ifTrue:ifFalse:
+ifc -> ifCurtailed:
+iff -> ifFalse:
+ifn -> ifNil:
+ifninn -> ifNil:ifNotNil:
+ifnn -> ifNotNil:
+ifnnin -> ifNotNil:ifNil:
+ift -> ifTrue:
+inj -> inject:into:
+kd -> keysDo:
+kvd -> keysAndValuesDo:
+met -> Instance Method
+ns -> Namespace
+ond -> on:do:
+rej -> reject:
+rep -> timesRepeat:
+ret -> return
+sel -> select:
+sub -> Subclass
+to -> to:do:
+wf -> whileFalse:
+wt -> whileTrue:
