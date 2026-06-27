@@ -15,6 +15,17 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.9.2 — selector-surface coverage audit (US-427, EPIC-005)** — doc + additive snippets,
+  no provider changes. The three surfaces that offer selectors now have a documented division of labour
+  ([ADR-0004](docs/decisions/0004-selector-surface-division.md)): static snippets = curated **block-bearing**
+  templates; dynamic completion = the full selector catalogue; signature help = the active parameter
+  mid-arguments. The completion↔signature-help double-popup and the completion selector→head switch are
+  **intentional, not bugs**. `snippets/snippets.json` grew 21→35 with the idiomatic block templates
+  (`whileTrue:`, `on:do:`, `ensure:`, `ifNil:ifNotNil:`, `at:ifAbsent:`, `keysAndValuesDo:`, `inject:into:`,
+  `doWithIndex:`, `detect:ifNone:`, …). Guard: `src/test/snippets-verification.js` (`npm run test:snippets`,
+  in `npm run eval`) enforces unique prefixes, cross-checks every keyword-selector snippet against
+  Cartridge #01 (which corrected `valuesDo:`→dropped and `withIndexDo:`→`doWithIndex:`), and snapshots the
+  prefix set. New `specs/US-427-*/manual-qa-workspace/`. Closes #102.
 - **Shipped:** **v0.9.1 — keyword-message signature help (US-425, EPIC-005)** — `textDocument/signatureHelp`
   for keyword sends (`providers/signatureHelp.ts`), **offline**: a backward token-stream scan reconstructs
   the keyword selector typed so far + the active parameter (the keyword being filled); matches it as an
@@ -70,9 +81,9 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** the **selector-surface coverage audit** (snippets ∪ completion ∪ signature-help division of
-  labour, raised in 0.9.1 QA); then **US-416** (formatting, EPIC-004, → ~1.0). EPIC-005 consumers now span
-  completion (0.5), semantic tokens (0.8), cross-reference (0.9), and signature help (0.9.1) on one Console.
+- **Next:** **US-416** (formatting, EPIC-004, → ~1.0). EPIC-005 consumers now span completion (0.5),
+  semantic tokens (0.8), cross-reference (0.9), signature help (0.9.1), and the selector-surface audit
+  (0.9.2) on one Console.
 - **Spike done (SPIKE-01, SHELVE):** the unknown-selector heuristic was built behind a flag + measured on
   the GST kernel (21.7k sends): naive 58 false positives → **12** after the `self` subclass-union (Template
   Method) insight; zero-FP bar **unmet** (~7-8 residual cartridge-gap FPs) + low closed-world coverage
@@ -124,6 +135,14 @@ Marketplace as `leocamello.vscode-smalltalk`.
   (installed-kernel discovery), and `kernelIndexService.ts` (resolve `auto|bundled|off` → Tier-1 installed
   / Tier-2 floor + provenance). The completion **output eval** lives in `evals/datasets/completion/` (run
   by `npm run eval`). The status-bar item is client-side (`client/src/extension.ts`).
+- **Selector surfaces — division of labour (US-427 → [ADR-0004](docs/decisions/0004-selector-surface-division.md)):**
+  three surfaces offer selectors, each with one job — **static snippets** (`snippets/snippets.json`) =
+  idiomatic **block-bearing** templates with tab-stops (curated, GST-selector-only); **completion**
+  (`providers/completion.ts`) = the full fact-sourced catalogue in *selector* context; **signature help**
+  (`providers/signatureHelp.ts`) = the active parameter mid-arguments. The completion↔signature-help
+  double-popup and the completion selector→head context switch are **intended**, not defects. Guard:
+  `src/test/snippets-verification.js` (`npm run test:snippets`, in `npm run eval`) enforces unique
+  prefixes, cross-checks every keyword-selector snippet against Cartridge #01, and snapshots the prefix set.
 - **Knowledge Graph / Cartridges (EPIC-005, US-430 — landed):** the dialect-neutral **Dialect Cartridge**
   schema lives in `server/src/types/knowledge-base.ts` (pure JSON, facts-only, class-side/instance-side
   split, superclass/traits resolution separate from an open `taxonomy` bag). GST **Cartridge #01** is

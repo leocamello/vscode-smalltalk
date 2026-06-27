@@ -147,7 +147,7 @@
 ## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
 
 * **ID:** EPIC-005
-* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; **US-425 keyword-message signature help shipped v0.9.1**; **SPIKE-01 unknown-selector heuristic done — shelved** (zero-FP bar unmet, gate parked); next consumer US-427 selector-surface audit)
+* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; **US-425 keyword-message signature help shipped v0.9.1**; **US-427 selector-surface coverage audit shipped v0.9.2** (ADR-0004 division of labour + 14 block snippets + guard); **SPIKE-01 unknown-selector heuristic done — shelved** (zero-FP bar unmet, gate parked); next US-416 formatting → ~1.0)
 * **Priority:** High
 * **Phase:** Phase 2 (extends EPIC-004)
 * **Date Proposed:** 2026-06-21
@@ -169,7 +169,8 @@
 * [US-430: Dialect Cartridge Schema + GST Cartridge #01 (reflective exporter)]
 * [US-422: Semantic Tokens (Cartridge-aware)] — **Done (v0.8.0, closes #65)**
 * [US-423: References + Senders/Implementors (Two-Tier Engine)]
-* [US-425: Signature Help]
+* [US-425: Signature Help] — **Done (v0.9.1, closes #68)**
+* [US-427: Selector-Surface Coverage Audit] — **Done (v0.9.2, closes #102)**
 * [US-426: Scope-aware Rename]
 * [SPIKE-01: Unknown-Selector Heuristic — false-positive validation]
 

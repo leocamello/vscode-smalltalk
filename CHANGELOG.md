@@ -6,6 +6,20 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-06-27
+
+### Added
+
+-   **More block-bearing snippets** for GNU Smalltalk (US-427). The static snippet set gained the idiomatic block templates you reach for daily, each with tab-stops: looping (`wt` → `whileTrue:`, `wf` → `whileFalse:`), exception/unwind (`ond` → `on:do:`, `ens` → `ensure:`, `ifc` → `ifCurtailed:`), nil-guards (`ifninn` → `ifNil:ifNotNil:`, `ifnnin` → `ifNotNil:ifNil:`), dictionary access (`atia` → `at:ifAbsent:`, `atiap` → `at:ifAbsentPut:`, `kvd` → `keysAndValuesDo:`, `kd` → `keysDo:`), and folding/indexing (`inj` → `inject:into:`, `dwi` → `doWithIndex:`, `detin` → `detect:ifNone:`).
+
+### Changed
+
+-   **Selector surfaces now have a documented division of labour** ([ADR-0004](docs/decisions/0004-selector-surface-division.md), US-427): static snippets = curated **block-bearing** templates; dynamic completion = the full selector catalogue; signature help = the active parameter mid-arguments. The completion/signature-help double-popup and the completion selector→head context switch are intentional, not bugs. No runtime behaviour changed — completion and signature help are untouched.
+
+### Internal
+
+-   A snippet guard (`npm run test:snippets`, in `npm run eval`) keeps the static set honest: unique trigger prefixes, every keyword-selector snippet cross-checked against GNU Smalltalk Cartridge #01, and a prefix snapshot. (It corrected two idiom names against the kernel: `valuesDo:` isn't a GST selector and was dropped; `withIndexDo:` is really `doWithIndex:`.)
+
 ## [0.9.1] - 2026-06-26
 
 ### Added

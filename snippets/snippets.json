@@ -65,6 +65,90 @@
 		"description": "timesRepeat: loop",
 		"scope": "source.smalltalk.gnu, source.smalltalk"
 	},
+	"whileTrue:": {
+		"prefix": "wt",
+		"body": "whileTrue: [ $1 ]",
+		"description": "whileTrue: loop",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"whileFalse:": {
+		"prefix": "wf",
+		"body": "whileFalse: [ $1 ]",
+		"description": "whileFalse: loop",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"on:do:": {
+		"prefix": "ond",
+		"body": "on: ${1:Error} do: [ :${2:ex} | $0 ]",
+		"description": "on:do: exception handler",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"ensure:": {
+		"prefix": "ens",
+		"body": "ensure: [ $0 ]",
+		"description": "ensure: cleanup block",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"ifCurtailed:": {
+		"prefix": "ifc",
+		"body": "ifCurtailed: [ $0 ]",
+		"description": "ifCurtailed: unwind block",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"ifNil:ifNotNil:": {
+		"prefix": "ifninn",
+		"body": "ifNil: [ $1 ] ifNotNil: [ :${2:arg} | $3 ]",
+		"description": "ifNil:ifNotNil: block",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"ifNotNil:ifNil:": {
+		"prefix": "ifnnin",
+		"body": "ifNotNil: [ :${1:arg} | $2 ] ifNil: [ $3 ]",
+		"description": "ifNotNil:ifNil: block",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"at:ifAbsent:": {
+		"prefix": "atia",
+		"body": "at: ${1:key} ifAbsent: [ $0 ]",
+		"description": "at:ifAbsent: lookup",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"at:ifAbsentPut:": {
+		"prefix": "atiap",
+		"body": "at: ${1:key} ifAbsentPut: [ $0 ]",
+		"description": "at:ifAbsentPut: memoize",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"keysAndValuesDo:": {
+		"prefix": "kvd",
+		"body": "keysAndValuesDo: [ :${1:key} :${2:value} | $0 ]",
+		"description": "keysAndValuesDo: iteration",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"keysDo:": {
+		"prefix": "kd",
+		"body": "keysDo: [ :${1:key} | $0 ]",
+		"description": "keysDo: iteration",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"inject:into:": {
+		"prefix": "inj",
+		"body": "inject: ${1:0} into: [ :${2:acc} :${3:each} | $0 ]",
+		"description": "inject:into: fold",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"doWithIndex:": {
+		"prefix": "dwi",
+		"body": "doWithIndex: [ :${1:each} :${2:index} | $0 ]",
+		"description": "doWithIndex: iteration",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
+	"detect:ifNone:": {
+		"prefix": "detin",
+		"body": "detect: [ :${1:each} | $2 ] ifNone: [ $0 ]",
+		"description": "detect:ifNone: finding",
+		"scope": "source.smalltalk.gnu, source.smalltalk"
+	},
 	"to:do:": {
 		"prefix": "to",
 		"body": "to: ${1:count} do: [ :${2:i} | $0 ]",
