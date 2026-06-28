@@ -125,6 +125,16 @@ assert.ok(Array.isArray(stLegend?.tokenTypes) && stLegend.tokenTypes.length > 0,
 assert.ok(stLegend.tokenTypes.includes('class'), 'legend includes the `class` token type (AC2)');
 assert.ok(caps.semanticTokensProvider.full, 'semantic tokens advertises the `full` document request (AC1)');
 
+// Formatting capabilities (US-416) — document + range + on-type advertised.
+assert.equal(caps.documentFormattingProvider, true, 'expected documentFormattingProvider (US-416)');
+assert.equal(caps.documentRangeFormattingProvider, true, 'expected documentRangeFormattingProvider (US-416)');
+assert.ok(caps.documentOnTypeFormattingProvider, 'expected documentOnTypeFormattingProvider (US-416)');
+assert.equal(
+  caps.documentOnTypeFormattingProvider.firstTriggerCharacter,
+  ']',
+  'on-type formatting first trigger character is `]` (dedent on block close)',
+);
+
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
 // --- documentSymbol (US-412 slice A) ---

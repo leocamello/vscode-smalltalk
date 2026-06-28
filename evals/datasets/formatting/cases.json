@@ -1,0 +1,123 @@
+{
+  "_comment": "Formatting output eval (US-416). Golden input -> formatted output over the pure formatter core (no gst, no VS Code). Each case asserts formatSource(input, options) === expected; `options` overrides DEFAULT_FORMAT_OPTIONS. RED until server/src/format/formatter.ts ships.",
+  "cases": [
+    {
+      "name": "assignment spacing is normalized",
+      "input": "foo:=Account new.",
+      "expected": "foo := Account new."
+    },
+    {
+      "name": "keyword message spacing is normalized",
+      "input": "dict at:#a put:1.",
+      "expected": "dict at: #a put: 1."
+    },
+    {
+      "name": "binary selector gets one space each side",
+      "input": "x:=1+2*3.",
+      "expected": "x := 1 + 2 * 3."
+    },
+    {
+      "name": "no space before period or semicolon",
+      "input": "a foo ; bar .",
+      "expected": "a\n    foo;\n    bar."
+    },
+    {
+      "name": "cascade segments align one per line under the receiver",
+      "input": "Transcript show: 'a'; show: 'b'; nl.",
+      "expected": "Transcript\n    show: 'a';\n    show: 'b';\n    nl."
+    },
+    {
+      "name": "cascades=preserve keeps author line breaks (spacing still normalized)",
+      "input": "Transcript show:'a';show:'b';nl.",
+      "expected": "Transcript show: 'a'; show: 'b'; nl.",
+      "options": { "cascades": "preserve" }
+    },
+    {
+      "name": "two or more blank lines collapse to one",
+      "input": "a := 1.\n\n\n\nb := 2.",
+      "expected": "a := 1.\n\nb := 2."
+    },
+    {
+      "name": "a single blank line is preserved as an intentional separator",
+      "input": "a := 1.\n\nb := 2.",
+      "expected": "a := 1.\n\nb := 2."
+    },
+    {
+      "name": "class body and method are indented by depth; comment preserved (tight blocks, GST style)",
+      "input": "Object subclass: Foo [\n| a b |\nsum [ \"add them\" ^a + b ]\n]",
+      "expected": "Object subclass: Foo [\n    | a b |\n    sum [\"add them\" ^a + b]\n]"
+    },
+    {
+      "name": "long keyword send wraps one keyword per line past the threshold",
+      "input": "aCollection inject: theVeryLongInitialAccumulatorValue into: [:acc :each | acc + each squared].",
+      "expected": "aCollection\n    inject: theVeryLongInitialAccumulatorValue\n    into: [:acc :each | acc + each squared].",
+      "options": { "keywordWrap": 40 }
+    },
+    {
+      "name": "short keyword send stays on one line",
+      "input": "dict at: #a put: 1.",
+      "expected": "dict at: #a put: 1.",
+      "options": { "keywordWrap": 80 }
+    },
+    {
+      "name": "literal arrays and dynamic arrays keep contents, normalize spacing",
+      "input": "x:=#(1 2 3). y:={1. 2. 3}.",
+      "expected": "x := #(1 2 3). y := {1. 2. 3}."
+    },
+    {
+      "name": "indentSize override uses two spaces",
+      "input": "Object subclass: Foo [\nbar [ ^1 ]\n]",
+      "expected": "Object subclass: Foo [\n  bar [^1]\n]",
+      "options": { "indentSize": 2 }
+    },
+    {
+      "name": "already-formatted input is a fixed point (idempotence)",
+      "input": "foo := Account new.",
+      "expected": "foo := Account new."
+    },
+    {
+      "name": "malformed: unterminated string is returned unchanged",
+      "input": "x := 'oops.",
+      "expected": "x := 'oops."
+    },
+    {
+      "name": "malformed: unclosed block is returned unchanged",
+      "input": "Object subclass: Foo [\n  bar [ ^1 \n",
+      "expected": "Object subclass: Foo [\n  bar [ ^1 \n"
+    },
+    {
+      "name": "empty input yields empty output",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "name": "blockStyle=expand breaks a method body onto its own lines, one statement per line",
+      "input": "Object subclass: Foo [\nbar [balance:=0. ^balance]\n]",
+      "expected": "Object subclass: Foo [\n    bar [\n        balance := 0.\n        ^balance\n    ]\n]",
+      "options": { "blockStyle": "expand" }
+    },
+    {
+      "name": "blockStyle=expand keeps single-statement argument blocks inline",
+      "input": "x ifTrue: [^1] ifFalse: [^2].",
+      "expected": "x ifTrue: [^1] ifFalse: [^2].",
+      "options": { "blockStyle": "expand" }
+    },
+    {
+      "name": "blockStyle=expand puts top-level statements one per line",
+      "input": "a:=1. b:=2. c:=3.",
+      "expected": "a := 1.\nb := 2.\nc := 3.",
+      "options": { "blockStyle": "expand" }
+    },
+    {
+      "name": "blockStyle=expand expands a multi-statement block; params stay on the opening line",
+      "input": "coll do: [:each | Transcript show: each. Transcript nl].",
+      "expected": "coll do: [:each |\n    Transcript show: each.\n    Transcript nl\n].",
+      "options": { "blockStyle": "expand" }
+    },
+    {
+      "name": "blockStyle=preserve (default) keeps the author's inline method body",
+      "input": "Object subclass: Foo [\nbar [balance:=0. ^balance]\n]",
+      "expected": "Object subclass: Foo [\n    bar [balance := 0. ^balance]\n]"
+    }
+  ]
+}
