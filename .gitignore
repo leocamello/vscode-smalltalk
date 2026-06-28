@@ -40,3 +40,5 @@ syntaxes/gnu-smalltalk.tmLanguage.json
 
 # e2e fixture workspace settings written by VS Code during tests
 client/test-e2e/fixtures/.vscode/
+# manual-QA workspace settings written by VS Code when the folder is opened
+specs/**/manual-qa-workspace/.vscode/
