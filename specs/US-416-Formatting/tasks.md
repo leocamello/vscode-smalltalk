@@ -27,6 +27,6 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 
 ## Phase 4 — Verify
 - [x] T900 All acceptance tests GREEN: `test:parser` (incl. format property 26 + 122/122 kernel files idempotent & token-invariant), `test:server` (handshake), `eval` (incl. formatting 17), `test:e2e` (US-416 5/5). `check-types` + `lint` clean.
-- [~] T901 Created `specs/US-416-Formatting/manual-qa-workspace/` (README matrix A–D + `Messy.st` valid/0-diag fixture + `Broken.st` malformed fixture) and filled `verification.md`. **Extension-Host matrix run still pending** (verification.md §4).
-- [ ] T902 CI green on Linux/macOS/Windows + e2e job (after PR).
+- [x] T901 Created `specs/US-416-Formatting/manual-qa-workspace/` (README matrix A–E + `Messy.st` valid/0-diag fixture + `Broken.st` malformed fixture) and filled `verification.md`. **Extension-Host matrix Parts A–E passed by the owner (2026-06-29).**
+- [x] T902 CI green on Linux/macOS/Windows + e2e job (PR #106). Merged squash `15a9564`; closed #28.
 - [x] T903 Doc-rot sweep (v0.10.0): version `0.9.2`→`0.10.0`; CHANGELOG `[0.10.0]` entry; README (Formatting feature + `smalltalk.format.*` config docs); user-stories US-416 → Done + status-summary line; EPIC-004 status (effectively complete); ROADMAP (0.10 row = Formatting shipped, Hardening→0.11, 1.0 drops formatting, parity scorecard `✅0.10`, Next-up + dated delta); CLAUDE.md (date, Shipped v0.10.0 bullet, Next, code map + formatting bullet).

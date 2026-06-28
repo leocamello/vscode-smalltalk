@@ -44,15 +44,16 @@
   the one dialect-sensitive rule (keep `Scope` tight) is structural, not GST-lexeme-specific. ADR-0005.
 
 ## Section 4: Manual Verification
-- [ ] Feature works in Extension Host — run `specs/US-416-Formatting/manual-qa-workspace/` matrix
-  (Parts A–D): off-by-default no-op; document format matches the documented golden; idempotent second pass;
-  range/on-type; comments + blank lines + `SystemExceptions.NotYetImplemented` (tight `Scope`) preserved;
-  `Broken.st` left byte-for-byte intact. *(To run before release, with both real code and a clean VSIX.)*
-- [ ] No errors in Developer Tools console during the matrix.
+- [x] Feature works in Extension Host — `specs/US-416-Formatting/manual-qa-workspace/` matrix
+  (Parts A–E) passed by the owner (2026-06-29): off-by-default no-op; document format matches the
+  documented golden; idempotent second pass; range/on-type; comments + blank lines +
+  `SystemExceptions.NotYetImplemented` (tight `Scope`) preserved; `Broken.st` left byte-for-byte intact;
+  `blockStyle: expand` reflows bodies one-statement-per-line. "Everything still working."
+- [x] No errors in Developer Tools console during the matrix.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge — pending the Part A–D Extension-Host pass + PO acceptance + green CI on
-  Linux/macOS/Windows.
+- [x] **Ready for Merge** — Extension-Host Parts A–E passed + PO accepted + CI green on
+  Linux/macOS/Windows + e2e. **Merged via PR #106 (squash, `15a9564`); closed #28; shipped as v0.10.0.**
 
 ---
 
@@ -61,5 +62,6 @@
 Kernel corpus: 122/122 idempotent + token-invariant **in both `preserve` and `expand` modes**.
 The opt-in `blockStyle: expand` (default `preserve`) delivers the expanded/one-statement-per-line aesthetic
 via structural forced-breaks — still whitespace-only (ADR-0005).
-**Remaining for Done:** manual-QA matrix in the Extension Host (§4), doc-rot sweep + version bump + CHANGELOG
-(staged in `tasks.md` T903), PO sign-off, CI green on all three OSes.
+**Done (2026-06-29):** automated layers green, doc-rot sweep + v0.10.0 bump + CHANGELOG (T903), manual-QA
+Parts A–E passed, PO sign-off, PR #106 merged (closes #28). Remaining outside this story: cut the
+`v0.10.0` GitHub Release to publish to the Marketplace.
