@@ -90,7 +90,7 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Semantic Highlighting:** role-accurate coloring — instance/class variables, temporaries, parameters, selectors, and pseudo-variables are each colored by meaning, and a capitalized name is colored as a **class** only when it's a real class in your workspace or the kernel (otherwise a global). Enable `editor.semanticHighlighting.enabled` if your theme defaults it off.
 *   **References · Senders · Implementors:** the System Browser's cross-reference muscle memory, **offline** — **Find All References** (`Shift+F12`), **plural Go to Definition**, **Call Hierarchy**, and the **`Smalltalk: Senders of…` / `Implementors of…`** commands (Command Palette + right-click) feed a **Smalltalk References** panel. Results are an **honest union** of your workspace and the GNU Smalltalk kernel — each row tagged with its source (`workspace` / `installed (gst)` / `reference (gst 3.2.5)`) — because dynamic dispatch can't be resolved statically: likely responders rank first, none are hidden. Kernel rows from your installed GNU Smalltalk open the real source file; the bundled reference opens a read-only fact card.
 *   **Signature Help:** typing a keyword message (`aDictionary at: key put: …`) pops the matching keyword selector(s) with the **active parameter** tracked — the keyword you're currently filling. Signatures are an honest prefix union of your workspace and the kernel (each tagged with its source); keyword-only by design.
-*   _(Coming Soon)_ Formatting
+*   **Formatting:** conservative, **idempotent** code formatting — **Format Document**, **Format Selection**, and on-type — that normalizes layout (indentation, spacing, blank-line runs, cascade alignment, long-keyword-message wrapping) **without ever changing your code**: it only rewrites whitespace between tokens, so comments and blank lines are preserved and the result is stable (formatting twice changes nothing). A file with a syntax error is left untouched. **Off by default** — enable [`smalltalk.format.enable`](#configuration); an optional [`smalltalk.format.blockStyle`](#configuration) `expand` reflows bodies one-statement-per-line.
 
 <!-- Configuration (US-105) -->
 ## Configuration
@@ -111,6 +111,31 @@ The following settings are available:
 
 *   **`smalltalk.completion.kernelPath`**
     *   **Description:** Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `smalltalk.gnuSmalltalkPath` and common install locations.
+
+*   **`smalltalk.format.enable`**
+    *   **Description:** Enable conservative, idempotent Smalltalk formatting (document, range, and on-type). Off by default — formatting only rewrites whitespace and never changes your code, but you opt in.
+    *   **Type:** `boolean`
+    *   **Default:** `false`
+
+*   **`smalltalk.format.indentSize`**
+    *   **Description:** Spaces per indent level when formatting. Tabs vs. spaces follow the editor's `editor.insertSpaces`.
+    *   **Type:** `number`
+    *   **Default:** `4`
+
+*   **`smalltalk.format.cascades`**
+    *   **Description:** How to lay out message cascades (`receiver msg1; msg2; …`). `align` breaks each segment onto its own line under the receiver; `preserve` keeps the author's line breaks.
+    *   **Type:** `string` — `align` | `preserve`
+    *   **Default:** `align`
+
+*   **`smalltalk.format.keywordWrap`**
+    *   **Description:** Wrap a keyword message one-keyword-per-line when its single-line width would exceed this column. `0` disables wrapping.
+    *   **Type:** `number`
+    *   **Default:** `100`
+
+*   **`smalltalk.format.blockStyle`**
+    *   **Description:** How to lay out block, method, and class bodies. `preserve` keeps your line breaks; `expand` reflows each body onto its own indented lines, one statement per line (single-statement argument blocks stay inline).
+    *   **Type:** `string` — `preserve` | `expand`
+    *   **Default:** `preserve`
     *   **Type:** `string`
     *   **Default:** `""`
 

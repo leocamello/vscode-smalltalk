@@ -23,6 +23,10 @@ import {
   type DocumentHighlightParams,
   type DocumentSymbol,
   type DocumentSymbolParams,
+  type DocumentFormattingParams,
+  type DocumentRangeFormattingParams,
+  type DocumentOnTypeFormattingParams,
+  type TextEdit,
   type FoldingRange,
   type FoldingRangeParams,
   type Hover,
@@ -42,6 +46,13 @@ import {
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getAst, getDiagnostics, getSymbols, getTokens, invalidate } from './documents/parseCache';
+import {
+  formatDocument,
+  formatRange,
+  formatOnType,
+  DEFAULT_FORMAT_SETTINGS,
+  type FormatSettings,
+} from './providers/formatting';
 import { toDiagnostics } from './providers/diagnostics';
 import { toCodeActions } from './providers/codeAction';
 import { toDocumentSymbols } from './providers/documentSymbol';
@@ -153,6 +164,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       // Keyword-message signature help (US-425): `:`/space trigger a new (or
       // retriggered) signature popup as keyword parts are typed.
       signatureHelpProvider: { triggerCharacters: [':', ' '], retriggerCharacters: [':'] },
+      // Conservative, idempotent whitespace-only formatting (US-416), off by
+      // default behind `smalltalk.format.enable`. Document + range + on-type;
+      // on-type dedents on `]`, re-indents after a newline / cascade `;`.
+      documentFormattingProvider: true,
+      documentRangeFormattingProvider: true,
+      documentOnTypeFormattingProvider: { firstTriggerCharacter: ']', moreTriggerCharacter: ['\n', ';'] },
     },
   };
 });
@@ -179,6 +196,39 @@ connection.onDidChangeConfiguration(() => {
 connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => {
   const doc = documents.get(params.textDocument.uri);
   return doc ? toDocumentSymbols(getSymbols(doc)) : [];
+});
+
+/** Pull `smalltalk.format.*` per request (pull model — always fresh, no init-only staleness). */
+async function getFormatSettings(): Promise<FormatSettings> {
+  let cfg: { format?: Partial<FormatSettings> } | undefined;
+  try {
+    cfg = (await connection.workspace.getConfiguration('smalltalk')) as typeof cfg;
+  } catch {
+    cfg = undefined;
+  }
+  const f = cfg?.format ?? {};
+  return {
+    enable: f.enable ?? DEFAULT_FORMAT_SETTINGS.enable,
+    indentSize: f.indentSize ?? DEFAULT_FORMAT_SETTINGS.indentSize,
+    cascades: f.cascades ?? DEFAULT_FORMAT_SETTINGS.cascades,
+    keywordWrap: f.keywordWrap ?? DEFAULT_FORMAT_SETTINGS.keywordWrap,
+    blockStyle: f.blockStyle ?? DEFAULT_FORMAT_SETTINGS.blockStyle,
+  };
+}
+
+connection.onDocumentFormatting(async (params: DocumentFormattingParams): Promise<TextEdit[]> => {
+  const doc = documents.get(params.textDocument.uri);
+  return doc ? formatDocument(doc.getText(), params.options, await getFormatSettings()) : [];
+});
+
+connection.onDocumentRangeFormatting(async (params: DocumentRangeFormattingParams): Promise<TextEdit[]> => {
+  const doc = documents.get(params.textDocument.uri);
+  return doc ? formatRange(doc.getText(), params.range, params.options, await getFormatSettings()) : [];
+});
+
+connection.onDocumentOnTypeFormatting(async (params: DocumentOnTypeFormattingParams): Promise<TextEdit[]> => {
+  const doc = documents.get(params.textDocument.uri);
+  return doc ? formatOnType(doc.getText(), params.position, params.ch, params.options, await getFormatSettings()) : [];
 });
 
 connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): WorkspaceSymbol[] =>

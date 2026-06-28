@@ -8,7 +8,7 @@
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.9.2",
+    "version": "0.10.0",
     "preview": true,
     "icon": "icon.png",
     "main": "./dist/extension.js",
@@ -169,6 +169,47 @@
                     ],
                     "default": "off",
                     "description": "Traces the communication between VS Code and the Smalltalk language server."
+                },
+                "smalltalk.format.enable": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Enable conservative, idempotent Smalltalk formatting (document, range, and on-type). **Off by default** — formatting only rewrites whitespace (indentation, spacing, blank-line runs, cascade alignment, keyword-message wrapping) and never changes your code, but you opt in per the project's safety-first posture."
+                },
+                "smalltalk.format.indentSize": {
+                    "type": "number",
+                    "default": 4,
+                    "markdownDescription": "Number of spaces per indent level when formatting. Whether tabs or spaces are used follows the editor's `#editor.insertSpaces#` setting."
+                },
+                "smalltalk.format.cascades": {
+                    "type": "string",
+                    "enum": [
+                        "align",
+                        "preserve"
+                    ],
+                    "enumDescriptions": [
+                        "Break each cascade segment onto its own line, indented under the receiver.",
+                        "Keep the author's cascade line breaks (only normalize spacing)."
+                    ],
+                    "default": "align",
+                    "markdownDescription": "How to lay out message cascades (`receiver msg1; msg2; …`) when formatting."
+                },
+                "smalltalk.format.keywordWrap": {
+                    "type": "number",
+                    "default": 100,
+                    "markdownDescription": "Wrap a keyword message onto one keyword-per-line when its single-line width would exceed this column. Set to `0` to never wrap keyword messages."
+                },
+                "smalltalk.format.blockStyle": {
+                    "type": "string",
+                    "enum": [
+                        "preserve",
+                        "expand"
+                    ],
+                    "enumDescriptions": [
+                        "Keep the author's block layout; only normalize whitespace within it.",
+                        "Break method/class/multi-statement-block bodies onto their own indented lines, one statement per line (the expanded aesthetic)."
+                    ],
+                    "default": "preserve",
+                    "markdownDescription": "How to lay out block, method, and class bodies. `preserve` keeps your line breaks; `expand` reflows each body onto its own indented lines, one statement per line. Single-statement argument blocks (e.g. `ifTrue: [^x]`) stay inline either way. Still whitespace-only — your code is never changed."
                 }
             }
         }
@@ -214,7 +255,8 @@
         "eval:semantic-tokens": "tsx evals/datasets/semantic-tokens/run.ts",
         "eval:references": "tsx evals/datasets/references/run.ts",
         "eval:signature-help": "tsx evals/datasets/signature-help/run.ts",
-        "eval": "npm run build:grammar && npm run test:grammar && npm run test:snippets && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references && npm run eval:signature-help",
+        "eval:formatting": "tsx evals/datasets/formatting/run.ts",
+        "eval": "npm run build:grammar && npm run test:grammar && npm run test:snippets && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references && npm run eval:signature-help && npm run eval:formatting",
         "new-story": "bash scripts/new-story.sh"
     }
 }

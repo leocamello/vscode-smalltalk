@@ -6,6 +6,19 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-29
+
+### Added
+
+-   **Formatting** for GNU Smalltalk — **Format Document**, **Format Selection**, and **on-type** — **offline, no `gst` required** (US-416). Conservative and **idempotent**: it normalizes indentation, inter-token spacing, blank-line runs, cascade alignment, and long-keyword-message wrapping, but **never changes your code** — only the whitespace between tokens is rewritten, so every comment and intentional blank line is preserved and formatting twice changes nothing.
+    -   **Off by default** — enable `smalltalk.format.enable` (a deliberate safety posture for a destructive-by-nature feature; "data loss = trust loss").
+    -   **Non-destructive on error** — a file with a syntax error is left **byte-for-byte untouched** (formatting is skipped, never guessed).
+    -   **Configurable** — `smalltalk.format.indentSize` (default 4; tabs/spaces follow the editor), `smalltalk.format.cascades` (`align`|`preserve`), `smalltalk.format.keywordWrap` (column threshold, default 100; `0` disables), and `smalltalk.format.blockStyle` (`preserve`|`expand` — `expand` reflows method/class/multi-statement-block bodies one statement per line, while single-statement argument blocks like `ifTrue: [^x]` stay inline).
+
+### Internal
+
+-   The formatter is a **whitespace-only token-stream rewriter**, not an AST pretty-printer ([ADR-0005](docs/decisions/0005-formatter-whitespace-rewriter.md)): tokens and comments are copied verbatim and only the whitespace between them is recomputed, so **idempotence** and **token-stream invariance** are structural guarantees — property-tested over the full 122-file GNU Smalltalk 3.2.5 kernel corpus in both block styles. Output-eval dataset `evals/datasets/formatting/`.
+
 ## [0.9.2] - 2026-06-27
 
 ### Added

@@ -86,8 +86,9 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | 0.7 🟢 | Hover | 004 | selectors/classes/vars/literals + provenance-gated comment prose | A+B | hover |
 | **0.8** 🟢 | **Console & Cartridge foundation** 🏰 | 005 | cartridge canonical + loader (US-430) + **semantic tokens** (US-422) — **shipped** | **B** | semantic highlighting (image-IDE parity) |
 | **0.9** ✅ | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** (honest two-tier union; installed-tier parity + real-source jump) — **shipped (US-423)**; signature help + SPIKE-01 carry forward | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
-| **0.10** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
-| **1.0** 🔵 | **Complete Offline GST IDE** | 416/902 | formatting + scope-rename; product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
+| **0.10** ✅ | **Formatting** | 004 | conservative, idempotent formatting — document/range/on-type over a **whitespace-only token-stream rewriter** ([ADR-0005](decisions/0005-formatter-whitespace-rewriter.md)); off by default; cascade-align, keyword-wrap, `blockStyle: expand` — **shipped (US-416)** | A | code formatting (image-IDE parity, offline) |
+| **0.11** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
+| **1.0** 🔵 | **Complete Offline GST IDE** | 426/902 | scope-rename; product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
 | **~1.0** 🟣 | **Tonel read-only wedge** ("Trojan Horse") | 006 | **read-only Tonel** grammar + folding + outline (US-424) — *no cartridge, no seam* | A ⚖️ | best-in-class Tonel reading — lands the Pharo/GemStone/VA crowd early |
 | **1.1–1.4** 🟣 | **Image-Grade Workbench** 🏰 | 008 | **System Browser view**, full-text method search, class-hierarchy view, more refactorings (extract method) | A+B | the "feels like Smalltalk" IDE (System Browser parity, offline) |
 | **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + full Tonel container seam (US-418) + `smalltalk.dialect` auto-detect **+ status-bar picker** (US-602) | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
@@ -99,6 +100,11 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 the old 0.9 hardening becomes **0.10**; **0.8/0.9 become the Console / cross-reference inflection**
 (where the vision's architecture goes load-bearing); everything from **1.1** on is net-new vision
 scope (EPIC-006/007/008). The 0.6 → 1.0 line is otherwise unchanged.
+
+**Delta (2026-06-29).** **Formatting (US-416) shipped as 0.10.0**, pulled ahead of the 1.0 milestone — it
+proved self-contained and the whitespace-only design (ADR-0005) de-risked it. Consequently **Hardening &
+Perf (US-901) shifts to 0.11**, and **1.0 now carries scope-rename (US-426) + polish + Open VSX** without
+formatting.
 
 **Delta (2026-06-24 strategy review).** Three ideas from an external review are folded into the plan:
 (1) **Tonel as the "Trojan Horse" — resequencing decision:** a **read-only** Tonel experience (grammar +
@@ -127,7 +133,7 @@ not a launcher for other servers) is the moat; an external live server stays an 
 | Semantic tokens | — | ✅0.8 | ✅ | — | ✅ |
 | References / **Senders / Implementors** | — | ✅0.9 | ✅ | partial | ✅ (image) |
 | Call hierarchy | — | ✅0.9 | ✅ | — | ✅ |
-| Formatting | — | ⏳1.0 | ✅ | ✅ | ✅ |
+| Formatting | — | ✅0.10 | ✅ | ✅ | ✅ |
 | Refactorings (rename → extract) | — | ⏳1.0+ | ✅ | ✅ (famous) | some |
 | **System Browser view** | — | ⏳1.x | ✅ | (is the image) | ✅ |
 | SUnit test explorer | — | — | ✅➕ | ✅ (image) | ✅ |
@@ -148,7 +154,7 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). Next: US-416 (formatting, ~1.0).**
+   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). 0.10.0 / US-416 — Formatting (document/range/on-type over a whitespace-only token-stream rewriter, ADR-0005; off by default; cascade-align + keyword-wrap + `blockStyle: expand`) — shipped (closes #28). Next: the 1.0 push — hardening/perf (US-901, now 0.11) and scope-aware rename (US-426).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /

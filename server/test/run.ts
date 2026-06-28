@@ -20,3 +20,4 @@ import './workspaceXref.test.ts';
 import './resolve.test.ts';
 import './callHierarchy.test.ts';
 import './crossReference.test.ts';
+import './format.property.test.ts';
