@@ -171,7 +171,7 @@
 * [US-423: References + Senders/Implementors (Two-Tier Engine)]
 * [US-425: Signature Help] — **Done (v0.9.1, closes #68)**
 * [US-427: Selector-Surface Coverage Audit] — **Done (v0.9.2, closes #102)**
-* [US-426: Scope-aware Rename]
+* [US-426: Scope-aware Rename] — **Done (v0.11.0, closes #69)** — temps/args/instance variables; class rename split to US-428 (#109)
 * [SPIKE-01: Unknown-Selector Heuristic — false-positive validation]
 
 **Success Metrics (Optional):**

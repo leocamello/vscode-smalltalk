@@ -24,6 +24,6 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 
 ## Phase 4 — Verify
 - [x] T900 All acceptance tests GREEN: `test:parser` (rename 13+9, suite incl. documentHighlight 24), `test:server`, `eval` (rename 6/6), `test:e2e` (US-426 3/3; suite 38/38). `check-types` + `lint` clean. Also fixed a pre-existing US-416 e2e config-isolation leak.
-- [~] T901 Created `specs/US-426-*/manual-qa-workspace/` (README A–D + split-class `Account.st`/`Account-Report.st` + shadowing `Account-Shadow.st`, all 0-diag; ivar rename verified to edit both files + skip the shadow) and filled `verification.md`. **Extension-Host matrix run still pending** (verification.md §4).
-- [ ] T902 CI green on Linux/macOS/Windows + e2e job (after PR).
-- [ ] T903 Doc-rot sweep staged for release: user-stories US-426 → Done, EPIC-005, ROADMAP, README features, CLAUDE.md, CHANGELOG, version bump.
+- [x] T901 Created `specs/US-426-*/manual-qa-workspace/` (README A–D + split-class `Account.st`/`Account-Report.st` + shadowing `Account-Shadow.st`, all 0-diag) and filled `verification.md`. **Extension-Host matrix Parts A–D passed by the owner (2026-07-01)**, incl. the forced multi-file Refactor Preview.
+- [x] T902 CI green on Linux/macOS/Windows + e2e job (PR #110).
+- [x] T903 Doc-rot sweep (v0.11.0): version `0.10.0`→`0.11.0`; CHANGELOG `[0.11.0]`; README (Rename feature); user-stories US-426 → Done + status-summary + EPIC-008/US-426 fix; EPIC-005 status; ROADMAP (0.11 row = Rename shipped, Hardening→0.12, 1.0 drops rename, scorecard `✅0.11`, Next-up + dated delta); CLAUDE.md (date, Shipped v0.11.0, Next, code map + rename bullet + scope.ts/ivarRefs).

@@ -6,6 +6,19 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-01
+
+### Added
+
+-   **Scope-aware rename** for GNU Smalltalk — **offline, no `gst`** (US-426). Rename a **temporary**, a **block/method argument**, or an **instance variable** (F2 / Rename Symbol) and every in-scope reference updates — and only those. It is never a blind text swap.
+    -   **Scope discipline** — temporaries/arguments are rewritten within their method/block; an **instance variable** is renamed **workspace-wide** across every file that defines or `extend`s its class, and a method that shadows the name with a local is left untouched.
+    -   **Safe by refusal** — selectors (dynamic dispatch), classes, kernel/cartridge symbols, `self`/`super`, and literals are **rejected with a reason** rather than guessed. A new name that isn't a valid identifier, or that **collides/shadows** an existing binding, is refused — a rename can never merge two distinct symbols.
+    -   **Multi-file preview** — a rename that spans more than one file is routed through VS Code's **Refactor Preview** (`needsConfirmation`) so cross-file changes are reviewed before they apply, never on a blind Enter. Single-file renames stay instant.
+
+### Internal
+
+-   Extracted a shared, **shadow-aware** variable-scope walk (`server/src/parser/scope.ts`) reused by rename and document-highlight; the workspace-wide instance-variable resolver lives in `server/src/xref/ivarRefs.ts`. Output-eval dataset `evals/datasets/rename/`. (Also fixed a pre-existing e2e test-isolation leak where the formatting `blockStyle` suite left `smalltalk.format.enable` set in the test host's user settings.)
+
 ## [0.10.0] - 2026-06-29
 
 ### Added

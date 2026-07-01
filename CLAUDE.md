@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-06-29)
+## Current status (2026-07-01)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,18 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.11.0 — scope-aware rename (US-426, EPIC-005)** — `textDocument/rename` +
+  `prepareRename`, **offline, no `gst`**, never a blind text swap. Renameable: temporaries, block/method
+  **arguments**, and **instance variables**; selectors + classes are **rejected with a reason** (dynamic
+  dispatch makes selector rename unsafe offline → Live Bridge; class rename split to **US-428/#109**).
+  temps/args rewrite within the enclosing block/method; an **ivar renames workspace-wide** across every file
+  that defines/`extend`s the class, **skipping any method that shadows the name with a local**. New-name
+  **validation** refuses invalid identifiers + collisions/shadows (no cross-symbol bleed). **Multi-file
+  renames force the Refactor Preview** (`needsConfirmation`, `withMultiFileConfirmation`, gated on client
+  change-annotation support); single-file stays instant. Shared **shadow-aware** scope walk extracted to
+  `server/src/parser/scope.ts` (reused by `documentHighlight`); provider `server/src/providers/rename.ts`;
+  workspace-wide ivar resolver `server/src/xref/ivarRefs.ts`. New `evals/datasets/rename/` +
+  `specs/US-426-Scope-Aware-Rename/manual-qa-workspace/`. Closes #69.
 - **Shipped:** **v0.10.0 — formatting (US-416, EPIC-004)** — `textDocument/formatting` +
   `rangeFormatting` + `onTypeFormatting`, **offline, no `gst`**. Conservative + **idempotent**: a
   **whitespace-only token-stream rewriter** ([ADR-0005](docs/decisions/0005-formatter-whitespace-rewriter.md)) —
@@ -93,10 +105,11 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** the **1.0 push** — hardening/perf (**US-901**, now 0.11) and scope-aware rename (**US-426**);
-  EPIC-004 language intelligence is now effectively complete through formatting (v0.10.0). EPIC-005
-  consumers span completion (0.5), semantic tokens (0.8), cross-reference (0.9), signature help (0.9.1),
-  and the selector-surface audit (0.9.2) on one Console.
+- **Next:** the **1.0 push** — hardening/perf (**US-901**, now 0.12); candidates: class rename
+  (**US-428**/#109) and product polish + Open VSX (**US-902**). EPIC-004 language intelligence is complete
+  through formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8),
+  cross-reference (0.9), signature help (0.9.1), the selector-surface audit (0.9.2), and **scope-aware
+  rename (0.11)** on one Console.
 - **Spike done (SPIKE-01, SHELVE):** the unknown-selector heuristic was built behind a flag + measured on
   the GST kernel (21.7k sends): naive 58 false positives → **12** after the `self` subclass-union (Template
   Method) insight; zero-FP bar **unmet** (~7-8 residual cartridge-gap FPs) + low closed-world coverage
@@ -114,12 +127,13 @@ Marketplace as `leocamello.vscode-smalltalk`.
 
 ### Language server — code map, tests & conventions (read before LSP work)
 - **Source:** parser/symbols in `server/src/parser/` (`lexer.ts`, `parser.ts`, `ast.ts`, `symbols.ts`,
-  `walk.ts`; GST containers/chunk live in `parser.ts`). LSP providers in `server/src/providers/`
+  `walk.ts`, **`scope.ts`** shared shadow-aware variable-scope walk; GST containers/chunk live in
+  `parser.ts`). LSP providers in `server/src/providers/`
   (`documentSymbol`, `workspaceSymbol` + `workspaceIndex`, `definition`, `foldingRange`,
   `documentHighlight`, `completion`, `diagnostics`, `codeAction`, `hover`, `semanticTokens`,
-  `references`, `callHierarchy`, `crossReference`, `formatting`); the cross-reference engine in
-  `server/src/xref/` (`workspaceXref`, `resolve`); the **formatter core** in `server/src/format/formatter.ts`
-  (pure, no `vscode`); `server/src/documents/parseCache.ts`
+  `references`, `callHierarchy`, `crossReference`, `formatting`, `rename`); the cross-reference engine in
+  `server/src/xref/` (`workspaceXref`, `resolve`, **`ivarRefs`** workspace-wide ivar resolver); the
+  **formatter core** in `server/src/format/formatter.ts` (pure, no `vscode`); `server/src/documents/parseCache.ts`
   memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
   `server/src/server.ts`.
 - **Cross-reference / Senders-Implementors (US-423 → 0.9.0):** `server/src/xref/workspaceXref.ts` is the
@@ -152,6 +166,19 @@ Marketplace as `leocamello.vscode-smalltalk`.
   `smalltalk.format.enable` (pulled per request); VS Code minimizes the whole-doc replace into small diffs.
   **Idempotence + token-stream invariance are the gates** — property-tested over all 122 kernel files in
   both block styles (`server/test/format.property.test.ts`); output eval `evals/datasets/formatting/`.
+- **Rename (US-426 → 0.11.0):** `providers/rename.ts` — `prepareRenameAt`/`renameAt`/`enclosingClassNameAt`
+  classify the cursor as a **local** (temp/arg, via the `parser/scope.ts` binding walk), an **instance
+  variable** (declared in the enclosing class), or a **reject-with-reason** (selector via
+  `resolveQueryInAst`; class/kernel; `self`/`super`; literal; unresolved). temp/arg edits come from
+  `variableOccurrences` in the binding scope; **ivars go workspace-wide** through `xref/ivarRefs.ts`
+  (`ivarOccurrences`/`isDeclaredIvar` — every file defining/`extend`ing the class, **shadow-skipping** any
+  method that re-binds the name). New-name validation refuses invalid identifiers + scope collisions/shadows.
+  `withMultiFileConfirmation` marks multi-file edits `needsConfirmation` (Refactor Preview) when the client
+  advertises change-annotation support. `server.ts` wires `renameProvider:{prepareProvider:true}`, discovers
+  candidate files (active/dirty ∪ open docs ∪ class-filtered index/disk via `containerName`), and rejects via
+  `ResponseError`. The `parser/scope.ts` extraction also made `documentHighlight` shadow-aware. Output eval
+  `evals/datasets/rename/`; property `server/test/rename.property.test.ts` (no-bleed + round-trip). **Class
+  and selector rename are out** — class rename is **US-428/#109**; selector rename needs a runtime (EPIC-007).
 - **Kernel completion (US-413 → US-430):** `server/src/kernel/` — neutral `model.ts` (the
   `KernelIndexData` projection target the completion service consumes), `cartridgeLoader.ts` (inlines the
   committed cartridge, builds resolved views, and projects to `KernelIndexData` via

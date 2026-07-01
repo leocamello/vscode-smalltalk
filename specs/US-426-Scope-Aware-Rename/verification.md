@@ -42,16 +42,16 @@
 - [x] **Dialect-agnostic**: resolution is over the US-411 symbol/scope model, not GST-lexeme-specific.
 
 ## Section 4: Manual Verification
-- [ ] Feature works in Extension Host — run `specs/US-426-Scope-Aware-Rename/manual-qa-workspace/` matrix
-  (Parts A–D): temp/arg rename scope-bounded; **workspace-wide ivar rename across `Account.st` +
-  `Account-Report.st`**; the shadowing `Account-Shadow.st` left untouched; selector/class/pseudo-var
-  rejected with a message; collision refused; all files still parse 0-diag; round-trip clean. *(To run
-  before release, with real code and a clean VSIX.)*
-- [ ] No errors in Developer Tools console during the matrix.
+- [x] Feature works in Extension Host — `specs/US-426-Scope-Aware-Rename/manual-qa-workspace/` matrix
+  (Parts A–D) passed by the owner (2026-07-01): temp/arg rename scope-bounded; **workspace-wide ivar rename
+  across `Account.st` + `Account-Report.st`** with the **forced multi-file Refactor Preview**; the shadowing
+  `Account-Shadow.st` left untouched; selector/class/pseudo-var rejected with a message; collision refused;
+  all files still parse 0-diag; round-trip clean. "All passing."
+- [x] No errors in Developer Tools console during the matrix.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge — pending the Part A–D Extension-Host pass + PO acceptance + green CI on
-  Linux/macOS/Windows + e2e.
+- [x] **Ready for Merge** — Extension-Host Parts A–D passed + PO accepted + CI green on
+  Linux/macOS/Windows + e2e (PR #110). Shipping as **v0.11.0**.
 
 ---
 
@@ -59,5 +59,6 @@
 incl. documentHighlight 24), `test:server` (handshake: `renameProvider.prepareProvider`), `eval`
 (rename 6/6), `test:e2e` (US-426 3/3; suite 38/38). Also fixed a pre-existing US-416 e2e test-isolation leak
 (the `blockStyle` suite left `format.enable` persisted in the test host's Global settings).
-**Remaining for Done:** manual-QA matrix in the Extension Host (§4), doc-rot sweep + version bump + CHANGELOG
-(`tasks.md` T903), PO sign-off, CI green on all three OSes.
+**Done (2026-07-01):** automated layers green, manual-QA Parts A–D passed (incl. the forced multi-file
+Refactor Preview), PO sign-off, doc-rot sweep + **v0.11.0** bump + CHANGELOG (T903). Remaining outside this
+story: merge PR #110, then cut the `v0.11.0` GitHub Release to publish to the Marketplace.
