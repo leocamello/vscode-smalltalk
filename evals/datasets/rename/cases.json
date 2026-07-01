@@ -1,0 +1,71 @@
+{
+  "_comment": "Scope-aware rename output eval (US-426). Each case runs renameAt(cursorUri, offset-of(find,occurrence), newName, files); applies the resulting WorkspaceEdit; and asserts each file's resulting text equals `expect[uri]`, OR that the rename is rejected (`expectRejectMatches`). RED until server/src/providers/rename.ts ships.",
+  "cases": [
+    {
+      "name": "temporary rename touches only its own method",
+      "files": {
+        "file:///t.st": "Object subclass: Foo [\n  bar [ | acc | acc := 1. ^acc ]\n  baz [ | acc | ^acc ] ]"
+      },
+      "cursor": { "uri": "file:///t.st", "find": "acc", "occurrence": 2 },
+      "newName": "total",
+      "expect": {
+        "file:///t.st": "Object subclass: Foo [\n  bar [ | total | total := 1. ^total ]\n  baz [ | acc | ^acc ] ]"
+      }
+    },
+    {
+      "name": "argument rename within the method",
+      "files": {
+        "file:///a.st": "Object subclass: Foo [\n  add: x [ ^x + x ] ]"
+      },
+      "cursor": { "uri": "file:///a.st", "find": "x", "occurrence": 2 },
+      "newName": "n",
+      "expect": {
+        "file:///a.st": "Object subclass: Foo [\n  add: n [ ^n + n ] ]"
+      }
+    },
+    {
+      "name": "instance variable rename spans the defining and the extending file",
+      "files": {
+        "file:///account.st": "Object subclass: Account [\n  | balance |\n  deposit: n [ balance := balance + n ] ]",
+        "file:///account-extra.st": "Account extend [\n  report [ ^balance ] ]"
+      },
+      "cursor": { "uri": "file:///account.st", "find": "balance", "occurrence": 2 },
+      "newName": "funds",
+      "expect": {
+        "file:///account.st": "Object subclass: Account [\n  | funds |\n  deposit: n [ funds := funds + n ] ]",
+        "file:///account-extra.st": "Account extend [\n  report [ ^funds ] ]"
+      }
+    },
+    {
+      "name": "instance variable rename skips a method that shadows the name locally",
+      "files": {
+        "file:///account.st": "Object subclass: Account [\n  | balance |\n  deposit: n [ balance := n ] ]",
+        "file:///shadow.st": "Account extend [\n  weird [ | balance | ^balance ] ]"
+      },
+      "cursor": { "uri": "file:///account.st", "find": "balance", "occurrence": 2 },
+      "newName": "funds",
+      "expect": {
+        "file:///account.st": "Object subclass: Account [\n  | funds |\n  deposit: n [ funds := n ] ]",
+        "file:///shadow.st": "Account extend [\n  weird [ | balance | ^balance ] ]"
+      }
+    },
+    {
+      "name": "selector rename is rejected",
+      "files": {
+        "file:///s.st": "Object subclass: Foo [\n  bar [ ^self frobnicate ] ]"
+      },
+      "cursor": { "uri": "file:///s.st", "find": "frobnicate", "occurrence": 1 },
+      "newName": "wobble",
+      "expectRejectMatches": "selector"
+    },
+    {
+      "name": "colliding new name is rejected",
+      "files": {
+        "file:///c.st": "Object subclass: Foo [\n  bar [ | acc total | acc := total ] ]"
+      },
+      "cursor": { "uri": "file:///c.st", "find": "acc", "occurrence": 2 },
+      "newName": "total",
+      "expectRejectMatches": "collid|exist|conflict"
+    }
+  ]
+}

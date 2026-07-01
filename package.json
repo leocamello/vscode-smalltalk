@@ -8,7 +8,7 @@
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "preview": true,
     "icon": "icon.png",
     "main": "./dist/extension.js",
@@ -256,7 +256,8 @@
         "eval:references": "tsx evals/datasets/references/run.ts",
         "eval:signature-help": "tsx evals/datasets/signature-help/run.ts",
         "eval:formatting": "tsx evals/datasets/formatting/run.ts",
-        "eval": "npm run build:grammar && npm run test:grammar && npm run test:snippets && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references && npm run eval:signature-help && npm run eval:formatting",
+        "eval:rename": "tsx evals/datasets/rename/run.ts",
+        "eval": "npm run build:grammar && npm run test:grammar && npm run test:snippets && npm run eval:completion && npm run eval:diagnostics && npm run eval:hover && npm run eval:semantic-tokens && npm run eval:references && npm run eval:signature-help && npm run eval:formatting && npm run eval:rename",
         "new-story": "bash scripts/new-story.sh"
     }
 }

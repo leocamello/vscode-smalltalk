@@ -135,6 +135,14 @@ assert.equal(
   'on-type formatting first trigger character is `]` (dedent on block close)',
 );
 
+// Scope-aware rename (US-426) — advertised with prepareRename support.
+assert.ok(caps.renameProvider, 'expected renameProvider (US-426)');
+assert.equal(
+  caps.renameProvider.prepareProvider,
+  true,
+  'rename advertises prepareProvider (prepareRename gates renameable positions)',
+);
+
 send({ jsonrpc: '2.0', method: 'initialized', params: {} });
 
 // --- documentSymbol (US-412 slice A) ---

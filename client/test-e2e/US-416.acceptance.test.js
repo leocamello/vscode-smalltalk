@@ -58,6 +58,13 @@ suite('US-416 acceptance (e2e)', () => {
   // AC4 — off by default: with smalltalk.format.enable unset (false), Format
   // Document must produce NO edits (never touches the buffer).
   suite('disabled by default (AC4)', () => {
+    suiteSetup(async () => {
+      // Clear any value persisted in the test host's user-data dir by a prior run,
+      // restoring the true default (false) so this asserts the *default* behaviour.
+      await vscode.workspace
+        .getConfiguration('smalltalk.format')
+        .update('enable', undefined, vscode.ConfigurationTarget.Global);
+    });
     test('AC4: Format Document is a no-op when smalltalk.format.enable is false', async () => {
       const doc = await openSmalltalk('foo:=Account new.');
       const cfg = vscode.workspace.getConfiguration('smalltalk.format');
@@ -152,9 +159,11 @@ suite('US-416 acceptance (e2e)', () => {
       );
     });
     suiteTeardown(async () => {
-      await vscode.workspace
-        .getConfiguration('smalltalk.format')
-        .update('blockStyle', undefined, vscode.ConfigurationTarget.Global);
+      // Reset BOTH knobs — Global settings persist in the test host's user-data dir
+      // across runs, so a leftover `enable: true` would break the off-by-default check.
+      const cfg = vscode.workspace.getConfiguration('smalltalk.format');
+      await cfg.update('blockStyle', undefined, vscode.ConfigurationTarget.Global);
+      await cfg.update('enable', undefined, vscode.ConfigurationTarget.Global);
     });
 
     test('expand reflows an inline method body to one statement per line', async () => {
