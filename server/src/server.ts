@@ -64,9 +64,11 @@ import {
   prepareRenameAt,
   renameAt,
   enclosingClassNameAt,
+  renameKindAt,
   withMultiFileConfirmation,
   type FileText,
 } from './providers/rename';
+import { buildClassWorldFromFiles, type ClassWorld } from './xref/classRefs';
 import { toDiagnostics } from './providers/diagnostics';
 import { toCodeActions } from './providers/codeAction';
 import { toDocumentSymbols } from './providers/documentSymbol';
@@ -254,9 +256,9 @@ connection.onDocumentOnTypeFormatting(async (params: DocumentOnTypeFormattingPar
   return doc ? formatOnType(doc.getText(), params.position, params.ch, params.options, await getFormatSettings()) : [];
 });
 
-/** (uri, text) for rename: the active doc (dirty wins) + every file that defines/extends the
- *  enclosing class (for workspace-wide ivar rename). Temp/arg renames only need the active doc. */
-function renameCandidateFiles(activeUri: string, activeText: string, offset: number): FileText[] {
+/** (uri, text) for an ivar rename: the active doc (dirty wins) + every file that
+ *  defines/extends the enclosing class. Temp/arg renames only need the active doc. */
+function ivarCandidateFiles(activeUri: string, activeText: string, offset: number): FileText[] {
   const files: FileText[] = [{ uri: activeUri, text: activeText }];
   const seen = new Set<string>([activeUri]);
   const className = enclosingClassNameAt(parse(activeText).ast, offset);
@@ -287,14 +289,68 @@ function renameCandidateFiles(activeUri: string, activeText: string, offset: num
   return files;
 }
 
+/** Every workspace file as (uri, text) for class rename — a class may be referenced
+ *  anywhere, so the whole indexed workspace ∪ open docs is in scope (open docs win). */
+function allWorkspaceFiles(activeUri: string, activeText: string): FileText[] {
+  const byUri = new Map<string, string>([[activeUri, activeText]]);
+  for (const doc of documents.all()) {
+    if (!byUri.has(doc.uri)) byUri.set(doc.uri, doc.getText());
+  }
+  for (const uri of new Set(index.all().map((e) => e.uri))) {
+    if (byUri.has(uri)) continue;
+    const fsPath = uriToPath(uri);
+    if (!fsPath) continue;
+    try {
+      byUri.set(uri, fs.readFileSync(fsPath, 'utf8'));
+    } catch {
+      // unreadable file — skip it (best-effort, never throw)
+    }
+  }
+  return [...byUri].map(([uri, text]) => ({ uri, text }));
+}
+
+/** The class-resolution world: workspace classes from the index ∪ the given files'
+ *  own definitions (so an unindexed/untitled active doc still resolves), the kernel
+ *  boundary from the cartridge, and namespaces from the index containerName. */
+function buildClassWorld(files: FileText[]): ClassWorld {
+  const nsOf = new Map<string, string | undefined>();
+  for (const e of index.all()) {
+    if (e.kind === SymbolKind.Class && !nsOf.has(e.name)) nsOf.set(e.name, e.containerName);
+  }
+  const fromFiles = buildClassWorldFromFiles(files, () => false);
+  return {
+    isKnownWorkspaceClass: (name) => nsOf.has(name) || fromFiles.isKnownWorkspaceClass(name),
+    isKernelClass: (name) => kernelService.hasClass(name),
+    namespaceOf: (name) => (nsOf.has(name) ? nsOf.get(name) : fromFiles.namespaceOf(name)),
+  };
+}
+
+/** Candidate (uri, text) files + the class world for a rename: a class rename scans
+ *  the whole workspace; an ivar only the class's files; a local just the active doc. */
+function renameContext(
+  activeUri: string,
+  activeText: string,
+  ast: ReturnType<typeof getAst>,
+  tokens: ReturnType<typeof getTokens>,
+  offset: number,
+): { files: FileText[]; world: ClassWorld } {
+  const active: FileText[] = [{ uri: activeUri, text: activeText }];
+  const world0 = buildClassWorld(active);
+  if (renameKindAt(ast, tokens, offset, active, world0) === 'class') {
+    const files = allWorkspaceFiles(activeUri, activeText);
+    return { files, world: buildClassWorld(files) };
+  }
+  return { files: ivarCandidateFiles(activeUri, activeText, offset), world: world0 };
+}
+
 connection.onPrepareRename((params: PrepareRenameParams): Range | null => {
   const doc = documents.get(params.textDocument.uri);
   if (!doc) {
     return null;
   }
   const offset = doc.offsetAt(params.position);
-  const files = renameCandidateFiles(doc.uri, doc.getText(), offset);
-  const result = prepareRenameAt(getAst(doc), getTokens(doc), getSymbols(doc), offset, files);
+  const { files, world } = renameContext(doc.uri, doc.getText(), getAst(doc), getTokens(doc), offset);
+  const result = prepareRenameAt(getAst(doc), getTokens(doc), getSymbols(doc), offset, files, world);
   if ('reject' in result) {
     throw new ResponseError(ErrorCodes.InvalidRequest, result.reject);
   }
@@ -307,8 +363,8 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
     return { changes: {} };
   }
   const offset = doc.offsetAt(params.position);
-  const files = renameCandidateFiles(doc.uri, doc.getText(), offset);
-  const result = renameAt(doc.uri, offset, params.newName, files);
+  const { files, world } = renameContext(doc.uri, doc.getText(), getAst(doc), getTokens(doc), offset);
+  const result = renameAt(doc.uri, offset, params.newName, files, world);
   if ('reject' in result) {
     throw new ResponseError(ErrorCodes.InvalidRequest, result.reject);
   }

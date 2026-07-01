@@ -211,6 +211,39 @@ assert.ok(defResult.length >= 1, 'definition must resolve the `greet` send');
 assert.equal(defResult[0].uri, defUri, 'definition resolves within the same file');
 assert.equal(defResult[0].range.start.line, 0, '`greet` is defined on line 0');
 
+// --- class rename (US-428) — prepareRename accepts a workspace class, rejects a
+// non-renameable class (kernel `Object` / unknown); rename returns a WorkspaceEdit.
+// Reuses the open `defUri` doc: `Object subclass: Greeter [ … ]` (Greeter is indexed).
+const greeterCol = 'Object subclass: '.length + 1; // inside `Greeter` on line 0
+send({
+  jsonrpc: '2.0',
+  id: 700,
+  method: 'textDocument/prepareRename',
+  params: { textDocument: { uri: defUri }, position: { line: 0, character: greeterCol } },
+});
+const prepClass = await receiveId(700);
+assert.ok(prepClass.result && prepClass.result.start, 'prepareRename accepts the workspace class Greeter (returns a range)');
+
+send({
+  jsonrpc: '2.0',
+  id: 701,
+  method: 'textDocument/prepareRename',
+  params: { textDocument: { uri: defUri }, position: { line: 0, character: 2 } }, // inside `Object`
+});
+const prepKernel = await receiveId(701);
+assert.ok(prepKernel.error, 'prepareRename rejects the kernel/non-workspace class Object (error response)');
+
+send({
+  jsonrpc: '2.0',
+  id: 702,
+  method: 'textDocument/rename',
+  params: { textDocument: { uri: defUri }, position: { line: 0, character: greeterCol }, newName: 'Welcomer' },
+});
+const renClass = await receiveId(702);
+assert.ok(renClass.result, 'rename of a workspace class returns a WorkspaceEdit');
+const renEdits = renClass.result.changes || renClass.result.documentChanges;
+assert.ok(renEdits, 'the class-rename WorkspaceEdit carries edits (changes or documentChanges)');
+
 // --- textDocument/references + plural definition (US-423) ---
 // Two classes implement `greet`; a third method sends it. references is the
 // union (2 defs + 1 send); definition on the send is plural (both impls).
