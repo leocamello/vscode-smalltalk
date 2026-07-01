@@ -66,6 +66,54 @@
       "cursor": { "uri": "file:///c.st", "find": "acc", "occurrence": 2 },
       "newName": "total",
       "expectRejectMatches": "collid|exist|conflict"
+    },
+    {
+      "name": "class rename spans declaration + receiver + superclass across files (US-428)",
+      "files": {
+        "file:///shape.st": "Object subclass: Shape [\n  parts [ ^OrderedCollection new ] ]",
+        "file:///draw.st": "Shape extend [\n  describe [ ^Shape new ] ]\nShape subclass: Circle [ ]"
+      },
+      "cursor": { "uri": "file:///shape.st", "find": "Shape", "occurrence": 1 },
+      "newName": "Polygon",
+      "expect": {
+        "file:///shape.st": "Object subclass: Polygon [\n  parts [ ^OrderedCollection new ] ]",
+        "file:///draw.st": "Polygon extend [\n  describe [ ^Polygon new ] ]\nPolygon subclass: Circle [ ]"
+      }
+    },
+    {
+      "name": "class rename rewrites binding-constant and qualified segments only (US-428)",
+      "files": {
+        "file:///shape.st": "Object subclass: Shape [ ]",
+        "file:///ns.st": "Object subclass: Painter [\n  a [ ^#{Shape} new ]\n  b [ ^Smalltalk.Shape new ] ]"
+      },
+      "cursor": { "uri": "file:///shape.st", "find": "Shape", "occurrence": 1 },
+      "newName": "Polygon",
+      "expect": {
+        "file:///shape.st": "Object subclass: Polygon [ ]",
+        "file:///ns.st": "Object subclass: Painter [\n  a [ ^#{Polygon} new ]\n  b [ ^Smalltalk.Polygon new ] ]"
+      }
+    },
+    {
+      "name": "class rename skips a local temp shadowing the class name (US-428)",
+      "files": {
+        "file:///shape.st": "Object subclass: Shape [ ]",
+        "file:///shadow.st": "Shape extend [\n  demo [ | Shape | Shape := 1. ^Shape ] ]"
+      },
+      "cursor": { "uri": "file:///shape.st", "find": "Shape", "occurrence": 1 },
+      "newName": "Polygon",
+      "expect": {
+        "file:///shape.st": "Object subclass: Polygon [ ]",
+        "file:///shadow.st": "Polygon extend [\n  demo [ | Shape | Shape := 1. ^Shape ] ]"
+      }
+    },
+    {
+      "name": "class rename into an existing kernel class is rejected (US-428)",
+      "files": {
+        "file:///shape.st": "Object subclass: Shape [ ]"
+      },
+      "cursor": { "uri": "file:///shape.st", "find": "Shape", "occurrence": 1 },
+      "newName": "OrderedCollection",
+      "expectRejectMatches": "kernel|exist|collid"
     }
   ]
 }
