@@ -5,6 +5,8 @@ import {
   createConnection,
   ProposedFeatures,
   DidChangeConfigurationNotification,
+  ResponseError,
+  ErrorCodes,
   TextDocuments,
   TextDocumentSyncKind,
   CodeActionKind,
@@ -26,6 +28,10 @@ import {
   type DocumentFormattingParams,
   type DocumentRangeFormattingParams,
   type DocumentOnTypeFormattingParams,
+  type PrepareRenameParams,
+  type RenameParams,
+  type Range,
+  type WorkspaceEdit,
   type TextEdit,
   type FoldingRange,
   type FoldingRangeParams,
@@ -45,6 +51,7 @@ import {
   type WorkspaceSymbolParams,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { parse } from './parser/parser';
 import { getAst, getDiagnostics, getSymbols, getTokens, invalidate } from './documents/parseCache';
 import {
   formatDocument,
@@ -53,6 +60,13 @@ import {
   DEFAULT_FORMAT_SETTINGS,
   type FormatSettings,
 } from './providers/formatting';
+import {
+  prepareRenameAt,
+  renameAt,
+  enclosingClassNameAt,
+  withMultiFileConfirmation,
+  type FileText,
+} from './providers/rename';
 import { toDiagnostics } from './providers/diagnostics';
 import { toCodeActions } from './providers/codeAction';
 import { toDocumentSymbols } from './providers/documentSymbol';
@@ -115,6 +129,9 @@ let workspaceFolders: string[] = [];
 // Whether the client accepts `LocationLink[]` from go-to-definition (US-423 AC3).
 // Real VS Code does; a minimal client may not, so we fall back to `Location[]`.
 let definitionLinkSupport = false;
+// Whether the client supports annotated workspace edits (US-426): lets a multi-file
+// rename ask for confirmation via the Refactor Preview instead of applying on Enter.
+let changeAnnotationSupport = false;
 // The exclude predicate in force; refreshed from `files.exclude` on init and on
 // configuration change so the index honors it consistently.
 let currentExclude: ExcludePredicate = defaultExclude;
@@ -127,6 +144,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
     .map((folder) => uriToPath(folder.uri))
     .filter((p): p is string => p !== undefined);
   definitionLinkSupport = params.capabilities.textDocument?.definition?.linkSupport === true;
+  changeAnnotationSupport =
+    params.capabilities.workspace?.workspaceEdit?.documentChanges === true &&
+    params.capabilities.workspace?.workspaceEdit?.changeAnnotationSupport !== undefined;
   // Have a usable kernel immediately (refined from config in onInitialized).
   kernelService.configure({ kernelLibrary: 'auto' });
   return {
@@ -170,6 +190,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       documentFormattingProvider: true,
       documentRangeFormattingProvider: true,
       documentOnTypeFormattingProvider: { firstTriggerCharacter: ']', moreTriggerCharacter: ['\n', ';'] },
+      // Scope-aware rename of temporaries/arguments/instance variables (US-426);
+      // prepareRename gates renameable positions and explains rejections.
+      renameProvider: { prepareProvider: true },
     },
   };
 });
@@ -229,6 +252,68 @@ connection.onDocumentRangeFormatting(async (params: DocumentRangeFormattingParam
 connection.onDocumentOnTypeFormatting(async (params: DocumentOnTypeFormattingParams): Promise<TextEdit[]> => {
   const doc = documents.get(params.textDocument.uri);
   return doc ? formatOnType(doc.getText(), params.position, params.ch, params.options, await getFormatSettings()) : [];
+});
+
+/** (uri, text) for rename: the active doc (dirty wins) + every file that defines/extends the
+ *  enclosing class (for workspace-wide ivar rename). Temp/arg renames only need the active doc. */
+function renameCandidateFiles(activeUri: string, activeText: string, offset: number): FileText[] {
+  const files: FileText[] = [{ uri: activeUri, text: activeText }];
+  const seen = new Set<string>([activeUri]);
+  const className = enclosingClassNameAt(parse(activeText).ast, offset);
+  if (!className) {
+    return files; // local (temp/arg) or not renameable — the active document is enough.
+  }
+  const wanted = new Set<string>();
+  for (const e of index.all()) {
+    if (e.name === className || e.containerName === className) wanted.add(e.uri);
+  }
+  for (const doc of documents.all()) {
+    if (!seen.has(doc.uri) && wanted.has(doc.uri)) {
+      seen.add(doc.uri);
+      files.push({ uri: doc.uri, text: doc.getText() });
+    }
+  }
+  for (const uri of wanted) {
+    if (seen.has(uri)) continue;
+    const fsPath = uriToPath(uri);
+    if (!fsPath) continue;
+    try {
+      seen.add(uri);
+      files.push({ uri, text: fs.readFileSync(fsPath, 'utf8') });
+    } catch {
+      // unreadable file — skip it (best-effort, never throw)
+    }
+  }
+  return files;
+}
+
+connection.onPrepareRename((params: PrepareRenameParams): Range | null => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return null;
+  }
+  const offset = doc.offsetAt(params.position);
+  const files = renameCandidateFiles(doc.uri, doc.getText(), offset);
+  const result = prepareRenameAt(getAst(doc), getTokens(doc), getSymbols(doc), offset, files);
+  if ('reject' in result) {
+    throw new ResponseError(ErrorCodes.InvalidRequest, result.reject);
+  }
+  return result.range;
+});
+
+connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) {
+    return { changes: {} };
+  }
+  const offset = doc.offsetAt(params.position);
+  const files = renameCandidateFiles(doc.uri, doc.getText(), offset);
+  const result = renameAt(doc.uri, offset, params.newName, files);
+  if ('reject' in result) {
+    throw new ResponseError(ErrorCodes.InvalidRequest, result.reject);
+  }
+  // A rename spanning multiple files asks for confirmation via the Refactor Preview.
+  return withMultiFileConfirmation(result, changeAnnotationSupport, (uri) => documents.get(uri)?.version ?? null);
 });
 
 connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): WorkspaceSymbol[] =>
