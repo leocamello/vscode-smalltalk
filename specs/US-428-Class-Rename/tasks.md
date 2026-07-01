@@ -25,5 +25,5 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 ## Phase 4 — Verify
 - [x] T900 All acceptance tests GREEN: `test:parser` (classRename 16, rename 16, property 15), `test:server` (handshake clean), `eval` (rename 10/10; full eval green), `test:e2e` (US-428 3/3; suite 41/41). `check-types` + `lint` clean.
 - [ ] T901 Manual-QA matrix Parts run in the Extension Host (`manual-qa-workspace/`); `verification.md` filled + **owner sign-off** (pending).
-- [ ] T902 CI green on Linux/macOS/Windows + e2e job (PR closing #109).
+- [x] T902 CI green on Linux/macOS/Windows + e2e job (PR #111 closing #109) — build ubuntu/macos/windows + e2e all pass.
 - [ ] T903 Doc-rot sweep (v0.12.0): version + CHANGELOG; README (Class Rename); user-stories US-428 → Done + EPIC-005; **ROADMAP resequence (0.12=Class Rename, 0.13=Hardening/US-901) + dated delta**; CLAUDE.md (date, Shipped v0.12.0, Next, code map + classRefs bullet).
