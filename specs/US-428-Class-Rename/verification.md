@@ -30,11 +30,11 @@
 - [x] **TDD**: RED acceptance harness written before code across all five layers (unit/property/eval/handshake/e2e).
 
 ## Section 4: Manual Verification
-- [ ] Feature works in the Extension Host — run `specs/US-428-Class-Rename/manual-qa-workspace/` Parts A–D (open the folder; rename `Shape`→`Polygon` across all four files via the forced Refactor Preview; confirm the shadow local + unrelated namespace stay put; F2 on `OrderedCollection` rejected; rename into `OrderedCollection`/`Circle`/`polygon` refused; round-trip back to `Shape` clean). **(Owner-run — pending.)**
-- [ ] No errors in the Developer Tools console during the matrix. **(Owner-run — pending.)**
+- [x] Feature works in the Extension Host — `specs/US-428-Class-Rename/manual-qa-workspace/` Parts A–D run by the owner (2026-07-02): rename `Shape`→`Polygon` updated all four files via the forced Refactor Preview; the shadow local + unrelated namespace stayed put; F2 on `OrderedCollection` rejected; rename into `OrderedCollection`/`Circle`/`polygon` refused; round-trip back to `Shape` clean. **All pass.**
+- [x] No errors in the Developer Tools console during the matrix.
 
 ## Section 5: Sign-Off
-- [ ] Ready for Merge — **pending owner manual-QA sign-off** (Section 4) + CI green on Linux/macOS/Windows (PR closing #109). Automated layers (unit/property/eval/handshake/e2e) + lint + types are all green locally.
+- [x] Ready for Merge — **owner manual-QA sign-off obtained (2026-07-02)**; CI green on Linux/macOS/Windows + e2e (PR #111 closing #109); automated layers (unit/property/eval/handshake/e2e) + lint + types green.
 
 ### Manual-QA matrix
 See `manual-qa-workspace/README.md` — Part A (all reference forms + forced multi-file preview), Part B

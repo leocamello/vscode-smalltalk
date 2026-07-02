@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-07-01)
+## Current status (2026-07-02)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,19 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.12.0 — class rename (US-428, EPIC-005)** — extends the US-426 rename engine to
+  **workspace classes**. F2 on a class renames **every resolved reference workspace-wide**: the declaration
+  (`Object subclass: Foo`/bare-id + chunk `#Foo` symbol), receiver/superclass `Variable`s (`Foo new`,
+  `Foo subclass: Bar`), `Foo class`/`Foo extend`, class-argument symbols, the binding constant `#{Foo}`, and
+  the namespaced `Foo.Bar`/`Foo::Bar` (**class segment only**, **resolution-gated** via index `containerName` ∪
+  the `Smalltalk` default). **Never** a local sharing the name (scope-aware skip), a same-named class in another
+  namespace, or a comment/string. **Kernel boundary** enforced twice — a cartridge class is rejected (read-only)
+  and a new name colliding with a **kernel or workspace** class is refused (reject-with-reason). Multi-file →
+  **Refactor Preview** (reused `withMultiFileConfirmation`). Offline, no `gst`. New resolver
+  `server/src/xref/classRefs.ts` (`classOccurrences`/`ClassWorld`/`buildClassWorldFromFiles`); `classify` grows a
+  `class` kind + `renameKindAt`; `server.ts` builds the class world (index ∪ active-doc defs ∪ cartridge) and
+  scans the whole workspace for class references. New `specs/US-428-*/manual-qa-workspace/` + class goldens in
+  `evals/datasets/rename/`. Closes #109.
 - **Shipped:** **v0.11.0 — scope-aware rename (US-426, EPIC-005)** — `textDocument/rename` +
   `prepareRename`, **offline, no `gst`**, never a blind text swap. Renameable: temporaries, block/method
   **arguments**, and **instance variables**; selectors + classes are **rejected with a reason** (dynamic
@@ -105,11 +118,11 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** the **1.0 push** — hardening/perf (**US-901**, now 0.12); candidates: class rename
-  (**US-428**/#109) and product polish + Open VSX (**US-902**). EPIC-004 language intelligence is complete
-  through formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8),
-  cross-reference (0.9), signature help (0.9.1), the selector-surface audit (0.9.2), and **scope-aware
-  rename (0.11)** on one Console.
+- **Next:** the **1.0 push** — hardening/perf (**US-901**, now **0.13** after the class-rename resequence),
+  then product polish + remove the preview flag + Open VSX (**US-902**, 1.0). EPIC-004 language intelligence is
+  complete through formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8),
+  cross-reference (0.9), signature help (0.9.1), the selector-surface audit (0.9.2), **scope-aware rename
+  (0.11)**, and **class rename (0.12)** on one Console.
 - **Spike done (SPIKE-01, SHELVE):** the unknown-selector heuristic was built behind a flag + measured on
   the GST kernel (21.7k sends): naive 58 false positives → **12** after the `self` subclass-union (Template
   Method) insight; zero-FP bar **unmet** (~7-8 residual cartridge-gap FPs) + low closed-world coverage
@@ -132,7 +145,8 @@ Marketplace as `leocamello.vscode-smalltalk`.
   (`documentSymbol`, `workspaceSymbol` + `workspaceIndex`, `definition`, `foldingRange`,
   `documentHighlight`, `completion`, `diagnostics`, `codeAction`, `hover`, `semanticTokens`,
   `references`, `callHierarchy`, `crossReference`, `formatting`, `rename`); the cross-reference engine in
-  `server/src/xref/` (`workspaceXref`, `resolve`, **`ivarRefs`** workspace-wide ivar resolver); the
+  `server/src/xref/` (`workspaceXref`, `resolve`, **`ivarRefs`** workspace-wide ivar resolver, **`classRefs`**
+  workspace-wide class-reference resolver); the
   **formatter core** in `server/src/format/formatter.ts` (pure, no `vscode`); `server/src/documents/parseCache.ts`
   memoizes AST/tokens/**diagnostics**/symbols by `(uri, version)`; wiring + advertised capabilities in
   `server/src/server.ts`.
@@ -166,19 +180,28 @@ Marketplace as `leocamello.vscode-smalltalk`.
   `smalltalk.format.enable` (pulled per request); VS Code minimizes the whole-doc replace into small diffs.
   **Idempotence + token-stream invariance are the gates** — property-tested over all 122 kernel files in
   both block styles (`server/test/format.property.test.ts`); output eval `evals/datasets/formatting/`.
-- **Rename (US-426 → 0.11.0):** `providers/rename.ts` — `prepareRenameAt`/`renameAt`/`enclosingClassNameAt`
-  classify the cursor as a **local** (temp/arg, via the `parser/scope.ts` binding walk), an **instance
-  variable** (declared in the enclosing class), or a **reject-with-reason** (selector via
-  `resolveQueryInAst`; class/kernel; `self`/`super`; literal; unresolved). temp/arg edits come from
-  `variableOccurrences` in the binding scope; **ivars go workspace-wide** through `xref/ivarRefs.ts`
-  (`ivarOccurrences`/`isDeclaredIvar` — every file defining/`extend`ing the class, **shadow-skipping** any
-  method that re-binds the name). New-name validation refuses invalid identifiers + scope collisions/shadows.
+- **Rename (US-426 → 0.11.0; US-428 class rename → 0.12.0):** `providers/rename.ts` —
+  `prepareRenameAt`/`renameAt`/`enclosingClassNameAt`/`renameKindAt` classify the cursor as a **local**
+  (temp/arg, via the `parser/scope.ts` binding walk), an **instance variable** (declared in the enclosing
+  class), a **class** (a capitalized name resolving to a workspace class via the `ClassWorld`), or a
+  **reject-with-reason** (selector via `resolveQueryInAst`; **kernel class read-only**; `self`/`super`; literal;
+  unknown global). temp/arg edits come from `variableOccurrences` in the binding scope; **ivars go
+  workspace-wide** through `xref/ivarRefs.ts` (`ivarOccurrences`/`isDeclaredIvar` — every file
+  defining/`extend`ing the class, **shadow-skipping** any method that re-binds the name); **classes go
+  workspace-wide** through `xref/classRefs.ts` (`classOccurrences`/`ClassWorld`/`buildClassWorldFromFiles` —
+  token-level class-segment ranges for the declaration, receiver/superclass `Variable`s, `class`/`extend`,
+  class-argument symbols, `#{Foo}`, and qualified `A.B`/`A::B`; a **scope-stack walk skips shadowing locals**;
+  qualified/binding forms are **resolution-gated** by `namespaceOf` = index `containerName` ∪ `Smalltalk`
+  default). New-name validation refuses invalid identifiers + scope collisions/shadows; for a class it also
+  refuses a **kernel or workspace class-name collision** (`[A-Z]…` required).
   `withMultiFileConfirmation` marks multi-file edits `needsConfirmation` (Refactor Preview) when the client
-  advertises change-annotation support. `server.ts` wires `renameProvider:{prepareProvider:true}`, discovers
-  candidate files (active/dirty ∪ open docs ∪ class-filtered index/disk via `containerName`), and rejects via
-  `ResponseError`. The `parser/scope.ts` extraction also made `documentHighlight` shadow-aware. Output eval
-  `evals/datasets/rename/`; property `server/test/rename.property.test.ts` (no-bleed + round-trip). **Class
-  and selector rename are out** — class rename is **US-428/#109**; selector rename needs a runtime (EPIC-007).
+  advertises change-annotation support. `server.ts` wires `renameProvider:{prepareProvider:true}`, builds the
+  `ClassWorld` (index ∪ active-doc defs ∪ cartridge via `kernelService.hasClass`), and discovers candidate files
+  by rename kind (`renameContext`): a **class** scans the **whole indexed workspace ∪ open docs**, an **ivar**
+  the class-filtered set, a **local** just the active doc; rejects via `ResponseError`. The `parser/scope.ts`
+  extraction also made `documentHighlight` shadow-aware. Output eval `evals/datasets/rename/`; property
+  `server/test/rename.property.test.ts` + unit `server/test/classRename.test.ts` (no-bleed + round-trip +
+  resolution-gating). **Selector rename stays out** — it needs a runtime (EPIC-007, Live Bridge).
 - **Kernel completion (US-413 → US-430):** `server/src/kernel/` — neutral `model.ts` (the
   `KernelIndexData` projection target the completion service consumes), `cartridgeLoader.ts` (inlines the
   committed cartridge, builds resolved views, and projects to `KernelIndexData` via
