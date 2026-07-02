@@ -67,9 +67,17 @@ export function parse(source: string): ParseResult {
   return new Parser(stream, diagnostics).parseProgram();
 }
 
+/** Max expression-nesting depth before the parser stops recursing. Real code never
+ *  nests messages/blocks/parens this deep; the cap turns a pathological input
+ *  (`[[[…]]]`, `(((…)))`, `a:=a:=…`) into a diagnostic instead of a stack overflow
+ *  (US-901 AC4/AC5 — the front end never throws). ~300 levels × the per-level frame
+ *  count stays well under Node's default stack. */
+const MAX_EXPRESSION_DEPTH = 300;
+
 class Parser {
   private index = 0;
   private prev: Token;
+  private depth = 0;
 
   constructor(
     private readonly tokens: Token[],
@@ -560,6 +568,28 @@ class Parser {
   // --- Expressions (precedence climb) ----------------------------------------
 
   private parseExpression(): Node {
+    // Every nesting level (parens, blocks, brace arrays, right-associative
+    // assignment chains) passes through here exactly once, so it's the single
+    // choke point for bounding recursion depth against a stack overflow.
+    if (this.depth >= MAX_EXPRESSION_DEPTH) return this.tooDeep();
+    this.depth += 1;
+    try {
+      return this.parseExpressionCore();
+    } finally {
+      this.depth -= 1;
+    }
+  }
+
+  /** Nesting too deep — stop recursing, emit a diagnostic, and consume one token
+   *  to guarantee forward progress (the enclosing constructs then unwind + close). */
+  private tooDeep(): Node {
+    const t = this.current();
+    if (!this.atEnd()) this.advance();
+    this.diag('Expression nesting too deep', t);
+    return { kind: NodeKind.Error, message: 'Expression nesting too deep', ...this.range(t) };
+  }
+
+  private parseExpressionCore(): Node {
     // Assignment: `identifier ':=' expression` (right-associative; also legacy `_`).
     if (this.at(TokenKind.Identifier) && this.peek(1).kind === TokenKind.Assign) {
       const idTok = this.current();

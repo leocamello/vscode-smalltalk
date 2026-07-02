@@ -13,6 +13,8 @@
 
 Provides comprehensive language support for **Smalltalk**, with an initial focus on **GNU Smalltalk** and a file-based (`.st`) development workflow within Visual Studio Code. Our goal is to offer a seamless and productive environment for Smalltalk developers using VS Code.
 
+**Private by design — no telemetry, fully offline.** The extension performs **no network I/O** and collects **no telemetry**: all language intelligence runs locally against a bundled TypeScript language server, and your code never leaves your machine. (This is enforced by a guard test in CI.)
+
 <!-- Prerequisites (US-102) -->
 ## Prerequisites
 

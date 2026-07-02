@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+
+-   **Hardening & performance pass** (US-901) — the offline engine hardened for beta quality:
+    -   **Parser never throws on pathological input.** Deeply nested expressions (`[[[…]]]`, `(((…)))`, long `a := b := …` chains) previously overflowed the recursive-descent parser's stack; the parser now caps expression-nesting depth and emits a diagnostic instead, upholding the "front end never throws" invariant. Fuzz-tested over thousands of malformed/random inputs (`server/test/robustness.test.ts`).
+    -   **Perf benchmark** — a local `npm run bench` over a generated synthetic corpus (`scripts/gen-corpus.ts`) proves the budgets: a **1,000-file** workspace indexes cold in **~0.2 s** (budget < 5 s) and completion responds at **p95 ~5 ms** (budget < 100 ms). Run locally + at release (not a CI gate).
+    -   **No-telemetry guard** — a regression test (`server/test/noTelemetry.test.ts`) asserts the server + client sources carry no network/telemetry surface; the offline, zero-telemetry stance is now documented in the README.
+
 ## [0.12.0] - 2026-07-02
 
 ### Added
