@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import { parse } from '../src/parser/parser.ts';
 import { renameAt } from '../src/providers/rename.ts';
+import { buildClassWorldFromFiles } from '../src/xref/classRefs.ts';
 
 let passed = 0;
 function test(name: string, fn: () => void): void {
@@ -88,6 +89,47 @@ for (const [name, sym, src] of SAMPLES) {
     const r = rename(src, at(src, sym, 2), 'renamed');
     const once = applyEdits(src, ((r as { changes?: Record<string, Edit[]> }).changes ?? {})[URI] ?? []);
     assert.ok(parse(once).diagnostics.length <= baseline, 'rename must not introduce parse errors');
+  });
+}
+
+// --- class rename (US-428): same invariants over the class reference forms ---
+const CLASS_KERNEL = new Set(['Object', 'OrderedCollection']);
+const classWorld = (src: string) => buildClassWorldFromFiles([{ uri: URI, text: src }], (n) => CLASS_KERNEL.has(n));
+const renameClass = (src: string, offset: number, newName: string) =>
+  renameAt(URI, offset, newName, [{ uri: URI, text: src }], classWorld(src));
+
+const CLASS_SAMPLES: Array<[string, string]> = [
+  ['receiver + superclass', 'Object subclass: Shape [ ]\nShape subclass: Circle [ ]\nShape extend [ f [ ^Shape new ] ]'],
+  ['binding + qualified', 'Object subclass: Shape [ ]\nObject subclass: P [ a [ ^#{Shape} new ] b [ ^Smalltalk.Shape new ] ] '],
+];
+
+for (const [name, src] of CLASS_SAMPLES) {
+  test(`class no bleed: ${name} edits cover only the "Shape" segment`, () => {
+    const r = renameClass(src, at(src, 'Shape', 1), 'Polygon');
+    assert.ok(!isReject(r), 'class rename should succeed');
+    const edits = ((r as { changes?: Record<string, Edit[]> }).changes ?? {})[URI] ?? [];
+    assert.ok(edits.length > 0, 'expected edits');
+    for (const e of edits) {
+      const slice = src.slice(offsetOf(src, e.range.start), offsetOf(src, e.range.end));
+      assert.equal(slice, 'Shape', `edited range must cover the class segment "Shape", got "${slice}"`);
+    }
+  });
+
+  test(`class round-trip: ${name} Shape->Polygon->Shape restores the original`, () => {
+    const r1 = renameClass(src, at(src, 'Shape', 1), 'Polygon');
+    assert.ok(!isReject(r1));
+    const once = applyEdits(src, ((r1 as { changes?: Record<string, Edit[]> }).changes ?? {})[URI] ?? []);
+    const back = renameClass(once, at(once, 'Polygon', 1), 'Shape');
+    assert.ok(!isReject(back), 'reverse class rename should succeed');
+    const restored = applyEdits(once, ((back as { changes?: Record<string, Edit[]> }).changes ?? {})[URI] ?? []);
+    assert.equal(restored, src, 'Shape->Polygon->Shape must restore the original text');
+  });
+
+  test(`class safe: ${name} renamed source still parses with no new diagnostics`, () => {
+    const baseline = parse(src).diagnostics.length;
+    const r = renameClass(src, at(src, 'Shape', 1), 'Polygon');
+    const once = applyEdits(src, ((r as { changes?: Record<string, Edit[]> }).changes ?? {})[URI] ?? []);
+    assert.ok(parse(once).diagnostics.length <= baseline, 'class rename must not introduce parse errors');
   });
 }
 

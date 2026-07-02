@@ -88,8 +88,9 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | **0.9** ✅ | **Cross-Reference Intelligence** 🏰 | 005 | **references · senders/implementors · call hierarchy** (honest two-tier union; installed-tier parity + real-source jump) — **shipped (US-423)**; signature help + SPIKE-01 carry forward | **B** ⚖️ | senders/implementors offline (image-IDE parity, no image) |
 | **0.10** ✅ | **Formatting** | 004 | conservative, idempotent formatting — document/range/on-type over a **whitespace-only token-stream rewriter** ([ADR-0005](decisions/0005-formatter-whitespace-rewriter.md)); off by default; cascade-align, keyword-wrap, `blockStyle: expand` — **shipped (US-416)** | A | code formatting (image-IDE parity, offline) |
 | **0.11** ✅ | **Scope-aware Rename** | 005 | safe rename of temps/args/**instance variables** (workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation); selectors/classes rejected-with-reason — **shipped (US-426)** | A | first refactoring (image-IDE parity, offline) |
-| **0.12** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
-| **1.0** 🔵 | **Complete Offline GST IDE** | 902 | product polish; remove `preview`; **Open VSX**; (opt.) class rename (US-428) | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
+| **0.12** ✅ | **Class Rename** | 005 | safe **workspace-wide class rename** across every reference form (declaration · receiver/superclass · `class`/`extend` · class-argument symbols · `#{Foo}` · namespaced `A.B`/`A::B`), resolution-gated; kernel-boundary-safe (reject-with-reason); multi-file Refactor Preview — **shipped (US-428)** | A | second refactoring (image-IDE parity, offline) |
+| **0.13** 🔵 | **Hardening & Perf** | 901 | 1k files < 5 s, completion < 100 ms, no-telemetry verified, bug-bash | — | beta quality |
+| **1.0** 🔵 | **Complete Offline GST IDE** | 902 | product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
 | **~1.0** 🟣 | **Tonel read-only wedge** ("Trojan Horse") | 006 | **read-only Tonel** grammar + folding + outline (US-424) — *no cartridge, no seam* | A ⚖️ | best-in-class Tonel reading — lands the Pharo/GemStone/VA crowd early |
 | **1.1–1.4** 🟣 | **Image-Grade Workbench** 🏰 | 008 | **System Browser view**, full-text method search, class-hierarchy view, more refactorings (extract method) | A+B | the "feels like Smalltalk" IDE (System Browser parity, offline) |
 | **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + full Tonel container seam (US-418) + `smalltalk.dialect` auto-detect **+ status-bar picker** (US-602) | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
@@ -112,6 +113,13 @@ args/ivars only — selector rename is unsafe offline and stays in the Live Brid
 split out to **US-428 / #109**). **Hardening & Perf (US-901) shifts to 0.12**; **1.0** is now polish +
 remove-`preview` + Open VSX, with class rename an optional add. The pattern holds: self-contained,
 honestly-scoped features ship as they're ready on the way to the 1.0 offline-parity line.
+
+**Delta (2026-07-02).** **Class Rename (US-428) shipped as 0.12.0** — the deferred sibling of ivar rename,
+built on the same engine (workspace-wide across all reference forms incl. namespaced `#{…}`/`A.B`/`A::B`,
+resolution-gated; kernel-boundary-safe reject-with-reason). It graduated from "optional 1.0 add" to a shipped
+0.12 milestone. Consequently **Hardening & Perf (US-901) resequences to 0.13**, and **1.0** is now cleanly
+polish + remove-`preview` + Open VSX (US-902). GST offline refactoring now spans **variable + class rename**;
+selector rename remains out (needs a runtime — EPIC-007).
 
 **Delta (2026-06-24 strategy review).** Three ideas from an external review are folded into the plan:
 (1) **Tonel as the "Trojan Horse" — resequencing decision:** a **read-only** Tonel experience (grammar +
@@ -141,7 +149,7 @@ not a launcher for other servers) is the moat; an external live server stays an 
 | References / **Senders / Implementors** | — | ✅0.9 | ✅ | partial | ✅ (image) |
 | Call hierarchy | — | ✅0.9 | ✅ | — | ✅ |
 | Formatting | — | ✅0.10 | ✅ | ✅ | ✅ |
-| Refactorings (rename → extract) | — | ✅0.11 (rename) · ⏳1.x (extract) | ✅ | ✅ (famous) | some |
+| Refactorings (rename → extract) | — | ✅0.11–0.12 (var + class rename) · ⏳1.x (extract) | ✅ | ✅ (famous) | some |
 | **System Browser view** | — | ⏳1.x | ✅ | (is the image) | ✅ |
 | SUnit test explorer | — | — | ✅➕ | ✅ (image) | ✅ |
 | Do-it / Print-it / **Inspect-it** | — | — | ✅➕ | ✅ (image) | ✅ |
@@ -161,7 +169,7 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). 0.10.0 / US-416 — Formatting (document/range/on-type over a whitespace-only token-stream rewriter, ADR-0005; off by default; cascade-align + keyword-wrap + `blockStyle: expand`) — shipped (closes #28). 0.11.0 / US-426 — Scope-aware Rename (temps/args/instance variables; workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation; selectors/classes rejected-with-reason) — shipped (closes #69). Next: the 1.0 push — hardening/perf (US-901, now 0.12); candidates class rename (US-428/#109) + polish + Open VSX (US-902).**
+   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). 0.10.0 / US-416 — Formatting (document/range/on-type over a whitespace-only token-stream rewriter, ADR-0005; off by default; cascade-align + keyword-wrap + `blockStyle: expand`) — shipped (closes #28). 0.11.0 / US-426 — Scope-aware Rename (temps/args/instance variables; workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation; selectors/classes rejected-with-reason) — shipped (closes #69). 0.12.0 / US-428 — Class Rename (workspace-wide across every reference form incl. namespaced `#{…}`/`A.B`/`A::B`, resolution-gated; kernel-boundary-safe reject-with-reason; multi-file Refactor Preview) — shipped (closes #109). Next: the 1.0 push — hardening/perf (US-901, resequenced to 0.13) + polish + remove-`preview` + Open VSX (US-902, 1.0).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /

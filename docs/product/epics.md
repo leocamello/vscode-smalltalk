@@ -172,6 +172,7 @@
 * [US-425: Signature Help] — **Done (v0.9.1, closes #68)**
 * [US-427: Selector-Surface Coverage Audit] — **Done (v0.9.2, closes #102)**
 * [US-426: Scope-aware Rename] — **Done (v0.11.0, closes #69)** — temps/args/instance variables; class rename split to US-428 (#109)
+* [US-428: Class Rename] — **Done (v0.12.0, closes #109)** — workspace-wide across every reference form (incl. namespaced `#{…}`/`A.B`/`A::B`, resolution-gated); kernel-boundary-safe reject-with-reason; multi-file Refactor Preview; built on the US-426 engine
 * [SPIKE-01: Unknown-Selector Heuristic — false-positive validation]
 
 **Success Metrics (Optional):**

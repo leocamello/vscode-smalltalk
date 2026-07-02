@@ -6,6 +6,19 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-02
+
+### Added
+
+-   **Class rename** for GNU Smalltalk — **offline, no `gst`** (US-428). Rename a **class you defined** (F2 / Rename Symbol) and every reference to it updates across the whole workspace: the **declaration** (`Object subclass: Foo`), **receiver** and **superclass** positions (`Foo new`, `Foo subclass: Bar`), `Foo class` / `Foo extend`, class-argument symbols, the binding constant `#{Foo}`, and the namespaced forms `Foo.Bar` / `Foo::Bar` (the class segment only).
+    -   **Honest resolution** — a rewrite happens only where a reference **resolves** to the class; a local variable that merely shares the name, a same-named class in another namespace, and text inside comments/strings are left untouched.
+    -   **Kernel boundary** — a kernel/cartridge class is **read-only** (its rename is rejected with a reason), and a new name that collides with an existing **kernel or workspace** class is refused — a rename can never edit a frozen cartridge class or merge two classes.
+    -   **Multi-file preview** — a class rename spanning more than one file is routed through VS Code's **Refactor Preview** so cross-file changes are reviewed before they apply (inherited from US-426).
+
+### Internal
+
+-   New workspace-wide class-reference resolver `server/src/xref/classRefs.ts` (`classOccurrences` + `ClassWorld` + `buildClassWorldFromFiles`) — token-level class-segment ranges for the qualified/binding/symbol forms, a scope-aware walk that skips shadowing locals, and resolution-gating via the workspace index namespaces (`containerName`) ∪ the `Smalltalk` default. Folded into `server/src/providers/rename.ts` (a `class` classification + kernel/workspace collision validation) and wired in `server.ts` (whole-workspace candidate scan for class references). Output-eval dataset `evals/datasets/rename/` grew class goldens.
+
 ## [0.11.0] - 2026-07-01
 
 ### Added

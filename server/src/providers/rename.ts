@@ -24,6 +24,7 @@ import {
   ivarOccurrences,
   type FileText,
 } from '../xref/ivarRefs';
+import { classOccurrences, type ClassWorld } from '../xref/classRefs';
 
 export interface RenameRange {
   readonly range: Range;
@@ -31,7 +32,7 @@ export interface RenameRange {
 export interface RenameReject {
   readonly reject: string;
 }
-export type { FileText };
+export type { FileText, ClassWorld };
 
 const PSEUDO = new Set(['self', 'super', 'thisContext', 'nil', 'true', 'false']);
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -42,6 +43,7 @@ const isReject = (v: unknown): v is RenameReject =>
 type Classification =
   | { readonly kind: 'local'; readonly name: string; readonly tok: Token }
   | { readonly kind: 'ivar'; readonly name: string; readonly className: string; readonly tok: Token }
+  | { readonly kind: 'class'; readonly name: string; readonly tok: Token }
   | RenameReject;
 
 /** The token covering `offset` (preferring a strictly-containing one). */
@@ -82,12 +84,15 @@ function boundNames(scope: Node): Set<string> {
 
 const NOT_RENAMEABLE = 'Only temporaries, arguments, and instance variables can be renamed.';
 
-/** Classify the symbol under the cursor; `files` (optional) lets ivars resolve across files. */
+/** Classify the symbol under the cursor; `files` lets ivars resolve across files,
+ *  `world` lets a capitalized name resolve to a (renameable) workspace class vs a
+ *  (rejected) kernel class. */
 function classify(
   ast: ProgramNode,
   tokens: Token[],
   offset: number,
   files?: ReadonlyArray<FileText>,
+  world?: ClassWorld,
 ): Classification {
   const tok = tokenAt(tokens, offset);
   if (!tok) {
@@ -116,7 +121,16 @@ function classify(
     }
   }
   if (/^[A-Z]/.test(name)) {
-    return reject(`"${name}" looks like a class — class and selector rename aren't supported in this version.`);
+    // A capitalized name resolves against the class world: a workspace class is
+    // renameable (US-428); a kernel/cartridge class is read-only; anything else is
+    // an unknown global we won't guess at.
+    if (world?.isKnownWorkspaceClass(name)) {
+      return { kind: 'class', name, tok };
+    }
+    if (world?.isKernelClass(name)) {
+      return reject(`"${name}" is a kernel class and can't be renamed — cartridge classes are read-only.`);
+    }
+    return reject(`"${name}" isn't a class defined in this workspace — only workspace classes (not kernel classes or selectors) can be renamed.`);
   }
   return reject(`"${name}" doesn't resolve to a temporary, argument, or instance variable in scope.`);
 }
@@ -126,15 +140,30 @@ export function enclosingClassNameAt(ast: ProgramNode, offset: number): string |
   return enclosingClassName(pathToOffset(ast, offset));
 }
 
-/** prepareRename: the renameable range, or a typed rejection. `files` lets ivars resolve cross-file. */
+/** The rename kind at `offset` — lets the server pick the candidate-file breadth
+ *  (a class rename must consider every workspace file, an ivar only the class's). */
+export function renameKindAt(
+  ast: ProgramNode,
+  tokens: Token[],
+  offset: number,
+  files?: ReadonlyArray<FileText>,
+  world?: ClassWorld,
+): 'local' | 'ivar' | 'class' | 'reject' {
+  const c = classify(ast, tokens, offset, files, world);
+  return isReject(c) ? 'reject' : c.kind;
+}
+
+/** prepareRename: the renameable range, or a typed rejection. `files` lets ivars
+ *  resolve cross-file; `world` lets a capitalized name resolve to a workspace class. */
 export function prepareRenameAt(
   ast: ProgramNode,
   tokens: Token[],
   _symbols: SymbolNode[],
   offset: number,
   files?: ReadonlyArray<FileText>,
+  world?: ClassWorld,
 ): RenameRange | RenameReject {
-  const c = classify(ast, tokens, offset, files);
+  const c = classify(ast, tokens, offset, files, world);
   if (isReject(c)) {
     return c;
   }
@@ -146,12 +175,16 @@ const toTextEdit = (r: Ranged, newText: string): TextEdit => ({
   newText,
 });
 
-/** rename: a WorkspaceEdit, or a typed rejection. `files` must include the cursor's file. */
+const CLASS_IDENTIFIER = /^[A-Z][A-Za-z0-9_]*$/;
+
+/** rename: a WorkspaceEdit, or a typed rejection. `files` must include the cursor's
+ *  file; `world` resolves class references + the kernel/workspace collision check. */
 export function renameAt(
   uri: string,
   offset: number,
   newName: string,
   files: ReadonlyArray<FileText>,
+  world?: ClassWorld,
 ): WorkspaceEdit | RenameReject {
   const primary = files.find((f) => f.uri === uri);
   if (!primary) {
@@ -160,7 +193,7 @@ export function renameAt(
   const ast = parse(primary.text).ast;
   const tokens = tokenize(primary.text).tokens;
 
-  const c = classify(ast, tokens, offset, files);
+  const c = classify(ast, tokens, offset, files, world);
   if (isReject(c)) {
     return c;
   }
@@ -169,6 +202,24 @@ export function renameAt(
   }
   if (newName === c.name) {
     return { changes: {} };
+  }
+
+  if (c.kind === 'class') {
+    if (!CLASS_IDENTIFIER.test(newName)) {
+      return reject(`"${newName}" is not a valid class name — a class must start with an uppercase letter.`);
+    }
+    if (world?.isKernelClass(newName)) {
+      return reject(`"${newName}" is already a kernel class — rename would collide.`);
+    }
+    if (world?.isKnownWorkspaceClass(newName)) {
+      return reject(`"${newName}" already exists as a class in the workspace — rename would collide.`);
+    }
+    const byUri = classOccurrences(c.name, world as ClassWorld, files);
+    const changes: Record<string, TextEdit[]> = {};
+    for (const [u, ranges] of byUri) {
+      changes[u] = ranges.map((r) => toTextEdit(r, newName));
+    }
+    return { changes };
   }
 
   const path = pathToOffset(ast, offset);

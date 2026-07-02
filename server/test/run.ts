@@ -23,3 +23,4 @@ import './crossReference.test.ts';
 import './format.property.test.ts';
 import './rename.test.ts';
 import './rename.property.test.ts';
+import './classRename.test.ts';

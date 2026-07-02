@@ -8,6 +8,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renameAt } from '../../../server/src/providers/rename.ts';
+import { buildClassWorldFromFiles } from '../../../server/src/xref/classRefs.ts';
+
+// A fixed kernel-class floor for the class-rename cases (US-428). The eval loads
+// no cartridge, so we name the kernel classes the fixtures reference.
+const EVAL_KERNEL = new Set(['Object', 'OrderedCollection', 'Collection', 'Array', 'String']);
 
 interface Pos { line: number; character: number }
 interface Edit { range: { start: Pos; end: Pos }; newText: string }
@@ -55,7 +60,8 @@ for (const c of cases) {
     const files = Object.entries(c.files).map(([uri, text]) => ({ uri, text }));
     const cursorText = c.files[c.cursor.uri]!;
     const offset = findOffset(cursorText, c.cursor.find, c.cursor.occurrence ?? 1);
-    const result = renameAt(c.cursor.uri, offset, c.newName, files);
+    const world = buildClassWorldFromFiles(files, (n) => EVAL_KERNEL.has(n));
+    const result = renameAt(c.cursor.uri, offset, c.newName, files, world);
 
     if (c.expectRejectMatches !== undefined) {
       assert.ok(
