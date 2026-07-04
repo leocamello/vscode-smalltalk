@@ -64,15 +64,45 @@ export function parse(source: string): ParseResult {
   const { tokens, diagnostics } = tokenize(source);
   // Comments are trivia; positions still come from the real (non-comment) tokens.
   const stream = tokens.filter((t) => t.kind !== TokenKind.Comment);
-  return new Parser(stream, diagnostics).parseProgram();
+  try {
+    return new Parser(stream, diagnostics).parseProgram();
+  } catch (e) {
+    // Absolute never-throw guarantee (US-901): the depth cap (MAX_EXPRESSION_DEPTH)
+    // is the first line of defence, but the safe depth depends on the runtime's
+    // stack size — which varies across OSes/CI runners. If pathological nesting
+    // still exhausts the stack on a small-stack runtime, degrade to an empty parse
+    // with a diagnostic rather than propagate the RangeError to the front end.
+    if (!(e instanceof RangeError)) throw e;
+    const zero = { line: 0, character: 0 };
+    const program: ProgramNode = {
+      kind: NodeKind.Program,
+      temporaries: [],
+      statements: [],
+      start: 0,
+      end: source.length,
+      startPos: zero,
+      endPos: zero,
+    };
+    diagnostics.push({
+      message: 'Expression nesting too deep to parse',
+      severity: DiagnosticSeverity.Error,
+      start: 0,
+      end: Math.min(source.length, 1),
+      startPos: zero,
+      endPos: zero,
+    });
+    return { ast: program, diagnostics };
+  }
 }
 
 /** Max expression-nesting depth before the parser stops recursing. Real code never
- *  nests messages/blocks/parens this deep; the cap turns a pathological input
- *  (`[[[…]]]`, `(((…)))`, `a:=a:=…`) into a diagnostic instead of a stack overflow
- *  (US-901 AC4/AC5 — the front end never throws). ~300 levels × the per-level frame
- *  count stays well under Node's default stack. */
-const MAX_EXPRESSION_DEPTH = 300;
+ *  nests messages/blocks/parens anywhere near this deep; the cap turns a pathological
+ *  input (`[[[…]]]`, `(((…)))`, `a:=a:=…`) into a diagnostic instead of a stack overflow
+ *  (US-901 AC4/AC5 — the front end never throws). Kept low (each level is ~10 stack
+ *  frames) so it stays safe even on the smaller default stacks seen on some CI runners
+ *  (macOS/Windows) — where a higher cap still overflowed. The top-level RangeError catch
+ *  in `parse()` is the ultimate guarantee if even this depth exceeds a tiny stack. */
+const MAX_EXPRESSION_DEPTH = 100;
 
 class Parser {
   private index = 0;
