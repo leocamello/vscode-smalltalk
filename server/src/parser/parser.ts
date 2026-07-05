@@ -67,13 +67,37 @@ export function parse(source: string): ParseResult {
   try {
     return new Parser(stream, diagnostics).parseProgram();
   } catch (e) {
-    // Absolute never-throw guarantee (US-901): the depth cap (MAX_EXPRESSION_DEPTH)
-    // is the first line of defence, but the safe depth depends on the runtime's
-    // stack size — which varies across OSes/CI runners. If pathological nesting
-    // still exhausts the stack on a small-stack runtime, degrade to an empty parse
-    // with a diagnostic rather than propagate the RangeError to the front end.
-    if (!(e instanceof RangeError)) throw e;
+    // Never-throw guarantee (US-901). Two paths land here, both degrading to an
+    // empty parse with a SINGLE diagnostic (rather than propagating, or emitting a
+    // per-level flood of errors as the parser limps through thousands of tokens):
+    //   • NestingTooDeepError — the depth cap tripped (the common, controlled case);
+    //     anchor the one diagnostic at the offending token.
+    //   • RangeError — even the capped depth exhausted a very small runtime stack
+    //     (the safe depth depends on the OS/CI stack size); anchor at the start.
     const zero = { line: 0, character: 0 };
+    let diagnostic: LexDiagnostic;
+    if (e instanceof NestingTooDeepError) {
+      const t = e.at;
+      diagnostic = {
+        message: 'Expression nesting too deep',
+        severity: DiagnosticSeverity.Error,
+        start: t.start,
+        end: t.end,
+        startPos: t.startPos,
+        endPos: t.endPos,
+      };
+    } else if (e instanceof RangeError) {
+      diagnostic = {
+        message: 'Expression nesting too deep to parse',
+        severity: DiagnosticSeverity.Error,
+        start: 0,
+        end: Math.min(source.length, 1),
+        startPos: zero,
+        endPos: zero,
+      };
+    } else {
+      throw e;
+    }
     const program: ProgramNode = {
       kind: NodeKind.Program,
       temporaries: [],
@@ -83,15 +107,19 @@ export function parse(source: string): ParseResult {
       startPos: zero,
       endPos: zero,
     };
-    diagnostics.push({
-      message: 'Expression nesting too deep to parse',
-      severity: DiagnosticSeverity.Error,
-      start: 0,
-      end: Math.min(source.length, 1),
-      startPos: zero,
-      endPos: zero,
-    });
+    diagnostics.push(diagnostic);
     return { ast: program, diagnostics };
+  }
+}
+
+/** Thrown when expression nesting exceeds MAX_EXPRESSION_DEPTH. Caught in `parse()`
+ *  and turned into ONE diagnostic — so a pathological input yields a single error,
+ *  not a per-level flood (US-901 manual-QA fix). Carries the offending token so the
+ *  diagnostic lands where the nesting got out of hand. */
+class NestingTooDeepError extends Error {
+  constructor(readonly at: Token) {
+    super('Expression nesting too deep');
+    this.name = 'NestingTooDeepError';
   }
 }
 
@@ -600,23 +628,16 @@ class Parser {
   private parseExpression(): Node {
     // Every nesting level (parens, blocks, brace arrays, right-associative
     // assignment chains) passes through here exactly once, so it's the single
-    // choke point for bounding recursion depth against a stack overflow.
-    if (this.depth >= MAX_EXPRESSION_DEPTH) return this.tooDeep();
+    // choke point for bounding recursion depth against a stack overflow. At the
+    // cap, throw to unwind the whole expression at once — `parse()` turns it into
+    // one diagnostic (limping on would emit a per-level error flood).
+    if (this.depth >= MAX_EXPRESSION_DEPTH) throw new NestingTooDeepError(this.current());
     this.depth += 1;
     try {
       return this.parseExpressionCore();
     } finally {
       this.depth -= 1;
     }
-  }
-
-  /** Nesting too deep — stop recursing, emit a diagnostic, and consume one token
-   *  to guarantee forward progress (the enclosing constructs then unwind + close). */
-  private tooDeep(): Node {
-    const t = this.current();
-    if (!this.atEnd()) this.advance();
-    this.diag('Expression nesting too deep', t);
-    return { kind: NodeKind.Error, message: 'Expression nesting too deep', ...this.range(t) };
   }
 
   private parseExpressionCore(): Node {
