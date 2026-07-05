@@ -7,7 +7,7 @@ for the full process and [`docs/ROADMAP.md`](docs/ROADMAP.md) for where we're he
 `vscode-smalltalk` — a VS Code extension for **GNU Smalltalk** (`.st`/`.gst`). Published on the
 Marketplace as `leocamello.vscode-smalltalk`.
 
-## Current status (2026-07-02)
+## Current status (2026-07-06)
 > **Direction (the end goal):** the language server is evolving into a dialect-agnostic
 > **Console & Cartridges** engine (EPIC-005) — a neutral query/index **Console** that loads frozen,
 > per-dialect **Cartridges** of resolved facts; GNU Smalltalk 3.2.5 is **Cartridge #01**. Features are
@@ -15,6 +15,17 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v0.13.0 — hardening & perf (US-901, EPIC-004)** — a beta-quality pass over the offline
+  engine; **no new feature surface**. The **parser never throws** on pathological input: deep nesting
+  (`[[[…]]]`, `(((…)))`, long `a:=b:=…` chains) that previously overflowed the recursive-descent stack now
+  hits a depth cap (`MAX_EXPRESSION_DEPTH` in `parser.ts`) + a top-level `RangeError` safety net and yields a
+  **single** "Expression nesting too deep" diagnostic — stack-size-independent (a naïve high cap still
+  overflowed the smaller macOS/Windows CI stacks). A committed **perf bench** (`npm run bench` over a synthetic
+  corpus from `scripts/gen-corpus.ts`) proves the budgets — **1k files index ≈0.2 s** (< 5 s), **completion p95
+  ≈5 ms** (< 100 ms) — with ~20× headroom; the class-rename `allWorkspaceFiles` scan measured a non-bottleneck
+  and was left un-optimized (measure-first). A **no-telemetry guard** (`server/test/noTelemetry.test.ts`) locks
+  in the offline/zero-network stance (documented in the README), and a fuzz + **735-check provider matrix**
+  (`robustness.test.ts` / `providerRobustness.test.ts`) guards never-throw across every provider. Closes #112.
 - **Shipped:** **v0.12.0 — class rename (US-428, EPIC-005)** — extends the US-426 rename engine to
   **workspace classes**. F2 on a class renames **every resolved reference workspace-wide**: the declaration
   (`Object subclass: Foo`/bare-id + chunk `#Foo` symbol), receiver/superclass `Variable`s (`Foo new`,
@@ -118,8 +129,9 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** the **1.0 push** — hardening/perf (**US-901**, now **0.13** after the class-rename resequence),
-  then product polish + remove the preview flag + Open VSX (**US-902**, 1.0). EPIC-004 language intelligence is
+- **Next:** the **1.0 push** — product polish + remove the preview/`format.enable` flag + Open VSX (**US-902**,
+  1.0), plus the two items deferred from US-901 (cancellation-token plumbing + untrusted-/virtual-workspace
+  **capability declarations**). Hardening/perf (**US-901**) shipped as **0.13**. EPIC-004 language intelligence is
   complete through formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8),
   cross-reference (0.9), signature help (0.9.1), the selector-surface audit (0.9.2), **scope-aware rename
   (0.11)**, and **class rename (0.12)** on one Console.
