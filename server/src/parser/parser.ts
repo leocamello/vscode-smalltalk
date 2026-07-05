@@ -64,12 +64,78 @@ export function parse(source: string): ParseResult {
   const { tokens, diagnostics } = tokenize(source);
   // Comments are trivia; positions still come from the real (non-comment) tokens.
   const stream = tokens.filter((t) => t.kind !== TokenKind.Comment);
-  return new Parser(stream, diagnostics).parseProgram();
+  try {
+    return new Parser(stream, diagnostics).parseProgram();
+  } catch (e) {
+    // Never-throw guarantee (US-901). Two paths land here, both degrading to an
+    // empty parse with a SINGLE diagnostic (rather than propagating, or emitting a
+    // per-level flood of errors as the parser limps through thousands of tokens):
+    //   • NestingTooDeepError — the depth cap tripped (the common, controlled case);
+    //     anchor the one diagnostic at the offending token.
+    //   • RangeError — even the capped depth exhausted a very small runtime stack
+    //     (the safe depth depends on the OS/CI stack size); anchor at the start.
+    const zero = { line: 0, character: 0 };
+    let diagnostic: LexDiagnostic;
+    if (e instanceof NestingTooDeepError) {
+      const t = e.at;
+      diagnostic = {
+        message: 'Expression nesting too deep',
+        severity: DiagnosticSeverity.Error,
+        start: t.start,
+        end: t.end,
+        startPos: t.startPos,
+        endPos: t.endPos,
+      };
+    } else if (e instanceof RangeError) {
+      diagnostic = {
+        message: 'Expression nesting too deep to parse',
+        severity: DiagnosticSeverity.Error,
+        start: 0,
+        end: Math.min(source.length, 1),
+        startPos: zero,
+        endPos: zero,
+      };
+    } else {
+      throw e;
+    }
+    const program: ProgramNode = {
+      kind: NodeKind.Program,
+      temporaries: [],
+      statements: [],
+      start: 0,
+      end: source.length,
+      startPos: zero,
+      endPos: zero,
+    };
+    diagnostics.push(diagnostic);
+    return { ast: program, diagnostics };
+  }
 }
+
+/** Thrown when expression nesting exceeds MAX_EXPRESSION_DEPTH. Caught in `parse()`
+ *  and turned into ONE diagnostic — so a pathological input yields a single error,
+ *  not a per-level flood (US-901 manual-QA fix). Carries the offending token so the
+ *  diagnostic lands where the nesting got out of hand. */
+class NestingTooDeepError extends Error {
+  constructor(readonly at: Token) {
+    super('Expression nesting too deep');
+    this.name = 'NestingTooDeepError';
+  }
+}
+
+/** Max expression-nesting depth before the parser stops recursing. Real code never
+ *  nests messages/blocks/parens anywhere near this deep; the cap turns a pathological
+ *  input (`[[[…]]]`, `(((…)))`, `a:=a:=…`) into a diagnostic instead of a stack overflow
+ *  (US-901 AC4/AC5 — the front end never throws). Kept low (each level is ~10 stack
+ *  frames) so it stays safe even on the smaller default stacks seen on some CI runners
+ *  (macOS/Windows) — where a higher cap still overflowed. The top-level RangeError catch
+ *  in `parse()` is the ultimate guarantee if even this depth exceeds a tiny stack. */
+const MAX_EXPRESSION_DEPTH = 100;
 
 class Parser {
   private index = 0;
   private prev: Token;
+  private depth = 0;
 
   constructor(
     private readonly tokens: Token[],
@@ -560,6 +626,21 @@ class Parser {
   // --- Expressions (precedence climb) ----------------------------------------
 
   private parseExpression(): Node {
+    // Every nesting level (parens, blocks, brace arrays, right-associative
+    // assignment chains) passes through here exactly once, so it's the single
+    // choke point for bounding recursion depth against a stack overflow. At the
+    // cap, throw to unwind the whole expression at once — `parse()` turns it into
+    // one diagnostic (limping on would emit a per-level error flood).
+    if (this.depth >= MAX_EXPRESSION_DEPTH) throw new NestingTooDeepError(this.current());
+    this.depth += 1;
+    try {
+      return this.parseExpressionCore();
+    } finally {
+      this.depth -= 1;
+    }
+  }
+
+  private parseExpressionCore(): Node {
     // Assignment: `identifier ':=' expression` (right-associative; also legacy `_`).
     if (this.at(TokenKind.Identifier) && this.peek(1).kind === TokenKind.Assign) {
       const idTok = this.current();

@@ -249,6 +249,8 @@
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
         "test:grammar": "node src/test/grammar-verification.js",
         "test:snippets": "node src/test/snippets-verification.js",
+        "bench": "tsx scripts/bench.ts",
+        "gen-corpus": "tsx scripts/gen-corpus.ts",
         "eval:completion": "tsx evals/datasets/completion/run.ts",
         "eval:diagnostics": "tsx evals/datasets/diagnostics/run.ts",
         "eval:hover": "tsx evals/datasets/hover/run.ts",

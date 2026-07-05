@@ -1136,7 +1136,7 @@ Scenario: User follows Quick Start guide
 ## US-901: Hardening, Performance & Beta Polish
 
 * **ID:** US-901
-* **Status:** Planned (hardening pass before 1.0 — milestone **0.10.0** in the evolved ladder)
+* **Status:** In progress — milestone **0.13.0** (#112). Specced + implemented on `feature/US-901-hardening-perf` (see `specs/US-901-Hardening-Perf/` — the authoritative source of truth); automated gates green, pending manual-QA + release.
 * **Epic:** EPIC-004 (cross-cutting)
 * **Priority:** Medium
 * **Estimate:** L
@@ -1162,6 +1162,7 @@ Scenario: User follows Quick Start guide
 
 **Notes / Questions / Assumptions:**
 * Perf budgets also live in the Constitution Performance section (v1.2.0).
+* **Scope refinement (Clarify, 2026-07-02 — see `specs/US-901-Hardening-Perf/spec.md`):** 0.13.0 delivers the perf bench (synthetic corpus, not `learning-smalltalk/`), the no-telemetry guard, parser fuzz/never-throw + large-file bounding, and a provider bug-bash. **Deferred to US-902 (1.0 polish):** cancellation-token plumbing and the untrusted-/virtual-workspace **capability declarations** (manifest `capabilities.*`) — measured latency (completion p95 ≈ 5 ms, 1k-file index ≈ 0.2 s) makes cancellation non-urgent; capability declarations are a manifest/polish concern that pairs naturally with the `preview`-flag removal + Open VSX work.
 
 ---
 

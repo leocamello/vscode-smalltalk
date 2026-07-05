@@ -76,8 +76,12 @@ fi
 # --- Render a template file with token substitution ---
 render() {
   local src="$1" dest="$2"
+  # Escape sed-replacement metacharacters (& = matched text, | = our delimiter,
+  # \ = escape) so titles like "Hardening & Perf" substitute literally.
+  local title_esc
+  title_esc="$(printf '%s' "$TITLE" | sed -e 's/[\\&|]/\\&/g')"
   sed -e "s|{{US_ID}}|${US_ID}|g" \
-      -e "s|{{TITLE}}|${TITLE}|g" \
+      -e "s|{{TITLE}}|${title_esc}|g" \
       -e "s|{{DATE}}|${DATE}|g" \
       -e "s|{{BRANCH}}|${BRANCH}|g" \
       "$src" > "$dest"
