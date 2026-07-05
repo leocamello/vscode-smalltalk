@@ -24,6 +24,6 @@ Mark each task `[x]` as it lands. Map tasks to acceptance criteria where possibl
 ## Phase 4 — Verify
 - [x] T900 Bench budgets PASS; fuzz + guards green; `test:parser`/`test:server`/`test:client`/`eval` green.
 - [x] T901 Recorded bench numbers + bug-bash triage in `verification.md`; gate passed.
-- [ ] T902 CI green on Linux/macOS/Windows + e2e (on push/PR).
-- [ ] T903 Doc-rot sweep (CLAUDE/README/ROADMAP/epics/user-stories + dates) inline with release.
-- [ ] T904 Manual-QA matrix run in the Extension Host (owner) before release.
+- [x] T902 CI green on Linux/macOS/Windows + e2e (#113: build ×3 + e2e pass).
+- [ ] T903 Doc-rot sweep (CLAUDE/README/ROADMAP/epics/user-stories + dates) — done at release with the version bump.
+- [x] T904 Manual-QA matrix run in the Extension Host (owner) — passed; caught + fixed the diagnostic-flood defect (`927b2b5`).

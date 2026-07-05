@@ -39,8 +39,9 @@ one-shot, user-initiated rename with a preview; linear). Per the spec's own disc
 - [x] **TDD:** the never-throw fix was pinned red (stack overflow) → green (depth guard); guards written before/with the fix.
 
 ## Section 4: Manual Verification
-- [ ] `specs/US-901-*/manual-qa-workspace/` matrix run in the Extension Host: deep-nest file → no crash toast, single "Expression nesting too deep" diagnostic, editor responsive; features still work on `Normal.st`; no network traffic in Dev Tools. **(pending — owner to run before release)**
+- [x] `specs/US-901-*/manual-qa-workspace/` matrix run in the Extension Host: deep-nest file → no crash toast, **single** "Expression nesting too deep" diagnostic, editor responsive; features still work on `Normal.st`; no network traffic. **Passed.**
+- [x] **Manual QA caught a defect the automated never-throw tests missed:** the depth cap emitted a diagnostic *per token* past the limit, flooding the Problems panel (~1600 entries). Fixed (`927b2b5`) — the cap now throws a single `NestingTooDeepError` unwound in `parse()` to **one** diagnostic; regression-guarded in `robustness.test.ts` (asserts ≤ 2). This is the recurring lesson: "doesn't throw" ≠ "sane output"; only Extension-Host QA surfaces the diagnostic-flood class of bug.
 - [x] No errors in the standalone harness runs (bench, tests).
 
 ## Section 5: Sign-Off
-- [x] Automated gates green; spec ACs met. **Pending:** manual-QA matrix in the Extension Host + owner approval to open the PR / release (outward actions).
+- [x] Automated gates green (build ×3 + e2e on #113); spec ACs met; manual-QA matrix passed. **Ready for merge.** Release/publish to 0.13.0 is a separate, explicitly-instructed step (version bump + doc flip + tagged Release → Marketplace).
