@@ -10,6 +10,7 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
   CodeActionKind,
+  type CancellationToken,
   type CallHierarchyIncomingCall,
   type CallHierarchyItem,
   type CallHierarchyIncomingCallsParams,
@@ -69,6 +70,7 @@ import {
   type FileText,
 } from './providers/rename';
 import { buildClassWorldFromFiles, type ClassWorld } from './xref/classRefs';
+import { isCancelled, readFilesCancellable } from './providers/cancellation';
 import { toDiagnostics } from './providers/diagnostics';
 import { toCodeActions } from './providers/codeAction';
 import { toDocumentSymbols } from './providers/documentSymbol';
@@ -186,9 +188,10 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       // Keyword-message signature help (US-425): `:`/space trigger a new (or
       // retriggered) signature popup as keyword parts are typed.
       signatureHelpProvider: { triggerCharacters: [':', ' '], retriggerCharacters: [':'] },
-      // Conservative, idempotent whitespace-only formatting (US-416), off by
-      // default behind `smalltalk.format.enable`. Document + range + on-type;
-      // on-type dedents on `]`, re-indents after a newline / cascade `;`.
+      // Conservative, idempotent whitespace-only formatting (US-416); always
+      // available as of 1.0 (US-902 — the `format.enable` gate was removed).
+      // Document + range + on-type; on-type dedents on `]`, re-indents after a
+      // newline / cascade `;`.
       documentFormattingProvider: true,
       documentRangeFormattingProvider: true,
       documentOnTypeFormattingProvider: { firstTriggerCharacter: ']', moreTriggerCharacter: ['\n', ';'] },
@@ -233,7 +236,6 @@ async function getFormatSettings(): Promise<FormatSettings> {
   }
   const f = cfg?.format ?? {};
   return {
-    enable: f.enable ?? DEFAULT_FORMAT_SETTINGS.enable,
     indentSize: f.indentSize ?? DEFAULT_FORMAT_SETTINGS.indentSize,
     cascades: f.cascades ?? DEFAULT_FORMAT_SETTINGS.cascades,
     keywordWrap: f.keywordWrap ?? DEFAULT_FORMAT_SETTINGS.keywordWrap,
@@ -258,7 +260,12 @@ connection.onDocumentOnTypeFormatting(async (params: DocumentOnTypeFormattingPar
 
 /** (uri, text) for an ivar rename: the active doc (dirty wins) + every file that
  *  defines/extends the enclosing class. Temp/arg renames only need the active doc. */
-function ivarCandidateFiles(activeUri: string, activeText: string, offset: number): FileText[] {
+function ivarCandidateFiles(
+  activeUri: string,
+  activeText: string,
+  offset: number,
+  token?: CancellationToken,
+): FileText[] {
   const files: FileText[] = [{ uri: activeUri, text: activeText }];
   const seen = new Set<string>([activeUri]);
   const className = enclosingClassNameAt(parse(activeText).ast, offset);
@@ -275,36 +282,35 @@ function ivarCandidateFiles(activeUri: string, activeText: string, offset: numbe
       files.push({ uri: doc.uri, text: doc.getText() });
     }
   }
-  for (const uri of wanted) {
-    if (seen.has(uri)) continue;
-    const fsPath = uriToPath(uri);
-    if (!fsPath) continue;
-    try {
-      seen.add(uri);
-      files.push({ uri, text: fs.readFileSync(fsPath, 'utf8') });
-    } catch {
-      // unreadable file — skip it (best-effort, never throw)
-    }
-  }
+  // Cancellable disk read of the remaining files (US-902 AC6).
+  const toRead = [...wanted].filter((uri) => !seen.has(uri));
+  files.push(...readFilesCancellable(toRead, readWorkspaceFile, token));
   return files;
 }
 
+/** Read one workspace file from disk, or `undefined` if it has no fs path / is
+ *  unreadable (best-effort — never throws). */
+function readWorkspaceFile(uri: string): string | undefined {
+  const fsPath = uriToPath(uri);
+  if (!fsPath) return undefined;
+  try {
+    return fs.readFileSync(fsPath, 'utf8');
+  } catch {
+    return undefined; // unreadable file — skip it
+  }
+}
+
 /** Every workspace file as (uri, text) for class rename — a class may be referenced
- *  anywhere, so the whole indexed workspace ∪ open docs is in scope (open docs win). */
-function allWorkspaceFiles(activeUri: string, activeText: string): FileText[] {
+ *  anywhere, so the whole indexed workspace ∪ open docs is in scope (open docs win).
+ *  The disk read honours the request's cancellation token (US-902 AC6). */
+function allWorkspaceFiles(activeUri: string, activeText: string, token?: CancellationToken): FileText[] {
   const byUri = new Map<string, string>([[activeUri, activeText]]);
   for (const doc of documents.all()) {
     if (!byUri.has(doc.uri)) byUri.set(doc.uri, doc.getText());
   }
-  for (const uri of new Set(index.all().map((e) => e.uri))) {
-    if (byUri.has(uri)) continue;
-    const fsPath = uriToPath(uri);
-    if (!fsPath) continue;
-    try {
-      byUri.set(uri, fs.readFileSync(fsPath, 'utf8'));
-    } catch {
-      // unreadable file — skip it (best-effort, never throw)
-    }
+  const toRead = [...new Set(index.all().map((e) => e.uri))].filter((uri) => !byUri.has(uri));
+  for (const f of readFilesCancellable(toRead, readWorkspaceFile, token)) {
+    byUri.set(f.uri, f.text);
   }
   return [...byUri].map(([uri, text]) => ({ uri, text }));
 }
@@ -333,14 +339,15 @@ function renameContext(
   ast: ReturnType<typeof getAst>,
   tokens: ReturnType<typeof getTokens>,
   offset: number,
+  token?: CancellationToken,
 ): { files: FileText[]; world: ClassWorld } {
   const active: FileText[] = [{ uri: activeUri, text: activeText }];
   const world0 = buildClassWorld(active);
   if (renameKindAt(ast, tokens, offset, active, world0) === 'class') {
-    const files = allWorkspaceFiles(activeUri, activeText);
+    const files = allWorkspaceFiles(activeUri, activeText, token);
     return { files, world: buildClassWorld(files) };
   }
-  return { files: ivarCandidateFiles(activeUri, activeText, offset), world: world0 };
+  return { files: ivarCandidateFiles(activeUri, activeText, offset, token), world: world0 };
 }
 
 connection.onPrepareRename((params: PrepareRenameParams): Range | null => {
@@ -357,13 +364,16 @@ connection.onPrepareRename((params: PrepareRenameParams): Range | null => {
   return result.range;
 });
 
-connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
+connection.onRenameRequest((params: RenameParams, token: CancellationToken): WorkspaceEdit => {
   const doc = documents.get(params.textDocument.uri);
-  if (!doc) {
+  if (!doc || isCancelled(token)) {
     return { changes: {} };
   }
   const offset = doc.offsetAt(params.position);
-  const { files, world } = renameContext(doc.uri, doc.getText(), getAst(doc), getTokens(doc), offset);
+  const { files, world } = renameContext(doc.uri, doc.getText(), getAst(doc), getTokens(doc), offset, token);
+  if (isCancelled(token)) {
+    return { changes: {} };
+  }
   const result = renameAt(doc.uri, offset, params.newName, files, world);
   if ('reject' in result) {
     throw new ResponseError(ErrorCodes.InvalidRequest, result.reject);
@@ -372,8 +382,8 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
   return withMultiFileConfirmation(result, changeAnnotationSupport, (uri) => documents.get(uri)?.version ?? null);
 });
 
-connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): WorkspaceSymbol[] =>
-  toWorkspaceSymbols(index.query(params.query)),
+connection.onWorkspaceSymbol((params: WorkspaceSymbolParams, token: CancellationToken): WorkspaceSymbol[] =>
+  isCancelled(token) ? [] : toWorkspaceSymbols(index.query(params.query)),
 );
 
 connection.onDefinition((params: DefinitionParams): Location[] | LocationLink[] => {
@@ -397,9 +407,9 @@ connection.onDefinition((params: DefinitionParams): Location[] | LocationLink[] 
   return findDefinitions(index, query, doc.uri);
 });
 
-connection.onReferences((params: ReferenceParams): Location[] => {
+connection.onReferences((params: ReferenceParams, token: CancellationToken): Location[] => {
   const doc = documents.get(params.textDocument.uri);
-  if (!doc) {
+  if (!doc || isCancelled(token)) {
     return [];
   }
   const query = resolveDefinitionQuery(doc.getText(), doc.offsetAt(params.position));
@@ -476,9 +486,9 @@ connection.languages.callHierarchy.onPrepare((params: CallHierarchyPrepareParams
 });
 
 connection.languages.callHierarchy.onIncomingCalls(
-  (params: CallHierarchyIncomingCallsParams): CallHierarchyIncomingCall[] => {
+  (params: CallHierarchyIncomingCallsParams, token: CancellationToken): CallHierarchyIncomingCall[] => {
     const data = params.item.data as CallItemData | undefined;
-    if (!data) {
+    if (!data || isCancelled(token)) {
       return [];
     }
     // Incoming = everyone who sends this selector (the lexical union, AC4).
@@ -487,10 +497,10 @@ connection.languages.callHierarchy.onIncomingCalls(
 );
 
 connection.languages.callHierarchy.onOutgoingCalls(
-  (params: CallHierarchyOutgoingCallsParams): CallHierarchyOutgoingCall[] => {
+  (params: CallHierarchyOutgoingCallsParams, token: CancellationToken): CallHierarchyOutgoingCall[] => {
     const data = params.item.data as CallItemData | undefined;
     // Outgoing = the sends inside this method's body (workspace tier only).
-    if (!data || data.side === undefined) {
+    if (!data || data.side === undefined || isCancelled(token)) {
       return [];
     }
     return outgoingCalls(workspaceXref.sendsFrom(data.uri, data.className, data.side, data.selector));

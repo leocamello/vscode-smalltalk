@@ -15,6 +15,19 @@ Provides comprehensive language support for **Smalltalk**, with an initial focus
 
 **Private by design — no telemetry, fully offline.** The extension performs **no network I/O** and collects **no telemetry**: all language intelligence runs locally against a bundled TypeScript language server, and your code never leaves your machine. (This is enforced by a guard test in CI.)
 
+Also available on **[Open VSX](https://open-vsx.org/extension/leocamello/vscode-smalltalk)** for editors that use it (VSCodium, Gitpod, Eclipse Theia, …).
+
+<!-- Demo (US-902) — animated captures. Assets recorded per docs/media-shotlist.md. -->
+## Demo
+
+Everything below runs **offline, with no `gst` installed** (except *Run Current File*, which uses `gst`).
+
+| | |
+| --- | --- |
+| **Syntax & semantic highlighting** — role-accurate colors for variables, selectors, and real classes.<br>![Syntax and semantic highlighting](media/demo-highlighting.gif) | **Outline & navigation** — classes → methods in the outline and breadcrumbs.<br>![Outline and breadcrumbs](media/demo-outline.gif) |
+| **Completion** — kernel classes/selectors + workspace symbols, keyword sends as snippets.<br>![Completion](media/demo-completion.gif) | **Diagnostics** — syntax squiggles as you type, with insert-closer quick fixes.<br>![Diagnostics and quick fixes](media/demo-diagnostics.gif) |
+| **Run Current File** — execute the active `.st`/`.gst` with GNU Smalltalk in the integrated terminal.<br>![Run Current File](media/demo-run.gif) | |
+
 <!-- Prerequisites (US-102) -->
 ## Prerequisites
 
@@ -92,7 +105,7 @@ Powered by a bundled language engine — **no GNU Smalltalk (`gst`) installation
 *   **Semantic Highlighting:** role-accurate coloring — instance/class variables, temporaries, parameters, selectors, and pseudo-variables are each colored by meaning, and a capitalized name is colored as a **class** only when it's a real class in your workspace or the kernel (otherwise a global). Enable `editor.semanticHighlighting.enabled` if your theme defaults it off.
 *   **References · Senders · Implementors:** the System Browser's cross-reference muscle memory, **offline** — **Find All References** (`Shift+F12`), **plural Go to Definition**, **Call Hierarchy**, and the **`Smalltalk: Senders of…` / `Implementors of…`** commands (Command Palette + right-click) feed a **Smalltalk References** panel. Results are an **honest union** of your workspace and the GNU Smalltalk kernel — each row tagged with its source (`workspace` / `installed (gst)` / `reference (gst 3.2.5)`) — because dynamic dispatch can't be resolved statically: likely responders rank first, none are hidden. Kernel rows from your installed GNU Smalltalk open the real source file; the bundled reference opens a read-only fact card.
 *   **Signature Help:** typing a keyword message (`aDictionary at: key put: …`) pops the matching keyword selector(s) with the **active parameter** tracked — the keyword you're currently filling. Signatures are an honest prefix union of your workspace and the kernel (each tagged with its source); keyword-only by design.
-*   **Formatting:** conservative, **idempotent** code formatting — **Format Document**, **Format Selection**, and on-type — that normalizes layout (indentation, spacing, blank-line runs, cascade alignment, long-keyword-message wrapping) **without ever changing your code**: it only rewrites whitespace between tokens, so comments and blank lines are preserved and the result is stable (formatting twice changes nothing). A file with a syntax error is left untouched. **Off by default** — enable [`smalltalk.format.enable`](#configuration); an optional [`smalltalk.format.blockStyle`](#configuration) `expand` reflows bodies one-statement-per-line.
+*   **Formatting:** conservative, **idempotent** code formatting — **Format Document**, **Format Selection**, and on-type — that normalizes layout (indentation, spacing, blank-line runs, cascade alignment, long-keyword-message wrapping) **without ever changing your code**: it only rewrites whitespace between tokens, so comments and blank lines are preserved and the result is stable (formatting twice changes nothing). A file with a syntax error is left untouched. Formatting runs on the editor's own gestures (**Format Document** / **Format Selection**, or `editor.formatOnSave`); an optional [`smalltalk.format.blockStyle`](#configuration) `expand` reflows bodies one-statement-per-line.
 *   **Rename (Refactor):** safe, scope-aware **Rename Symbol** (`F2`) for temporaries, method/block arguments, instance variables, and **classes** — **offline**, never a blind text swap. Locals are renamed within their method; an instance variable is renamed **across every file that defines or extends its class** (a method that shadows the name with a local is left alone); a **class** is renamed **workspace-wide** across every resolved reference — its declaration, senders (`Foo new`), superclass positions (`Foo subclass: Bar`), `Foo class` / `Foo extend`, the binding constant `#{Foo}`, and namespaced forms `Foo.Bar` / `Foo::Bar` — while a local sharing the name, a same-named class in another namespace, and comments/strings are left untouched. **Kernel/cartridge classes are read-only** (renaming one, or renaming into an existing kernel/workspace class name, is refused with a reason). Multi-file renames go through the **Refactor Preview** so you review the changes first. Selectors are deliberately not renamed (you get a clear message why) — dynamic dispatch makes selector rename unsafe without a running image.
 
 <!-- Configuration (US-105) -->
@@ -115,11 +128,6 @@ The following settings are available:
 *   **`smalltalk.completion.kernelPath`**
     *   **Description:** Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `smalltalk.gnuSmalltalkPath` and common install locations.
 
-*   **`smalltalk.format.enable`**
-    *   **Description:** Enable conservative, idempotent Smalltalk formatting (document, range, and on-type). Off by default — formatting only rewrites whitespace and never changes your code, but you opt in.
-    *   **Type:** `boolean`
-    *   **Default:** `false`
-
 *   **`smalltalk.format.indentSize`**
     *   **Description:** Spaces per indent level when formatting. Tabs vs. spaces follow the editor's `editor.insertSpaces`.
     *   **Type:** `number`
@@ -139,8 +147,10 @@ The following settings are available:
     *   **Description:** How to lay out block, method, and class bodies. `preserve` keeps your line breaks; `expand` reflows each body onto its own indented lines, one statement per line (single-statement argument blocks stay inline).
     *   **Type:** `string` — `preserve` | `expand`
     *   **Default:** `preserve`
-    *   **Type:** `string`
-    *   **Default:** `""`
+
+> **Formatting is always available** as of 1.0 — there is no enable switch. It only runs when you invoke a format gesture (or `editor.formatOnSave`) and is whitespace-only, so it never changes your code.
+>
+> **Workspace Trust.** All language intelligence works in **Restricted Mode**. **Run Current File** executes code with `gst`, so it is disabled until you trust the workspace; a workspace-scoped `smalltalk.gnuSmalltalkPath` is also ignored while untrusted.
 
 <!-- Commands (US-301) -->
 ## Commands

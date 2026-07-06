@@ -8,8 +8,7 @@
     },
     "publisher": "leocamello",
     "license": "MIT",
-    "version": "0.13.0",
-    "preview": true,
+    "version": "1.0.0",
     "icon": "icon.png",
     "main": "./dist/extension.js",
     "workspaces": [
@@ -32,6 +31,19 @@
     "activationEvents": [
         "workspaceContains:**/*.{st,gst}"
     ],
+    "capabilities": {
+        "untrustedWorkspaces": {
+            "supported": "limited",
+            "description": "Language intelligence (highlighting, outline, completion, hover, references, rename, formatting) works in Restricted Mode. Running a file with GNU Smalltalk (gst) executes code and is disabled until you trust the workspace.",
+            "restrictedConfigurations": [
+                "smalltalk.gnuSmalltalkPath"
+            ]
+        },
+        "virtualWorkspaces": {
+            "supported": "limited",
+            "description": "Editing intelligence works on open files. Workspace-wide indexing, installed-kernel discovery, and Run Current File need a local filesystem and are unavailable in virtual workspaces."
+        }
+    },
     "contributes": {
         "languages": [
             {
@@ -136,11 +148,13 @@
             "title": "SmallTalk",
             "properties": {
                 "smalltalk.gnuSmalltalkPath": {
+                    "order": 1,
                     "type": "string",
                     "default": "",
                     "description": "Absolute path to the GNU Smalltalk executable (gst). If empty, the extension will attempt to find 'gst' in your system PATH."
                 },
                 "smalltalk.completion.kernelLibrary": {
+                    "order": 2,
                     "type": "string",
                     "enum": [
                         "auto",
@@ -156,11 +170,13 @@
                     "markdownDescription": "Source for standard kernel-library completions (classes/selectors). `auto` prefers your **installed** GNU Smalltalk kernel and falls back to the **bundled** reference (**GNU Smalltalk 3.2.5**). The active source is shown in the status bar. Workspace symbols are always available regardless of this setting."
                 },
                 "smalltalk.completion.kernelPath": {
+                    "order": 3,
                     "type": "string",
                     "default": "",
-                    "markdownDescription": "Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used by `auto`. If empty, the kernel directory is discovered from `#smalltalk.gnuSmalltalkPath#` and common install locations."
+                    "markdownDescription": "Optional path to a GNU Smalltalk **kernel source directory** (the folder of `.st` files, e.g. `…/share/smalltalk/kernel`) used when `#smalltalk.completion.kernelLibrary#` is `auto`. If empty, the kernel directory is discovered from `#smalltalk.gnuSmalltalkPath#` and common install locations."
                 },
                 "smalltalk.trace.server": {
+                    "order": 4,
                     "type": "string",
                     "enum": [
                         "off",
@@ -170,17 +186,14 @@
                     "default": "off",
                     "description": "Traces the communication between VS Code and the Smalltalk language server."
                 },
-                "smalltalk.format.enable": {
-                    "type": "boolean",
-                    "default": false,
-                    "markdownDescription": "Enable conservative, idempotent Smalltalk formatting (document, range, and on-type). **Off by default** — formatting only rewrites whitespace (indentation, spacing, blank-line runs, cascade alignment, keyword-message wrapping) and never changes your code, but you opt in per the project's safety-first posture."
-                },
                 "smalltalk.format.indentSize": {
+                    "order": 5,
                     "type": "number",
                     "default": 4,
                     "markdownDescription": "Number of spaces per indent level when formatting. Whether tabs or spaces are used follows the editor's `#editor.insertSpaces#` setting."
                 },
                 "smalltalk.format.cascades": {
+                    "order": 6,
                     "type": "string",
                     "enum": [
                         "align",
@@ -194,11 +207,13 @@
                     "markdownDescription": "How to lay out message cascades (`receiver msg1; msg2; …`) when formatting."
                 },
                 "smalltalk.format.keywordWrap": {
+                    "order": 7,
                     "type": "number",
                     "default": 100,
                     "markdownDescription": "Wrap a keyword message onto one keyword-per-line when its single-line width would exceed this column. Set to `0` to never wrap keyword messages."
                 },
                 "smalltalk.format.blockStyle": {
+                    "order": 8,
                     "type": "string",
                     "enum": [
                         "preserve",
@@ -223,6 +238,7 @@
         "esbuild": "^0.25.0",
         "eslint": "^9.9.0",
         "js-yaml": "^4.1.0",
+        "ovsx": "^0.10.12",
         "tsx": "^4.19.0",
         "typescript": "^5.5.0",
         "typescript-eslint": "^8.0.0",
@@ -238,13 +254,14 @@
         "watch": "node esbuild.mjs --watch",
         "check-types": "tsc --noEmit -p client/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
         "test:server": "node server/test/handshake.test.mjs",
-        "test:client": "tsx client/test/gstLocator.test.ts",
+        "test:client": "tsx client/test/run.ts",
         "test:parser": "tsx server/test/run.ts",
         "lint": "eslint client/src server/src",
         "test": "vscode-test",
         "test:e2e": "npm run compile && vscode-test",
         "package": "vsce package --no-dependencies",
         "deploy": "vsce publish",
+        "deploy:ovsx": "ovsx publish --no-dependencies",
         "stamp:cartridge": "tsx scripts/stamp-cartridge.ts",
         "build:grammar": "js-yaml syntaxes/gnu-smalltalk.YAML-tmLanguage > syntaxes/gnu-smalltalk.tmLanguage.json",
         "test:grammar": "node src/test/grammar-verification.js",

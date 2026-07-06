@@ -1,0 +1,89 @@
+# Issue/PR label manifest (US-902). The source of truth for this repo's labels.
+# Importable with a label-sync tool (e.g. `github-label-sync --labels .github/labels.yml`)
+# or `gh label create <name> --color <hex> --description <text>`.
+# Mirrors the taxonomy documented in CONTRIBUTING.md §GitHub issue labels.
+
+# --- Kind ---
+- name: user-story
+  color: "0e8a16"
+  description: A backlog user story (US-XXX)
+- name: bug
+  color: "d73a4a"
+  description: Something isn't working
+- name: enhancement
+  color: "a2eeef"
+  description: New feature or capability request
+- name: type:research
+  color: "5319e7"
+  description: A research spike
+- name: type:prototype
+  color: "5319e7"
+  description: Throwaway prototype / experiment
+
+# --- Area (which part of the extension) ---
+- name: area:parser
+  color: "fbca04"
+  description: Lexer, parser, symbol table, diagnostics
+- name: area:lsp
+  color: "1d76db"
+  description: Language server providers (completion, hover, references, rename, formatting, …)
+- name: area:grammar
+  color: "fef2c0"
+  description: TextMate grammar / syntax highlighting / snippets
+- name: area:runtime
+  color: "c5def5"
+  description: gst integration (Run Current File, future Live Bridge)
+
+# --- Epics ---
+- name: epic:documentation
+  color: "bfdadc"
+  description: EPIC-001 documentation
+- name: epic:declarative-features
+  color: "bfdadc"
+  description: EPIC-002 declarative editing features
+- name: epic:workflow
+  color: "bfdadc"
+  description: EPIC-003 workflow
+- name: epic:lsp
+  color: "bfdadc"
+  description: EPIC-004 language intelligence (LSP)
+
+# --- Planning ---
+- name: "phase:1"
+  color: "ededed"
+  description: Planning phase 1
+- name: "phase:2"
+  color: "ededed"
+  description: Planning phase 2
+- name: priority:high
+  color: "b60205"
+  description: High priority
+- name: priority:medium
+  color: "d93f0b"
+  description: Medium priority
+- name: priority:low
+  color: "0e8a16"
+  description: Low priority
+- name: "size:S"
+  color: "ededed"
+  description: Small
+- name: "size:M"
+  color: "ededed"
+  description: Medium
+- name: "size:L"
+  color: "ededed"
+  description: Large
+- name: "size:XL"
+  color: "ededed"
+  description: Extra large
+- name: status:ready
+  color: "0e8a16"
+  description: Ready to pick up
+- name: status:blocked
+  color: "b60205"
+  description: Blocked on a dependency
+
+# --- Community ---
+- name: good-first-issue
+  color: "7057ff"
+  description: A well-scoped starting point for new contributors

@@ -55,49 +55,25 @@ suite('US-416 acceptance (e2e)', () => {
     assert.ok(ext.isActive, 'extension must be active');
   });
 
-  // AC4 — off by default: with smalltalk.format.enable unset (false), Format
-  // Document must produce NO edits (never touches the buffer).
-  suite('disabled by default (AC4)', () => {
-    suiteSetup(async () => {
-      // Clear any value persisted in the test host's user-data dir by a prior run,
-      // restoring the true default (false) so this asserts the *default* behaviour.
-      await vscode.workspace
-        .getConfiguration('smalltalk.format')
-        .update('enable', undefined, vscode.ConfigurationTarget.Global);
-    });
-    test('AC4: Format Document is a no-op when smalltalk.format.enable is false', async () => {
-      const doc = await openSmalltalk('foo:=Account new.');
-      const cfg = vscode.workspace.getConfiguration('smalltalk.format');
-      assert.equal(cfg.get('enable'), false, 'format.enable must default to false (AC4)');
-      const edits = await vscode.commands.executeCommand(
-        'vscode.executeFormatDocumentProvider', doc.uri, FMT_OPTS,
-      );
-      assert.ok(!edits || edits.length === 0, 'no edits expected while formatting is disabled');
-    });
-  });
+  // NOTE (US-902): the US-416 AC4 "off by default" behaviour was superseded at
+  // 1.0 — the `smalltalk.format.enable` gate was removed and formatting is now
+  // always available. The former disabled-by-default suite is retired here; the
+  // always-on behaviour is pinned by US-902's acceptance test. See
+  // specs/US-902-*/spec.md and specs/US-416-*/spec.md §AC4 (superseded).
 
-  // AC1/AC2 — with formatting enabled.
+  // AC1/AC2 — formatting is always available (no setting to toggle).
   suite('enabled (AC1, AC2)', () => {
     suiteSetup(async function () {
       this.timeout(90000);
-      await vscode.workspace
-        .getConfiguration('smalltalk.format')
-        .update('enable', true, vscode.ConfigurationTarget.Global);
-      // The server pulls config per request; the Global write can take a while
-      // to round-trip in a headless test host. Warm up until a probe format
-      // actually produces edits, so the assertions below don't race propagation.
+      // Warm up until a probe format produces edits, so the assertions below
+      // don't race the server attaching in a fresh headless host.
       const probe = await openSmalltalk('warm:=1.');
       const warmed = await waitFor(
         () => vscode.commands.executeCommand('vscode.executeFormatDocumentProvider', probe.uri, FMT_OPTS),
         (r) => Array.isArray(r) && r.length > 0,
         240,
       );
-      assert.ok(Array.isArray(warmed) && warmed.length > 0, 'formatting did not become enabled (config propagation)');
-    });
-    suiteTeardown(async () => {
-      await vscode.workspace
-        .getConfiguration('smalltalk.format')
-        .update('enable', undefined, vscode.ConfigurationTarget.Global);
+      assert.ok(Array.isArray(warmed) && warmed.length > 0, 'formatting should be available with no enable flag');
     });
 
     test('AC2: Format Document normalizes spacing (buffer changes)', async () => {
@@ -149,7 +125,6 @@ suite('US-416 acceptance (e2e)', () => {
     suiteSetup(async function () {
       this.timeout(90000);
       const cfg = vscode.workspace.getConfiguration('smalltalk.format');
-      await cfg.update('enable', true, vscode.ConfigurationTarget.Global);
       await cfg.update('blockStyle', 'expand', vscode.ConfigurationTarget.Global);
       const probe = await openSmalltalk('Object subclass: Warm [\nm [a:=1. ^a]\n]');
       await waitFor(
@@ -159,11 +134,10 @@ suite('US-416 acceptance (e2e)', () => {
       );
     });
     suiteTeardown(async () => {
-      // Reset BOTH knobs — Global settings persist in the test host's user-data dir
-      // across runs, so a leftover `enable: true` would break the off-by-default check.
+      // Reset the blockStyle knob — Global settings persist in the test host's
+      // user-data dir across runs.
       const cfg = vscode.workspace.getConfiguration('smalltalk.format');
       await cfg.update('blockStyle', undefined, vscode.ConfigurationTarget.Global);
-      await cfg.update('enable', undefined, vscode.ConfigurationTarget.Global);
     });
 
     test('expand reflows an inline method body to one statement per line', async () => {

@@ -70,9 +70,12 @@ specifying (as US-200 did for the grammar before US-201).
 * **Epics** `EPIC-00X`. **ADRs** `NNNN` (zero-padded, incrementing).
 
 ### GitHub issue labels
+The canonical set lives in [`.github/labels.yml`](.github/labels.yml) (importable with a label-sync tool).
 * Kind: `user-story`, `bug`, `enhancement`, `type:research`, `type:prototype`
+* Area: `area:parser`, `area:lsp`, `area:grammar`, `area:runtime`
 * Planning: `phase:1`/`phase:2`, `priority:high|medium|low`, `size:S|M|L|XL`, `status:ready|blocked`
-* Area: `epic:documentation`, `epic:declarative-features`, `epic:workflow`, `epic:lsp`
+* Epics: `epic:documentation`, `epic:declarative-features`, `epic:workflow`, `epic:lsp`
+* Community: `good-first-issue` (well-scoped starters for new contributors)
 
 ### Branches & commits
 * **Branch per story**, named for it: `feature/US-XXX-short-name` for new work,

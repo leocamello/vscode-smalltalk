@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/leocamello/vscode-smalltalk/issues
+    about: Not a bug or a feature? Open a plain issue to ask a question or start a discussion.
+  - name: Roadmap & user stories
+    url: https://github.com/leocamello/vscode-smalltalk/blob/master/docs/ROADMAP.md
+    about: See what's planned before filing — your idea may already be a scheduled story.
+  - name: Contribution guide
+    url: https://github.com/leocamello/vscode-smalltalk/blob/master/CONTRIBUTING.md
+    about: How we work (spec-driven), conventions, and how to submit a pull request.

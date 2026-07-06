@@ -90,7 +90,7 @@ Legend: 🟢 done · 🔵 planned · 🟣 vision (new) · ➕ optional-runtime �
 | **0.11** ✅ | **Scope-aware Rename** | 005 | safe rename of temps/args/**instance variables** (workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation); selectors/classes rejected-with-reason — **shipped (US-426)** | A | first refactoring (image-IDE parity, offline) |
 | **0.12** ✅ | **Class Rename** | 005 | safe **workspace-wide class rename** across every reference form (declaration · receiver/superclass · `class`/`extend` · class-argument symbols · `#{Foo}` · namespaced `A.B`/`A::B`), resolution-gated; kernel-boundary-safe (reject-with-reason); multi-file Refactor Preview — **shipped (US-428)** | A | second refactoring (image-IDE parity, offline) |
 | **0.13** ✅ | **Hardening & Perf** | 004 | **parser never-throws** (depth cap + `RangeError` net, one diagnostic) · **perf bench** (1k files ≈0.2 s, completion p95 ≈5 ms) · **no-telemetry guard** · fuzz + 735-check provider matrix — **shipped (US-901)** | — | beta quality |
-| **1.0** 🔵 | **Complete Offline GST IDE** | 902 | product polish; remove `preview`; **Open VSX** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
+| **1.0** ✅ | **Complete Offline GST IDE** | 902 | product polish; **formatting always-on** (removed `format.enable`); removed `preview`; settings reorder; **Workspace-Trust** decl + Run-refused-untrusted; **cancellation tokens**; **Open VSX** — **shipped (US-902)** | A | **parity with image-based extensions for everything that doesn't need a runtime — at zero setup** |
 | **~1.0** 🟣 | **Tonel read-only wedge** ("Trojan Horse") | 006 | **read-only Tonel** grammar + folding + outline (US-424) — *no cartridge, no seam* | A ⚖️ | best-in-class Tonel reading — lands the Pharo/GemStone/VA crowd early |
 | **1.1–1.4** 🟣 | **Image-Grade Workbench** 🏰 | 008 | **System Browser view**, full-text method search, class-hierarchy view, more refactorings (extract method) | A+B | the "feels like Smalltalk" IDE (System Browser parity, offline) |
 | **1.5** 🟣 | **THE SECOND DIALECT (Pharo)** 🏰🏰 | 006 | Pharo cartridge (image export) + full Tonel container seam (US-418) + `smalltalk.dialect` auto-detect **+ status-bar picker** (US-602) | **B — vision becomes real** | **multi-dialect — beyond ALL rivals** |
@@ -129,6 +129,16 @@ headroom, a **no-telemetry guard** locks in the offline stance, and a fuzz + 735
 never-throw. The flagged `allWorkspaceFiles` rename scan measured a non-bottleneck and was left un-optimized.
 **1.0 (US-902)** now carries polish + remove-`preview` + Open VSX, plus the two items deferred from US-901
 (cancellation-token plumbing + untrusted-/virtual-workspace capability declarations).
+
+**Delta (2026-07-06) — 1.0.0 shipped (US-902).** The offline-parity line is reached. The graduation pass
+(no new provider): **formatting graduated to always-on** (removed the `smalltalk.format.enable` gate — it
+shipped off-by-default 0.10→0.13; US-416 AC4 superseded), the **`preview` flag removed**, **settings
+reordered** so the GST path is first, **Workspace Trust** declared + enforced (static intelligence works in
+Restricted Mode; **Run Current File refused untrusted**), **cancellation tokens** honoured by the
+workspace-spanning requests, and the extension is **published to Open VSX** in CI alongside the Marketplace
+(gated on `OVSX_PAT`). Docs: README **Demo** section (owner records the GIFs per `docs/media-shotlist.md`
+before the tag), issue templates, and a label manifest. **Next is post-1.0**: the read-only Tonel wedge
+(US-424) and the Image-Grade Workbench (EPIC-008).
 
 **Delta (2026-06-24 strategy review).** Three ideas from an external review are folded into the plan:
 (1) **Tonel as the "Trojan Horse" — resequencing decision:** a **read-only** Tonel experience (grammar +
@@ -178,7 +188,7 @@ need a VM — *with no setup*. By **2.0** the runtime-dependent features arrive 
    closer (`]`/`)`/`}`/`>`) and close-unterminated-string quick fixes — **no `gst`**. The opt-in
    `gst`/runtime compile-diagnostics tier (original AC2/AC3) was built then **deferred to EPIC-007**
    (Live Bridge): gst 3.2.5 emits only syntax errors the parser already catches better; real value
-   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). 0.10.0 / US-416 — Formatting (document/range/on-type over a whitespace-only token-stream rewriter, ADR-0005; off by default; cascade-align + keyword-wrap + `blockStyle: expand`) — shipped (closes #28). 0.11.0 / US-426 — Scope-aware Rename (temps/args/instance variables; workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation; selectors/classes rejected-with-reason) — shipped (closes #69). 0.12.0 / US-428 — Class Rename (workspace-wide across every reference form incl. namespaced `#{…}`/`A.B`/`A::B`, resolution-gated; kernel-boundary-safe reject-with-reason; multi-file Refactor Preview) — shipped (closes #109). 0.13.0 / US-901 — Hardening & Perf (parser never-throws: depth cap + `RangeError` net → one diagnostic; perf bench 1k files ≈0.2 s / completion p95 ≈5 ms; no-telemetry guard; fuzz + 735-check provider matrix) — shipped (closes #112). Next: the 1.0 push — polish + remove-`preview` + Open VSX (US-902, 1.0).**
+   (semantic errors) needs a runtime. **0.9.0 / US-423 — Cross-Reference Intelligence (references · senders/implementors · call hierarchy over the two-tier engine) — shipped. 0.9.1 / US-425 — keyword-message signature help — shipped (closes #68). SPIKE-01 (unknown-selector heuristic) — done, shelved (#67). 0.9.2 / US-427 — selector-surface coverage audit (ADR-0004 division of labour + 14 block snippets + cartridge-cross-check guard) — shipped (closes #102). 0.10.0 / US-416 — Formatting (document/range/on-type over a whitespace-only token-stream rewriter, ADR-0005; off by default; cascade-align + keyword-wrap + `blockStyle: expand`) — shipped (closes #28). 0.11.0 / US-426 — Scope-aware Rename (temps/args/instance variables; workspace-wide ivar rename, shadow-safe, multi-file Refactor-Preview confirmation; selectors/classes rejected-with-reason) — shipped (closes #69). 0.12.0 / US-428 — Class Rename (workspace-wide across every reference form incl. namespaced `#{…}`/`A.B`/`A::B`, resolution-gated; kernel-boundary-safe reject-with-reason; multi-file Refactor Preview) — shipped (closes #109). 0.13.0 / US-901 — Hardening & Perf (parser never-throws: depth cap + `RangeError` net → one diagnostic; perf bench 1k files ≈0.2 s / completion p95 ≈5 ms; no-telemetry guard; fuzz + 735-check provider matrix) — shipped (closes #112). 1.0.0 / US-902 — Product Polish & Open VSX (formatting graduated to always-on = removed `format.enable`; removed `preview`; settings reorder (GST path first); Workspace-Trust decl + Run-refused-untrusted; virtual-workspace decl; cancellation-token plumbing; published to Open VSX in CI; README demo + issue templates + labels) — shipped. **The 1.0 offline-parity line is reached.** Next (post-1.0): the read-only Tonel wedge (US-424, EPIC-006) + the Image-Grade Workbench (EPIC-008).**
 2. **EPIC-005 foundation has landed** (US-430, merged #82) ahead of its 0.8/0.9 milestones: the Dialect
    Cartridge schema (`server/src/types/knowledge-base.ts`) + GST **Cartridge #01**
    (`scripts/export-gst-cartridge.st` → `server/data/cartridges/gst-3.2.5-cartridge.json`, 249 classes /
@@ -210,7 +220,7 @@ stories in [`docs/product/user-stories.md`](product/user-stories.md).
 
 | Epic | Theme | Stream | Status |
 |---|---|---|---|
-| EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | In progress (→1.0) |
+| EPIC-004 | Language Intelligence — TypeScript LSP (offline, single-dialect) | A | **Complete at 1.0** (diagnostics→hover→formatting→hardening + US-902 polish; runtime diagnostics deferred to EPIC-007) |
 | EPIC-005 | Offline Knowledge Graph — Console & Cartridges | B | In progress (US-430 foundation + US-422 semantic tokens + US-423 cross-reference + US-425 signature help + US-427 selector-surface audit shipped; SPIKE-01 shelved) |
 | EPIC-006 | Multi-Dialect Expansion (2nd+ cartridges, dialect detection, container seam) | A+B | Planned (read-only Tonel wedge US-424 ~1.0; full second dialect 1.5) |
 | EPIC-007 | The Live Bridge (optional runtime delegation) | C | Planned (1.6+) |
