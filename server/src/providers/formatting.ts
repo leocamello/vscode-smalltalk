@@ -1,14 +1,15 @@
 // Formatting providers (US-416): document / range / on-type. Thin LSP adapters
 // over the pure whitespace-only formatter core (server/src/format/formatter.ts,
-// ADR-0005). Each returns TextEdit[]; all are gated on `smalltalk.format.enable`
-// (off by default, AC4) — disabled yields no edits. Pure: text in, edits out.
+// ADR-0005). Each returns TextEdit[]. Pure: text in, edits out. Formatting is
+// always available as of 1.0 (US-902) — it graduated out of the opt-in
+// `smalltalk.format.enable` gate; the editor's own format gestures / formatOnSave
+// are the trigger, and the rewriter stays whitespace-only + idempotent.
 
 import { Position, Range, TextEdit, type FormattingOptions } from 'vscode-languageserver-types';
 import { formatSource, lineIndentDepth, type FormatOptions } from '../format/formatter';
 
 /** Resolved `smalltalk.format.*` settings (see package.json contributes). */
 export interface FormatSettings {
-  enable: boolean;
   indentSize: number;
   cascades: 'align' | 'preserve';
   keywordWrap: number;
@@ -16,7 +17,6 @@ export interface FormatSettings {
 }
 
 export const DEFAULT_FORMAT_SETTINGS: FormatSettings = {
-  enable: false,
   indentSize: 4,
   cascades: 'align',
   keywordWrap: 100,
@@ -57,7 +57,6 @@ function endPosition(text: string): Position {
 
 /** Whole-document formatting: one replace edit, or none if already normalized / disabled. */
 export function formatDocument(text: string, lsp: FormattingOptions, settings: FormatSettings): TextEdit[] {
-  if (!settings.enable) return [];
   const formatted = formatSource(text, toFormatOptions(lsp, settings));
   if (formatted === text) return [];
   return [TextEdit.replace(Range.create(Position.create(0, 0), endPosition(text)), formatted)];
@@ -70,7 +69,6 @@ export function formatRange(
   lsp: FormattingOptions,
   settings: FormatSettings,
 ): TextEdit[] {
-  if (!settings.enable) return [];
   const eol = eolOf(text);
   const lines = text.split(eol);
   const startLine = Math.max(0, range.start.line);
@@ -99,7 +97,7 @@ export function formatOnType(
   lsp: FormattingOptions,
   settings: FormatSettings,
 ): TextEdit[] {
-  if (!settings.enable || !ON_TYPE_TRIGGERS.has(ch)) return [];
+  if (!ON_TYPE_TRIGGERS.has(ch)) return [];
   const eol = eolOf(text);
   const lines = text.split(eol);
   if (position.line >= lines.length) return [];

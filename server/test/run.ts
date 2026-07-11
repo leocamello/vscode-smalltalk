@@ -27,3 +27,5 @@ import './classRename.test.ts';
 import './robustness.test.ts';
 import './noTelemetry.test.ts';
 import './providerRobustness.test.ts';
+import './cancellation.test.ts';
+import './manifest.test.ts';

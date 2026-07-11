@@ -15,6 +15,23 @@ Marketplace as `leocamello.vscode-smalltalk`.
 > Bridge (EPIC-007) adds runtime features when present, never required. See
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the vision, architecture diagram, milestone ladder
 > (0.6→2.0) and parity scorecard, and [`epics.md`](docs/product/epics.md) EPIC-005–008.
+- **Shipped:** **v1.0.0 — Product Polish & Open VSX (US-902, 1.0 milestone)** — the graduation pass, **no new
+  provider**. **Formatting graduated to always-on** — the `smalltalk.format.enable` gate was **removed** (after
+  shipping off-by-default 0.10→0.13); formatting still runs only on the editor's format gestures / `formatOnSave`,
+  stays whitespace-only + idempotent. The **`preview` flag is gone**; **settings reordered** so
+  `smalltalk.gnuSmalltalkPath` is first (explicit `order`). **Workspace Trust declared + enforced**
+  (`capabilities.untrustedWorkspaces: limited` + `restrictedConfigurations: [smalltalk.gnuSmalltalkPath]`,
+  `virtualWorkspaces: limited`): all static intelligence works in Restricted Mode, but **Run Current File is
+  refused untrusted** (client-side `workspace.isTrusted` guard → Manage-Trust prompt; pure decision in
+  `client/src/commands/trustGate.ts`). **Cancellation-token plumbing** — the workspace-spanning requests
+  (workspace symbols, references, call hierarchy, rename) honour the LSP token and bail cooperatively
+  (`server/src/providers/cancellation.ts` `readFilesCancellable`; threaded through `server.ts`). **Published to
+  Open VSX** in CI (`ovsx` + `deploy:ovsx`, gated on release + `OVSX_PAT`, skip-if-absent) alongside `vsce`.
+  Docs polish: README **Demo** section (+ `docs/media-shotlist.md` for the owner-recorded GIFs),
+  `.github/ISSUE_TEMPLATE/`, and `.github/labels.yml` (`area:parser`/`area:lsp`/`good-first-issue`). New unit
+  guards: `server/test/manifest.test.ts` (preview/order/capabilities/ovsx/version) + `cancellation.test.ts`;
+  `client/test/trustGate.test.ts` (client tests now run via `client/test/run.ts`). Manual-QA workspace at
+  `specs/US-902-*/manual-qa-workspace/`. **US-416 AC4 (off-by-default) is superseded here.** Closes #(US-902).
 - **Shipped:** **v0.13.0 — hardening & perf (US-901, EPIC-004)** — a beta-quality pass over the offline
   engine; **no new feature surface**. The **parser never throws** on pathological input: deep nesting
   (`[[[…]]]`, `(((…)))`, long `a:=b:=…` chains) that previously overflowed the recursive-descent stack now
@@ -58,8 +75,9 @@ Marketplace as `leocamello.vscode-smalltalk`.
   whitespace (indent by block depth, tight-bracket spacing table, blank-line collapse, AST-driven
   cascade-align + long-keyword-message wrap). So **idempotence + token-stream invariance are structural
   guarantees** (property-tested over all 122 kernel files in both block styles). Any parse diagnostic →
-  input returned **unchanged** (non-destructive). **Off by default** (`smalltalk.format.enable`, AC4) for
-  ≥1 release; knobs `indentSize`/`cascades`/`keywordWrap`/`blockStyle` (`expand` reflows bodies
+  input returned **unchanged** (non-destructive). **Always available since 1.0** (US-902 removed the
+  `smalltalk.format.enable` gate; it shipped off-by-default 0.10→0.13); knobs
+  `indentSize`/`cascades`/`keywordWrap`/`blockStyle` (`expand` reflows bodies
   one-statement-per-line via structural forced-breaks; single-statement arg blocks stay inline). Core
   `server/src/format/formatter.ts`, providers `server/src/providers/formatting.ts`. New
   `evals/datasets/formatting/` + `specs/US-416-*/manual-qa-workspace/`. Closes #28.
@@ -129,12 +147,15 @@ Marketplace as `leocamello.vscode-smalltalk`.
   go-to-definition; US-412) on the error-tolerant **lexer + parser + symbol table** (US-411, internal
   M3). All language intelligence runs with **no `gst`**. Earlier: v0.3.0 grammar/snippets/config +
   **Run Current File** (US-301) + the LSP scaffold (US-410).
-- **Next:** the **1.0 push** — product polish + remove the preview/`format.enable` flag + Open VSX (**US-902**,
-  1.0), plus the two items deferred from US-901 (cancellation-token plumbing + untrusted-/virtual-workspace
-  **capability declarations**). Hardening/perf (**US-901**) shipped as **0.13**. EPIC-004 language intelligence is
-  complete through formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8),
-  cross-reference (0.9), signature help (0.9.1), the selector-surface audit (0.9.2), **scope-aware rename
-  (0.11)**, and **class rename (0.12)** on one Console.
+- **Next (post-1.0):** the **read-only Tonel wedge** (grammar + folding + outline, **US-424**, EPIC-006 —
+  the "Trojan Horse" pulled forward to ~1.0, no cartridge/seam) and the **Image-Grade Workbench** (EPIC-008:
+  System Browser view, class-hierarchy view, extract-method). The optional **Live Bridge** (EPIC-007 — Do-it/
+  Print-it/Inspect-it + runtime diagnostics) stays post-1.x. **1.0 (US-902) shipped** product polish +
+  remove-preview + remove-`format.enable` + Open VSX + the two US-901 deferrals (cancellation tokens +
+  untrusted/virtual-workspace capability declarations). EPIC-004 language intelligence is **complete** through
+  formatting (v0.10.0); EPIC-005 consumers span completion (0.5), semantic tokens (0.8), cross-reference (0.9),
+  signature help (0.9.1), the selector-surface audit (0.9.2), **scope-aware rename (0.11)**, and **class rename
+  (0.12)** on one Console.
 - **Spike done (SPIKE-01, SHELVE):** the unknown-selector heuristic was built behind a flag + measured on
   the GST kernel (21.7k sends): naive 58 false positives → **12** after the `self` subclass-union (Template
   Method) insight; zero-FP bar **unmet** (~7-8 residual cartridge-gap FPs) + low closed-world coverage
@@ -188,8 +209,9 @@ Marketplace as `leocamello.vscode-smalltalk`.
   kept tight** so `.` never re-lexes as a `Period` — a token-stream-corruption trap caught by the property
   test). Forced breaks are AST-derived: cascade-align, long-keyword-wrap, and `blockStyle: expand`
   (statement-per-line bodies; single-statement arg blocks stay inline). Any parse diagnostic → return input
-  unchanged. `providers/formatting.ts` adapts it to document/range/on-type `TextEdit[]`, gated on
-  `smalltalk.format.enable` (pulled per request); VS Code minimizes the whole-doc replace into small diffs.
+  unchanged. `providers/formatting.ts` adapts it to document/range/on-type `TextEdit[]` (always available
+  since 1.0/US-902 — the `smalltalk.format.enable` gate was removed; the editor's format gestures are the
+  trigger, other `format.*` knobs pulled per request); VS Code minimizes the whole-doc replace into small diffs.
   **Idempotence + token-stream invariance are the gates** — property-tested over all 122 kernel files in
   both block styles (`server/test/format.property.test.ts`); output eval `evals/datasets/formatting/`.
 - **Rename (US-426 → 0.11.0; US-428 class rename → 0.12.0):** `providers/rename.ts` —

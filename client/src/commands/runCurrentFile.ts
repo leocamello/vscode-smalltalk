@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { commands, window, workspace, type Terminal } from 'vscode';
 import { buildRunCommand, defaultExeNames, resolveGst } from '../gstLocator';
+import { MANAGE_TRUST_ACTION, RESTRICTED_RUN_MESSAGE, runBlockedByTrust } from './trustGate';
 
 const TERMINAL_NAME = 'Smalltalk';
 
@@ -29,6 +30,16 @@ export async function runCurrentFile(): Promise<void> {
   const editor = window.activeTextEditor;
   if (!editor || editor.document.languageId !== 'smalltalk') {
     void window.showErrorMessage('Open a Smalltalk file to run it.');
+    return;
+  }
+
+  // Running a file executes code via gst — refuse in an untrusted workspace
+  // (US-902 AC4). Static language intelligence is unaffected in Restricted Mode.
+  if (runBlockedByTrust(workspace.isTrusted)) {
+    const choice = await window.showWarningMessage(RESTRICTED_RUN_MESSAGE, MANAGE_TRUST_ACTION);
+    if (choice === MANAGE_TRUST_ACTION) {
+      void commands.executeCommand('workbench.action.manageTrust');
+    }
     return;
   }
 

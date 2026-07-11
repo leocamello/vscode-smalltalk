@@ -105,7 +105,7 @@
 ## EPIC-004: Language Intelligence — TypeScript LSP
 
 * **ID:** EPIC-004
-* **Status:** Effectively complete (US-410 scaffold, US-411 parser/symbols, US-412 navigation, US-417 folding+highlight, US-413 completion + kernel index, US-414 diagnostics, US-415 hover, and **US-416 formatting** all shipped — v0.3.0→v0.10.0). The remaining language-intelligence work (cartridge-aware cross-reference, semantic tokens, signature help) continued under EPIC-005; refactorings (rename/extract) live in EPIC-008.
+* **Status:** **Complete at 1.0** (US-410 scaffold, US-411 parser/symbols, US-412 navigation, US-417 folding+highlight, US-413 completion + kernel index, US-414 diagnostics, US-415 hover, **US-416 formatting**, **US-901 hardening & perf** (v0.13.0), and **US-902 product polish & Open VSX** (v1.0.0) all shipped — v0.3.0→**v1.0.0**). The remaining language-intelligence work (cartridge-aware cross-reference, semantic tokens, signature help) continued under EPIC-005; refactorings (rename/extract) live in EPIC-008; runtime compile/semantic diagnostics deferred to EPIC-007.
 * **Priority:** Medium
 * **Phase:** Phase 2
 * **Date Proposed:** 2025-05-02
@@ -147,7 +147,7 @@
 ## EPIC-005: Offline Knowledge Graph ("Console & Cartridges")
 
 * **ID:** EPIC-005
-* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; **US-425 keyword-message signature help shipped v0.9.1**; **US-427 selector-surface coverage audit shipped v0.9.2** (ADR-0004 division of labour + 14 block snippets + guard); **SPIKE-01 unknown-selector heuristic done — shelved** (zero-FP bar unmet, gate parked); next US-416 formatting → ~1.0)
+* **Status:** In Progress (foundation landed — US-430 schema + GST Cartridge #01 + Console loader/convergence, merged #82; **US-422 cartridge-aware semantic tokens shipped v0.8.0** — first user-facing consumer; **US-423 references + senders/implementors + call hierarchy shipped v0.9.0**; **US-425 keyword-message signature help shipped v0.9.1**; **US-427 selector-surface coverage audit shipped v0.9.2** (ADR-0004 division of labour + 14 block snippets + guard); **SPIKE-01 unknown-selector heuristic done — shelved** (zero-FP bar unmet, gate parked); **US-416 formatting shipped v0.10.0**, **US-426 scope-aware rename v0.11.0**, **US-428 class rename v0.12.0** — all on the one Console)
 * **Priority:** High
 * **Phase:** Phase 2 (extends EPIC-004)
 * **Date Proposed:** 2026-06-21

@@ -62,7 +62,9 @@ can normalize style without risking my code.**
   (idempotence) **and** the significant-token stream (kinds + text, comments included, whitespace excluded)
   is **identical** before and after formatting (no token added, dropped, split, or merged).
 - **AC4**: Formatting is **off by default** (`smalltalk.format.enable: false`) for at least one release;
-  enabling it is required for any edits to be produced.
+  enabling it is required for any edits to be produced. **[SUPERSEDED by US-902 at 1.0.0]** — formatting
+  shipped off-by-default for releases 0.10→0.13, then graduated to **always available** in 1.0; the
+  `smalltalk.format.enable` setting was removed. See `specs/US-902-Product-Polish-Open-VSX/spec.md` §4 AC2.
 - **AC5**: Works with **no `gst`**; a malformed file produces **no edits** for the unparseable region (never
   corrupts code); output-eval dataset `evals/datasets/formatting/` passes in CI on Linux/macOS/Windows.
 

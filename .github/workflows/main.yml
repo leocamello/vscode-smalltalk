@@ -46,6 +46,20 @@ jobs:
       run: npm run deploy
       env:
         VSCE_PAT: ${{ secrets.MARKETPLACE }}
+    # Publish the same VSIX to Open VSX (US-902). Gated on a release event; the
+    # runtime check skips cleanly when OVSX_PAT isn't provisioned yet, so an early
+    # release doesn't red-fail the job (the `secrets` context isn't available in
+    # step `if:` conditions, so the guard lives in the shell).
+    - name: Publish to Open VSX
+      if: success() && github.event_name == 'release' && matrix.os == 'ubuntu-latest'
+      run: |
+        if [ -n "$OVSX_PAT" ]; then
+          npm run deploy:ovsx
+        else
+          echo "OVSX_PAT not set — skipping Open VSX publish."
+        fi
+      env:
+        OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
   # End-to-end acceptance tests: launch real VS Code (Electron) with the
   # extension and drive the LSP providers. Needs a display, so it runs only on
