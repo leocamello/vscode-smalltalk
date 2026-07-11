@@ -25,7 +25,7 @@ extensions for everything that doesn't need a runtime — at zero setup.**
     -   All **language intelligence works in Restricted Mode**. **Run Current File** executes code with `gst`, so it is disabled until you trust the workspace (with a one-click *Manage Workspace Trust* prompt), and a workspace-scoped `smalltalk.gnuSmalltalkPath` is ignored while untrusted.
     -   In **virtual** (no-filesystem) workspaces, on-file editing intelligence works; workspace-wide indexing, installed-kernel discovery, and Run Current File are unavailable (declared, and degrade cleanly).
 -   **Cancellation-token plumbing** — the workspace-spanning requests (workspace symbols, references, call hierarchy, rename) now honour the LSP cancellation token, so a superseded request stops instead of finishing a full multi-file scan.
--   **Docs polish** — a README **Demo** section, `.github/ISSUE_TEMPLATE/` (bug report + feature request), and a canonical label manifest (`.github/labels.yml`, incl. `area:parser`, `area:lsp`, `good-first-issue`).
+-   **Docs & marketplace polish** — a restructured, scannable **README** (tight hero → feature showcase with the demo GIFs → requirements → quick start → settings table → commands → privacy/trust → troubleshooting); a richer **marketplace listing** (corrected display name **Smalltalk**, a value-focused description, `keywords`, `Formatters`/`Linters` categories, a gallery banner, `Free` pricing, and an Open VSX badge); `.github/ISSUE_TEMPLATE/` (bug report + feature request); and a canonical label manifest (`.github/labels.yml`, incl. `area:parser`, `area:lsp`, `good-first-issue`).
 
 ## [0.13.0] - 2026-07-06
 

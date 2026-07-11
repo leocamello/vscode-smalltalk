@@ -1,7 +1,7 @@
 {
     "name": "vscode-smalltalk",
-    "displayName": "SmallTalk",
-    "description": "SmallTalk Language Support for Visual Studio Code",
+    "displayName": "Smalltalk",
+    "description": "GNU Smalltalk language support for VS Code — syntax highlighting, IntelliSense, refactoring, diagnostics, and Run Current File. Fully offline; no image or gst required.",
     "author": {
         "name": "Leonardo Nascimento",
         "email": "leocamello@gmail.com"
@@ -10,6 +10,12 @@
     "license": "MIT",
     "version": "1.0.0",
     "icon": "icon.png",
+    "galleryBanner": {
+        "color": "#0A1A3F",
+        "theme": "dark"
+    },
+    "pricing": "Free",
+    "homepage": "https://github.com/leocamello/vscode-smalltalk#readme",
     "main": "./dist/extension.js",
     "workspaces": [
         "client",
@@ -26,7 +32,17 @@
     },
     "categories": [
         "Programming Languages",
-        "Snippets"
+        "Snippets",
+        "Formatters",
+        "Linters"
+    ],
+    "keywords": [
+        "smalltalk",
+        "gnu smalltalk",
+        "gst",
+        "st",
+        "language server",
+        "syntax highlighting"
     ],
     "activationEvents": [
         "workspaceContains:**/*.{st,gst}"
